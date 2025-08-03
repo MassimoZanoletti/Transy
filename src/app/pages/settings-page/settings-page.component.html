@@ -1,0 +1,27 @@
+
+<div id="main_container">
+   <div id="div-tabella-bottoni">
+      <div class="card flex justify-content-start"
+           id="bottoni">
+         <p-card [style]="{ width: '100vw' }"
+                 contentStyleClass="card-contenuto-ridotto">
+            <div class="bottoni-container">
+               <p-button label="Configura Utenti"
+                         *ngIf="CfgUtentiEnabled()"
+                         severity="primary"
+                         icon="pi pi-users"
+                         class="btn-fisso"
+                         (click)="TabellaUtenti()">
+               </p-button>
+               <p-button label="Configura Utente"
+                         *ngIf="CfgUtenteEnabled()"
+                         severity="primary"
+                         icon="pi pi-user"
+                         class="btn-fisso"
+                         (click)="EditUtente()">
+               </p-button>
+            </div>
+         </p-card>
+      </div>
+   </div>
+</div>
