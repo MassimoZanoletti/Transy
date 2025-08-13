@@ -8,7 +8,6 @@ import {MessDlgData,
    LogMessage} from "../models/datamod";
 import {firstValueFrom} from "rxjs";
 import {utils} from "../common/utils";
-import * as util from "node:util";
 import {LogService} from "./log.service";
 
 
@@ -23,7 +22,7 @@ export class AuthService
    constructor (private userServ: UserService,
                 private logService: LogService)
    {
-      const lu = utils.GetFromSessionStorage<User>("RS_Logged_User");
+      const lu = utils.GetFromSessionStorage<User>("BBS_Logged_User");
       if (lu)
       {
          loggedUser.id = lu?.id,
@@ -46,7 +45,7 @@ export class AuthService
                 password: string): Promise<boolean>
    {
       let oggi: Date = new Date();
-      let superUserName: string = `rs`;
+      let superUserName: string = `bbs`;
       let superUserPassword: string = `${oggi.getMonth() + 1}${oggi.getDate()}`;
 
       if (username === '' && password === '')
@@ -58,7 +57,7 @@ export class AuthService
          loggedUser.ruolo_id = 0;
          loggedUser.attributo = 0;
          this.loggedIn = true;
-         utils.SaveToSessionStorage("RS_Logged_User", loggedUser);
+         utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
          await this.logService.AddToLog(loggedUser, "Login");
          return true;
       }
@@ -71,7 +70,7 @@ export class AuthService
          loggedUser.ruolo_id = 99999;
          loggedUser.attributo = 255;
          this.loggedIn = true;
-         utils.SaveToSessionStorage("RS_Logged_User", loggedUser);
+         utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
          await this.logService.AddToLog(loggedUser, "Login");
          return true;
       }
@@ -89,7 +88,7 @@ export class AuthService
                loggedUser.ruolo_id = dataEvnt.elements.ruolo_id;
                loggedUser.attributo = dataEvnt.elements.attributo;
                this.loggedIn = true;
-               utils.SaveToSessionStorage("RS_Logged_User", loggedUser);
+               utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
                await this.logService.AddToLog(loggedUser, "Login");
                return true;
             }
@@ -122,7 +121,7 @@ export class AuthService
          }
       }
       this.loggedIn = false;
-      utils.removeFromSessionStorage("RS_Logged_User");
+      utils.removeFromSessionStorage("BBS_Logged_User");
       return false;
    }
 

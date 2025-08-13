@@ -7,14 +7,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
-import { RisorseService } from "../../services/risorse.service";
-import { GruppiService } from "../../services/gruppi.service";
 import { EventiService } from "../../services/eventi.service";
 import { LogService } from "../../services/log.service";
 import { loggedUser } from "../../services/users.service";
 import {
    MessDlgData,
-   SeasonElement,
    EventoElement, globs, TipoEvento
 } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
@@ -65,12 +62,6 @@ export class EventoEditComponent implements OnInit
    data: Date |  null = null;
    orainizio: Date |  null = null;
    orafine: Date |  null = null;
-   risorsa_id: number = 0;
-   listaRisorse: Array<any> = [];
-   currRisorsa: any | null = null;
-   gruppo_id: number = 0;
-   listaGruppi: Array<any> = [];
-   currGruppo: any | null = null;
    casa: string = "";
    ospite: string = "";
    indirizzo: string = "";
@@ -82,8 +73,6 @@ export class EventoEditComponent implements OnInit
 
    constructor (private authService: AuthService,
                 private eventiService: EventiService,
-                private resourceService: RisorseService,
-                private gruppiService: GruppiService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
                 private messageDialogService: MessageDialogService,
@@ -102,19 +91,13 @@ export class EventoEditComponent implements OnInit
       this.request = history.state.request.toString();
       this.season_id = Number(history.state.season_id);
       //
-      this.lastGroup = utils.GetFromSessionStorage("RS_Editing_Event_LastGroup");
+      this.lastGroup = utils.GetFromSessionStorage("BBS_Editing_Event_LastGroup");
       if (this.lastGroup == null)
          this.lastGroup = 0;
-      this.lastResource = utils.GetFromSessionStorage("RS_Editing_Event_LastResource");
+      this.lastResource = utils.GetFromSessionStorage("BBS_Editing_Event_LastResource");
       if (this.lastResource == null)
          this.lastResource = 0;
       //
-      const dataRis = await firstValueFrom(this.resourceService.getAllData());
-      const dataGrp = await firstValueFrom(this.gruppiService.getAllData());
-      if ((dataRis) && (dataRis.ok))
-         this.listaRisorse = dataRis.elements;
-      if ((dataGrp) && (dataGrp.ok))
-         this.listaGruppi = dataGrp.elements;
       console.log(`EDIT: 2`);
       if (this.id > 0)
       {
@@ -127,32 +110,6 @@ export class EventoEditComponent implements OnInit
             this.data = new Date((dataRes.elements as EventoElement).data);
             this.orainizio = await this.TimeFromString((dataRes.elements as EventoElement).data, (dataRes.elements as EventoElement).orainizio);
             this.orafine = await this.TimeFromString((dataRes.elements as EventoElement).data, (dataRes.elements as EventoElement).orafine);
-            this.risorsa_id = (dataRes.elements as EventoElement).risorsa_id;
-            if (this.risorsa_id > 0)
-            {
-               const currr = this.listaRisorse.findIndex (elemento => elemento.id == this.risorsa_id);
-               if (currr != -1)
-                  this.currRisorsa = this.listaRisorse[currr];
-            }
-            else if (this.lastResource > 0)
-            {
-               const currr = this.listaRisorse.findIndex (elemento => elemento.id == this.lastResource);
-               if (currr != -1)
-                  this.currRisorsa = this.listaRisorse[currr];
-            }
-            this.gruppo_id = (dataRes.elements as EventoElement).gruppo_id;
-            if (this.gruppo_id > 0)
-            {
-               const currg = this.listaRisorse.findIndex (elemento => elemento.id == this.gruppo_id);
-               if (currg != -1)
-                  this.currGruppo = this.listaGruppi[currg];
-            }
-            else if (this.lastGroup > 0)
-            {
-               const currg = this.listaRisorse.findIndex(elemento => elemento.id == this.lastGroup);
-               if (currg != -1)
-                  this.currGruppo = this.listaGruppi[currg];
-            }
             this.casa = (dataRes.elements as EventoElement).casa;
             this.ospite = (dataRes.elements as EventoElement).ospite;
             this.indirizzo = (dataRes.elements as EventoElement).luogo;
@@ -177,10 +134,6 @@ export class EventoEditComponent implements OnInit
          //
          this.orafine = new Date(this.data);
          this.orafine.setHours(0,0,0,0);
-         //
-         const currg = this.listaRisorse.findIndex(elemento => elemento.id == this.lastGroup);
-         if (currg != -1)
-            this.currGruppo = this.listaGruppi[currg];
       }
       this.cdr.detectChanges();
    }
@@ -203,24 +156,7 @@ export class EventoEditComponent implements OnInit
       try
       {
          console.log("Salva");
-         if (this.currRisorsa)
-         {
-            this.risorsa_id = this.currRisorsa.id;
-            if (this.currRisorsa.nome != "Trasferta")
-            {
-               utils.SaveToSessionStorage("RS_Editing_Event_LastResource", this.risorsa_id);
-            }
-         }
-         else
-            this.risorsa_id = 0;
          //
-         if (this.currGruppo)
-         {
-            this.gruppo_id = this.currGruppo.id;
-         }
-         else
-            this.gruppo_id = 0;
-         utils.SaveToSessionStorage("RS_Editing_Event_LastGroup", this.gruppo_id);
          //
          console.log(this.arbitraggio);
          //
@@ -229,8 +165,8 @@ export class EventoEditComponent implements OnInit
             const response = await firstValueFrom (this.eventiService.addNewData((this.data) ? this.data.toLocaleDateString ('ja-JP') : "",
                                                                                  `${this.orainizio?.getHours ()}:${this.orainizio?.getMinutes ()}`,
                                                                                  `${this.orafine?.getHours ()}:${this.orafine?.getMinutes ()}`,
-                                                                                 this.risorsa_id,
-                                                                                 this.gruppo_id,
+                                                                                 0,
+                                                                                 0,
                                                                                  this.casa,
                                                                                  this.ospite,
                                                                                  this.indirizzo,
@@ -264,8 +200,8 @@ export class EventoEditComponent implements OnInit
                                                                                   (this.data) ? this.data.toLocaleDateString ('ja-JP') : "",
                                                                                   `${this.orainizio?.getHours ()}:${this.orainizio?.getMinutes ()}`,
                                                                                   `${this.orafine?.getHours ()}:${this.orafine?.getMinutes ()}`,
-                                                                                  this.risorsa_id,
-                                                                                  this.gruppo_id,
+                                                                                  0,
+                                                                                  0,
                                                                                   this.casa,
                                                                                   this.ospite,
                                                                                   this.indirizzo,
@@ -419,30 +355,21 @@ export class EventoEditComponent implements OnInit
 
    async OnCasaClick()
    {
-      if (this.currGruppo)
-         this.casa = this.currGruppo.nome;
    }
 
 
    async OnOspiteClick()
    {
-      if (this.currGruppo)
-         this.ospite = this.currGruppo.nome;
    }
 
 
    async OnIndirizzoClick()
    {
-      if ((this.currRisorsa) && (this.currRisorsa.indirizzo != ""))
-         this.indirizzo = this.currRisorsa.indirizzo;
    }
 
 
    SetTrasferta()
    {
-      const currr = this.listaRisorse.findIndex(elemento => elemento.nome == "Trasferta");
-      if (currr != -1)
-         this.currRisorsa = this.listaRisorse[currr];
    }
 
 

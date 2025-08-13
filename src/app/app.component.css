@@ -44,3 +44,19 @@ html, body {
 .router-container {
    height: 100% !important;
 }
+
+::ng-deep .icona-rossa .p-menuitem-icon {
+   color: #FF0000 !important;
+}
+
+::ng-deep .icona-arancio .p-menuitem-icon {
+   color: #FF8800 !important;
+}
+
+::ng-deep .icona-gialla .p-menuitem-icon {
+   color: #FFFF00 !important;
+}
+
+::ng-deep .icona-default .p-menuitem-icon {
+   color: #9a65f8 !important;
+}

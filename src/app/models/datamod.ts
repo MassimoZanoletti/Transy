@@ -12,91 +12,28 @@ export interface User
 }
 
 
-export interface Resource
-{
-   id: number;
-   nome: string;
-   abbreviazione: string;
-   indirizzo: string;
-   coloretesto: string;
-   coloresfondo: string;
-   societa_id: number;
-   soc_nome: string;
-   soc_codice: number;
-}
-
-
-export interface Ruolo
-{
-   id: number;
-   ruolo: string;
-   attributo: number;
-}
-
-
 export interface Societa
 {
    id: number;
    nome: string;
-   tenant: string;
-   codice: number;
-}
-
-
-export interface Categoria
-{
-   id: number;
-   nome: string;
-}
-
-
-export interface SeasonDbElement
-{
-   id: number;
-   nome: string;
-   datainizio: string;
-   datafine: string;
-}
-
-
-export interface SeasonDb
-{
-   ok: boolean;
-   message: string;
-   elements: SeasonDbElement[];
-}
-
-
-export interface SeasonElement
-{
-   id: number;
-   nome: string;
-   datainizio: Date;
-   datafine: Date;
 }
 
 
 export interface Season
 {
-   ok: boolean;
-   message: string;
-   elements: SeasonElement[];
+   id: number;
+   nome: string;
+   abbrev: string;
+   tenantid_link: number;
 }
 
 
-export interface Gruppo
+export interface Champ
 {
    id: number;
    nome: string;
-   abbreviazione: string;
-   coloretesto: string;
-   coloresfondo: string;
-   exportgroup: string;
-   exportname: string;
-   categoria_id: number;
-   societa_id: number;
-   societa: string;
-   categoria: string;
+   abbrev: string;
+   seasonid_link: number;
 }
 
 
@@ -166,72 +103,6 @@ export interface EventoElement
    season_id: number;
    season: string;
    master_id: number;
-}
-
-
-export interface Evento
-{
-   ok: boolean;
-   message: string;
-   elements: EventoElement[];
-}
-
-
-export interface EventoMasterDbElement
-{
-   id: number;
-   data: string;
-   data_fine: string;
-   orainizio: string;
-   orafine: string;
-   risorsa_id: number;
-   gruppo_id: number;
-   commento: string;
-   season_id: number;
-   season: string;
-   risorsa: string;
-   risorsatxt: string;
-   risorsabck: string;
-   gruppo: string;
-   gruppotxt: string
-   gruppobck: string;
-}
-
-
-export interface EventoMasterDb
-{
-   ok: boolean;
-   message: string;
-   elements: EventoMasterDbElement[];
-}
-
-
-export interface EventoMasterElement
-{
-   id: number;
-   data: Date;
-   datafine: Date;
-   orainizio: Date;
-   orafine: Date;
-   risorsa_id: number;
-   gruppo_id: number;
-   commento: string;
-   risorsa: string;
-   risorsatxt: string;
-   risorsabck: string;
-   gruppo: string;
-   gruppotxt: string
-   gruppobck: string;
-   season_id: number;
-   season: string;
-}
-
-
-export interface EventoMaster
-{
-   ok: boolean;
-   message: string;
-   elements: EventoMasterElement[];
 }
 
 

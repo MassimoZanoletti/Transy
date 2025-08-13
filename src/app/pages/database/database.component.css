@@ -1,3 +1,71 @@
+.card-container {
+   display: flex;
+   align-items: stretch;
+   gap: 0;
+}
+
+.custom-card-tabelle {
+   flex: 1;
+   margin: 0px;
+   padding: 0px;
+   max-width: 400px !important;
+}
+
+.custom-card {
+   flex: 1;
+   margin: 0px;
+   padding: 0px;
+}
+
+.divider-wrapper {
+   display: flex;
+   align-items: stretch;
+   margin: 10px 4px;
+   padding: 0;
+}
+
+.divider-wrapper p-divider {
+   margin: 0 !important;
+   padding: 0 !important;
+   border: none;
+}
+
+.no-header-table ::ng-deep thead {
+   display: none;
+}
+
+.bottoni-container {
+   display: flex;
+   gap: 1rem;
+   align-items: center;
+   justify-content: flex-start;
+   margin: 1px !important;
+   padding: 1px !important;
+   /*background-color: red;*/
+}
+
+.card-header-personalizzato {
+   background-color: #422d6b;
+   padding: 0.7rem;
+   border-top-left-radius: 6px;
+   border-top-right-radius: 6px;
+}
+
+.card-header-personalizzato h3 {
+   font-size: 1.5rem;
+   font-weight: 700;
+   margin: 0;
+}
+
+:host ::ng-deep .highlight-text {
+   color: yellow !important;
+}
+
+:host ::ng-deep .white-text {
+   color: white !important;
+}
+
+
 ::ng-deep .p-button-table .p-button {
    max-height: 28px !important;
    min-height: 28px !important;
@@ -8,12 +76,14 @@
    margin-right: 8px !important;
 }
 
+
 ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
-   background-color: #422d6b !important; /* blu scuro */
-   color: #ffe378 !important; /* testo bianco */
+   background-color: #422d6b !important;
+   color: #ffe378 !important;
    font-weight: bold;
    font-size: 1.2em;
-   border-bottom: 2px solid #3949ab; /* bordo inferiore */
+   border-bottom: 2px solid #3949ab;
+   border-right: none !important;
 }
 
 
@@ -36,30 +106,25 @@
 }
 
 ::ng-deep .edit-button {
-   /*background-color: #1976d2;*/
    color: white;
 }
 
 ::ng-deep .delete-button {
-   /*background-color: #d32f2f;*/
    color: white;
 }
 
+/*
 ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
    line-height: 1.0;
 }
+*/
 
 ::ng-deep .p-card .p-card-body {
    padding: 1px !important;
    margin-top: 12px !important;
    margin-bottom: 6px !important;
-   /*
-   margin-left: 4px !important;
-   margin-right: 4px !important;
-   */
-   /*background-color: white !important;*/
 }
 
 
@@ -68,9 +133,7 @@
    padding-bottom: 1px !important;
    margin-top: 1px !important;
    margin-bottom: 1px !important;
-   /*background-color: green !important;*/
 }
-
 
 .row-bck-0 {
    background-color: #161c2d; /* Un rosso chiaro */
@@ -83,3 +146,7 @@
 .row-bck-2 {
    background-color: #1e273f; /* Un giallo chiaro */
 }
+
+
+
+

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RisorseEditComponent } from './risorse-edit.component';
+import { DatabaseComponent } from './database.component';
 
-describe('RisorseEditComponent', () => {
-  let component: RisorseEditComponent;
-  let fixture: ComponentFixture<RisorseEditComponent>;
+describe('DatabaseComponent', () => {
+  let component: DatabaseComponent;
+  let fixture: ComponentFixture<DatabaseComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RisorseEditComponent]
+      imports: [DatabaseComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(RisorseEditComponent);
+    fixture = TestBed.createComponent(DatabaseComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

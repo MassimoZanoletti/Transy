@@ -3,29 +3,29 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-   Season
+   Champ
 } from "../models/datamod";
 
 
 
-@Injectable ({
-                providedIn: 'root'
-             })
-export class SeasonsService
+@Injectable({
+  providedIn: 'root'
+})
+export class CampionatiService
 {
-   private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_seasons.php';
+   private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_champs.php';
 
    constructor (private http: HttpClient)
    {
    }
 
 
-   getAllData (tenant: number | null): Observable<any>
+   getAllData (season: number | null): Observable<any>
    {
       const operation: string = "all";
       let qryTenant: string = "";
-      if (tenant != null)
-         qryTenant = `&tenant=${tenant}`;
+      if (season != null)
+         qryTenant = `&season=${season}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
       return this.http.get<any>(url);
    }
@@ -42,20 +42,20 @@ export class SeasonsService
    updateData (aId: number,
                aName: string,
                aAbbrev: string,
-               aTenantId: number): Observable<any>
+               aSeasonId: number): Observable<any>
    {
       const operation: string = "edit";
-      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}&abbrev=${aAbbrev}&tenantid_link=${aTenantId}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}&abbrev=${aAbbrev}&seasonid_link=${aSeasonId}`;
       return this.http.get<any> (url);
    }
 
 
    addNewData (aName: string,
                aAbbrev: string,
-               aTenantId: number): Observable<any>
+               aSeasonId: number): Observable<any>
    {
       const operation: string = "add";
-      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}&abbrev=${aAbbrev}&tenantid_link=${aTenantId}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}&abbrev=${aAbbrev}&seasonid_link=${aSeasonId}`;
       return this.http.get<any> (url);
    }
 

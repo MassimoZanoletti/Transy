@@ -1,0 +1,132 @@
+
+<div class="card flex justify-content-start">
+   <p-card [style]="{ width: '100%' }"
+           contentStyleClass="card-contenuto-ridotto">
+      <div style="display: flex; align-items: center;">
+         <h2 style="margin-left: 15px; margin-right: 30px; margin-bottom: 0px; margin-top: 0px; padding-bottom: 0px; padding-top: 0px;">Database</h2>
+         <p-button
+            class="p-button-table"
+            icon="pi pi-refresh"
+            severity="secondary"
+            pTooltip="Refresh"
+            tooltipPosition="top"
+            (click)="LoadData()"
+         ></p-button>
+      </div>
+   </p-card>
+</div>
+
+<!--
+<div *ngIf="isLoading" class="card flex justify-content-center">
+   -->
+<p-blockUI [blocked]="isLoading">
+   <p-progressSpinner></p-progressSpinner>
+</p-blockUI>
+
+<div class="card"
+     id="div-data">
+   <div class="card-container"
+        id="div-camp-fasi">
+      <p-card class="custom-card-tabelle">
+         <ng-template pTemplate="header">
+            <div class="card-header-personalizzato">
+               <h3>Tabelle</h3>
+            </div>
+         </ng-template>
+         <ng-template pTemplate="content">
+            <p-table
+               id="tabellaTable"
+               #tabellaTable
+               class="no-header-table"
+               [scrollable]="true"
+               [value]="tabelle"
+               selectionMode="single"
+               dataKey="id"
+               [(selection)]="currTabella"
+               (onRowSelect)="OnTabellaSelected($event)"
+               (onRowUnselect)="OnTabellaUnselect($event)"
+               >
+               <ng-template pTemplate="header">
+                  <tr>
+                     <th style="width: 65px;">Id</th>
+                     <th style="width: 150px;">Nome</th>
+                     <th>Sel.</th>
+                  </tr>
+               </ng-template>
+               <ng-template pTemplate="body" let-tabella let-rowIndex="rowIndex">
+                  <tr [pSelectableRow]="tabella">
+                     <td style="width: 65px;"><span style="font-size: 0.6em;">{{ tabella.id }}</span></td>
+                     <td style="width: 150px;">{{ tabella.nome }}</td>
+                     <td>{{ tabella.selName }}</td>
+                  </tr>
+               </ng-template>
+            </p-table>
+         </ng-template>
+      </p-card>
+      <p-divider class="vert-div"
+                 layout="vertical"/>
+      <div id="div-dati-bottoni">
+         <p-card class="custom-card-tabelle">
+            <ng-template pTemplate="header">
+               <div class="card-header-personalizzato">
+                  <h3><span [innerHTML]="CurrSelTable()"></span></h3>
+               </div>
+            </ng-template>
+            <p-table
+               id="tabellaDeiDati"
+               #tabellaDeiDati
+               class="no-header-table"
+               [scrollable]="true"
+               [value]="tabellaDati"
+               selectionMode="single"
+               dataKey="id"
+               (selectionChange)="currDati = $event; OnDatiSelected($event)"
+            >
+               <ng-template pTemplate="header">
+                  <tr>
+                     <th *ngFor="let col of colonneDati">
+                        {{ col.header }}
+                     </th>
+                  </tr>
+               </ng-template>
+               <ng-template pTemplate="body" let-rowData>
+                  <tr  [pSelectableRow]="rowData">
+                     <td *ngFor="let col of colonneDati">
+                        {{ rowData[col.field] }}
+                     </td>
+                  </tr>
+               </ng-template>
+            </p-table>
+         </p-card>
+         <div class="card flex justify-content-start"
+              id="div-bottoni">
+            <p-card
+                    contentStyleClass="card-contenuto-ridotto">
+               <div class="bottoni-container">
+                  <p-button label="Aggiungi"
+                            severity="primary"
+                            icon="pi pi-plus"
+                            class="btn-fisso"
+                            (click)="AddData()"
+                  >
+                  </p-button>
+                  <p-button label="Modifica"
+                            severity="primary"
+                            icon="pi pi-pencil"
+                            class="btn-fisso"
+                            (click)="EditData()"
+                  >
+                  </p-button>
+                  <p-button label="Elimina"
+                            severity="warning"
+                            icon="pi pi-trash"
+                            class="btn-fisso"
+                            (click)="DeleteData()"
+                  >
+                  </p-button>
+               </div>
+            </p-card>
+         </div>
+      </div>
+   </div>
+</div>

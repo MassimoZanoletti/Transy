@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GruppoEditComponent } from './gruppo-edit.component';
+import { ChampEditComponent } from './champ-edit.component';
 
-describe('GruppoEditComponent', () => {
-  let component: GruppoEditComponent;
-  let fixture: ComponentFixture<GruppoEditComponent>;
+describe('ChampEditComponent', () => {
+  let component: ChampEditComponent;
+  let fixture: ComponentFixture<ChampEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GruppoEditComponent]
+      imports: [ChampEditComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(GruppoEditComponent);
+    fixture = TestBed.createComponent(ChampEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

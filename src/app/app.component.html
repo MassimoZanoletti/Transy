@@ -5,30 +5,39 @@
       <ng-container *ngIf="authService.isAuthenticated()">
          <button pButton
                  type="button"
-                 label="Eventi"
+                 label="Dashboard"
                  class="p-button-text ml-3 mnu-button"
                  routerLink="/"
-                 style="margin-left: 10px !important;"
-                 [raised]="true"></button>
+                 style="margin-left: 20px !important;"
+                 [raised]="true">
+         </button>
 
-         <div class="card flex justify-content-center">
-            <p-menu #tabelleMenu
-                    [model]="mnuTabelle"
-                    [popup]="true"/>
-            <button pButton
-                    type="button"
-                    label="Tabelle"
-                    class="p-button-text ml-3 mnu-button"
-                    (click)="tabelleMenu.toggle($event)"
-                    [raised]="true"></button>
-         </div>
-
+         <p-menu #partitaMenu
+                 [style]="{'min-width': '300px'}"
+                 [model]="mnuPartita"
+                 [popup]="true">
+         </p-menu>
          <button pButton
                  type="button"
-                 label="Impostazioni"
+                 label="Partita"
                  class="p-button-text ml-3 mnu-button"
-                 routerLink="/settings"
-                 [raised]="true"></button>
+                 (click)="partitaMenu.toggle($event)"
+                 [raised]="true">
+         </button>
+
+         <div class="card flex justify-content-center">
+            <p-menu #strumentiMenu
+                    [model]="mnuStrumenti"
+                    [popup]="true">
+            </p-menu>
+            <button pButton
+                    type="button"
+                    label="Strumenti"
+                    class="p-button-text ml-3 mnu-button"
+                    (click)="strumentiMenu.toggle($event)"
+                    [raised]="true">
+            </button>
+         </div>
       </ng-container>
    </div>
    <ng-container *ngIf="authService.isAuthenticated()">
@@ -38,7 +47,8 @@
                  label="Logout"
                  icon="pi pi-sign-out"
                  (click)="logout()"
-                 [raised]="true"></button>
+                 [raised]="true">
+         </button>
       </div>
    </ng-container>
 </p-toolbar>

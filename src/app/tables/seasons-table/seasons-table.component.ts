@@ -11,10 +11,8 @@ import {
 import {Router} from "@angular/router";
 import {SeasonsService} from "../../services/seasons.service";
 import {
-   SeasonDb,
-   Season,
-   SeasonElement,
-   MessDlgData
+   MessDlgData,
+   Season
 } from "../../models/datamod";
 import {Button,
    ButtonModule} from "primeng/button";
@@ -50,7 +48,7 @@ import { loggedUser } from "../../services/users.service";
 export class SeasonsTableComponent implements OnInit
 {
    isLoading: boolean = false;
-   public tblData: Array<SeasonElement> = [];
+   public tblData: Array<Season> = [];
 
 
    constructor (public router: Router,
@@ -71,7 +69,7 @@ export class SeasonsTableComponent implements OnInit
    LoadData ()
    {
       this.isLoading = true;
-      this.theDataService.getAllData ().subscribe (data =>
+      this.theDataService.getAllData (null).subscribe (data =>
                                                    {
                                                       if (data)
                                                       {

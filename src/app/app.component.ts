@@ -19,7 +19,7 @@ import {
    CommonModule,
    NgIf
 } from '@angular/common';
-import {MenuItem} from 'primeng/api';
+import {MenuItem, PrimeIcons } from 'primeng/api';
 import {MenuModule} from 'primeng/menu';
 import {Menu} from 'primeng/menu';
 import { PrimeNGConfig } from 'primeng/api';
@@ -52,7 +52,8 @@ export class AppComponent implements AfterViewInit, OnInit
    public pkg: { name: string; version: string; copyrights: string } = currentPackage;
 
    title = 'ResSchedulerAuth';
-   mnuTabelle: MenuItem[] | undefined;
+   mnuPartita: MenuItem[] | undefined;
+   mnuStrumenti: MenuItem[] | undefined;
    appVersion: string = "V. ";
    appTitle: string = "RS";
    appCopyrights: string = "";
@@ -70,34 +71,43 @@ export class AppComponent implements AfterViewInit, OnInit
       if (utils.IsDevMode == null)
          utils.IsDevMode = isDevMode();
       //
-      this.mnuTabelle = [
+      this.mnuPartita = [
          {
-            label: "Normali",
+            label: "",
             items: [
-               {label: "Risorse", icon: 'pi pi-table', routerLink: ['/risorsetable']},
-               {label: "Gruppi", icon: 'pi pi-table', routerLink: ['/gruppitable']}
+               {label: "Modifica Numeri/Nomi", icon: 'pi pi-book', styleClass: 'icona-default', routerLink: ['/']},
+               {label: "Azioni", icon: 'pi pi-bolt', styleClass: 'icona-gialla', routerLink: ['/']},
+               {label: "Tempi di gioco", icon: 'pi pi-stopwatch', styleClass: 'icona-default', routerLink: ['/']},
+               {label: "Falli totali", icon: 'pi pi-flag-fill', styleClass: 'icona-rossa', routerLink: ['/']}
             ]
          },
          {
             separator: true
          },
          {
-            label: "Base",
+            label: "",
             items: [
-               {label: "Stagioni", icon: 'pi pi-table', routerLink: ['/seasonstable']},
-               {label: "Società", icon: 'pi pi-table', routerLink: ['/societatable']},
-               {label: "Ruoli", icon: 'pi pi-table', routerLink: ['/ruolitable'], visible: this.IsAdmin ()},
-               {label: "Categorie", icon: 'pi pi-table', routerLink: ['/categorietable']}
+               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', routerLink: ['/']},
+               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', routerLink: ['/']}
+            ]
+         },
+      ];
+      this.mnuStrumenti = [
+         {
+            label: "",
+            items: [
+               {label: "Statistiche", icon: 'pi pi-chart-line', styleClass: 'icona-default', routerLink: ['/']},
+               {label: "Database", icon: 'pi pi-table', styleClass: 'icona-default', routerLink: ['/database']}
             ]
          },
          {
             separator: true
          },
          {
-            label: "Sistema",
+            label: "",
             items: [
-               {label: "Eventi Master", icon: 'pi pi-table', routerLink: ['/eventimastertable']},
-               {label: "Log", icon: 'pi pi-table', routerLink: ['/logtable']}
+               {label: "Configurazione", icon: 'pi pi-wrench', styleClass: 'icona-default', routerLink: ['/']},
+               {label: "Utenti", icon: 'pi pi-users', styleClass: 'icona-default', routerLink: ['/userstable']}
             ]
          }
       ];
@@ -110,16 +120,28 @@ export class AppComponent implements AfterViewInit, OnInit
 
 
    // Definisci una variabile privata per il riferimento al menu
-   private _tabelleMenuInstance!: Menu;
+   private _strumentiMenuInstance!: Menu;
+   private _partitaMenuInstance!: Menu;
 
 
    // Usa un setter per @ViewChild per reagire quando il menu diventa disponibile
-   @ViewChild ('tabelleMenu', {static: false})
-   set tabelleMenuRef (menu: Menu)
+   @ViewChild ('strumentiMenu', {static: false})
+   set strumentiMenuRef (menu: Menu)
    {
       if (menu)
       {
-         this._tabelleMenuInstance = menu;
+         this._strumentiMenuInstance = menu;
+      }
+   }
+
+
+   // Usa un setter per @ViewChild per reagire quando il menu diventa disponibile
+   @ViewChild ('partitaMenu', {static: false})
+   set partitaMenuRef (menu: Menu)
+   {
+      if (menu)
+      {
+         this._partitaMenuInstance = menu;
       }
    }
 
@@ -159,7 +181,7 @@ export class AppComponent implements AfterViewInit, OnInit
    logout (): void
    {
       this.logService.AddToLog (loggedUser, "Logout");
-      utils.removeFromSessionStorage ("RS_Logged_User");
+      utils.removeFromSessionStorage ("BBS_Logged_User");
       InitLoggedUser ();
       this.cdr.detectChanges ();
       this.authService.logout ();
@@ -181,7 +203,15 @@ export class AppComponent implements AfterViewInit, OnInit
 
 
    // Il metodo toggleTabelleMenu può continuare a usare il riferimento passato dal template
-   TabelleMenuClick (event: MouseEvent, menu: Menu)
+   StrumentiMenuClick (event: MouseEvent, menu: Menu)
+   {
+      // Qui `menu` è il riferimento valido passato dal template
+      menu.toggle (event);
+      this.cdr.detectChanges (); // Forziamo un ciclo di change detection
+   }
+
+
+   PartitaMenuClick (event: MouseEvent, menu: Menu)
    {
       // Qui `menu` è il riferimento valido passato dal template
       menu.toggle (event);

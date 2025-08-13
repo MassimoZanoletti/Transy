@@ -39,14 +39,12 @@ export class SocietaEditComponent implements OnInit
 {
    id: number = 0;
    nome = '';
-   tenant: string = "";
-   codice: number = 0;
    theError = false;
    errorMessage: string = "Il campo non può essere vuoto";
    operazione: string = "";
 
    constructor (private authService: AuthService,
-                private resourceService: SocietaService,
+                private dataService: SocietaService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
                 private messageDialogService: MessageDialogService)
@@ -60,15 +58,13 @@ export class SocietaEditComponent implements OnInit
       if (this.id > 0)
       {
          this.operazione = "Modifica ";
-         this.resourceService.getSingleData (this.id).subscribe (data =>
+         this.dataService.getSingleData (this.id).subscribe (data =>
                                                                  {
                                                                     if (data)
                                                                     {
                                                                        if (data.ok)
                                                                        {
                                                                           this.nome = (data.elements as Societa).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
-                                                                          this.tenant = (data.elements as Societa).tenant;
-                                                                          this.codice = (data.elements as Societa).codice;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -93,16 +89,14 @@ export class SocietaEditComponent implements OnInit
          if (this.id > 0)
          {
             // EDIT
-            this.resourceService.updateData (this.id,
-                                             this.nome,
-                                             this.tenant,
-                                             this.codice).subscribe ({
+            this.dataService.updateData (this.id,
+                                             this.nome).subscribe ({
                                                                         next:  (response) =>
                                                                                   {
                                                                                      if (response.ok)
                                                                                      {
                                                                                         console.log ('Item aggiornato:', response);
-                                                                                        this.router.navigate (['/societatable']);
+                                                                                        this.router.navigate (['/database']);
                                                                                      }
                                                                                      else
                                                                                      {
@@ -132,15 +126,13 @@ export class SocietaEditComponent implements OnInit
          else
          {
             // ADD NEW
-            this.resourceService.addNewData(this.nome,
-                                            this.tenant,
-                                            this.codice).subscribe ({
+            this.dataService.addNewData(this.nome).subscribe ({
                                                                        next:  (response) =>
                                                                                  {
                                                                                     if (response.ok)
                                                                                     {
                                                                                        console.log ('Item aggiunto:', response);
-                                                                                       this.router.navigate (['/societatable']);
+                                                                                       this.router.navigate (['/database']);
                                                                                     }
                                                                                     else
                                                                                     {
@@ -173,7 +165,7 @@ export class SocietaEditComponent implements OnInit
 
    async Annulla()
    {
-      this.router.navigate(['/societatable']);
+      this.router.navigate(['/database']);
    }
 
 }

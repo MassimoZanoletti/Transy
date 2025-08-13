@@ -7,33 +7,33 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
-import { SeasonsService} from "../../services/seasons.service";
-import {MessDlgData, Season} from "../../models/datamod";
+import { CampionatiService} from "../../services/campionati.service";
+import {MessDlgData, Champ} from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 
 // PrimeNG modules
 import { InputTextModule } from 'primeng/inputtext';
-import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import {CalendarModule} from "primeng/calendar";
 
 @Component({
-  selector:    'app-season-edit',
+  selector:    'app-champ-edit',
   standalone:  true,
-  imports:     [
+              imports: [
 
-     CommonModule,
-     FormsModule,
-     InputTextModule,
-     CalendarModule,
-     ButtonModule,
-     CardModule
+                 CommonModule,
+                 FormsModule,
+                 InputTextModule,
+                 CalendarModule,
+                 ButtonModule,
+                 CardModule
 
-  ],
-  templateUrl: './season-edit.component.html',
-  styleUrl:    './season-edit.component.css'
+              ],
+  templateUrl: './champ-edit.component.html',
+  styleUrl:    './champ-edit.component.css'
 })
-export class SeasonEditComponent implements OnInit
+export class ChampEditComponent implements OnInit
 {
    id: number = 0;
    nome = '';
@@ -45,7 +45,7 @@ export class SeasonEditComponent implements OnInit
 
 
    constructor (private authService: AuthService,
-                private resourceService: SeasonsService,
+                private theDataService: CampionatiService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
                 private messageDialogService: MessageDialogService)
@@ -60,15 +60,15 @@ export class SeasonEditComponent implements OnInit
       if (this.id > 0)
       {
          this.operazione = "Modifica ";
-         this.resourceService.getSingleData (this.id).subscribe (data =>
+         this.theDataService.getSingleData (this.id).subscribe (data =>
                                                                  {
                                                                     if (data)
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as Season).nome;
-                                                                          this.abbrev = (data.elements as Season).abbrev;
-                                                                          this.tenantId = (data.elements as Season).tenantid_link;
+                                                                          this.nome = (data.elements as Champ).nome;
+                                                                          this.abbrev = (data.elements as Champ).abbrev;
+                                                                          this.tenantId = (data.elements as Champ).seasonid_link;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -93,7 +93,7 @@ export class SeasonEditComponent implements OnInit
          if (this.id > 0)
          {
             // EDIT
-            this.resourceService.updateData (this.id,
+            this.theDataService.updateData (this.id,
                                              this.nome,
                                              this.abbrev,
                                              this.tenantId).subscribe ({
@@ -132,7 +132,7 @@ export class SeasonEditComponent implements OnInit
          else
          {
             // ADD NEW
-            this.resourceService.addNewData(this.nome,
+            this.theDataService.addNewData(this.nome,
                                             this.abbrev,
                                             this.tenantId).subscribe ({
                                                                          next:  (response) =>

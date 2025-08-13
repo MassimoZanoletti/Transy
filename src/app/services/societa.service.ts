@@ -9,7 +9,7 @@ import { Societa } from '../models/datamod';
             })
 export class SocietaService
 {
-   private apiUrl = 'https://www.basketsarezzo.com/code/backend/yessched/societa/api.php'; // Assicurati che questo sia corretto
+   private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_tenant.php'; // Assicurati che questo sia corretto
 
    constructor(private http: HttpClient)
    {
@@ -33,22 +33,18 @@ export class SocietaService
 
 
    updateData (aId: number,
-               aName: string,
-               aTenamt: string,
-               aCode: number): Observable<any>
+               aName: string): Observable<any>
    {
       const operation: string = "edit";
-      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}&tenant=${aTenamt}&codice=${aCode}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}`;
       return this.http.get<any>(url);
    }
 
 
-   addNewData (aName: string,
-               aTenamt: string,
-               aCode: number): Observable<any>
+   addNewData (aName: string): Observable<any>
    {
       const operation: string = "add";
-      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}&tenant=${aTenamt}&codice=${aCode}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}`;
       return this.http.get<any>(url);
    }
 
