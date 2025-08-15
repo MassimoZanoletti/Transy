@@ -1,8 +1,7 @@
+
 import {Component, OnInit, OnDestroy, Input, Output, EventEmitter} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {NgIf} from "@angular/common";
 // PrimeNG modules
-import {InputTextModule} from 'primeng/inputtext';
 import {ButtonModule} from 'primeng/button';
 import {CardModule} from 'primeng/card';
 import {TooltipModule} from "primeng/tooltip";

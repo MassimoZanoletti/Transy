@@ -40,6 +40,7 @@ import {utils} from "../../common/utils";
 import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
+import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
 
 
 
@@ -69,7 +70,8 @@ export interface CbTipoEvento
                   CheckboxModule,
                   DialogModule,
                   DynamicDialogModule,
-                  TimerCompComponent
+                  TimerCompComponent,
+                  PlayerCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -103,6 +105,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    private totalSeconds: number = 600; // 10 minuti * 60 secondi
    public cronoTime: string = '10:00';
    public isRunning: boolean = false;
+   public currPlayer: string = "";
 
 
    constructor (public router: Router,
@@ -876,6 +879,12 @@ export class MainPageComponent implements OnInit, OnDestroy
       {
          console.log(`Il cronometro ${event.id} è stato avviato`);
       }
+   }
+
+
+   PlayerClicked(id: string)
+   {
+      this.currPlayer = id;
    }
 
 

@@ -1,0 +1,68 @@
+
+.div-main {
+   border: #ffffff solid 1px;
+   margin: 0px;
+   padding: 0px;
+}
+
+.div-riga1 {
+   /*
+   background-color: #007bff;
+   border: #00ffff solid 1px;
+   */
+   margin: 0px;
+   padding: 0px;
+   border-bottom: solid 1px white;
+}
+
+.div-riga2 {
+   /*
+   background-color: #422d6b;
+   border: #ff00ff solid 1px;
+   */
+   margin: 0px;
+   padding: 0px;
+   display: flex;
+   align-items: center;
+}
+
+.div-number {
+   background-color: transparent;
+   color: #ffff99;
+   font-size: 2.0em;
+   font-weight: 700;
+   padding-right: 10px;
+}
+
+.div-name {
+   background-color: transparent;
+   color: #ffffff;
+   font-size: 2.0em;
+   font-weight: 700;
+}
+
+.div-falli {
+   font-size: 1.2em;
+   font-weight: 700;
+   padding: 4px 10px !important;
+   margin: 2px !important;
+}
+
+.div-minutes {
+   background-color: transparent;
+   color: #aaaaaa;
+   font-size: 0.85em;
+   margin: 3px !important;
+   display: flex;
+   align-items: center;
+}
+
+.div-points {
+   background-color: transparent !important;
+   border: solid 2px yellow;
+   margin-left: auto !important;
+   font-size: 1.3em;
+   font-weight: 700;
+   padding: 3px 10px !important;
+   color: white;
+}

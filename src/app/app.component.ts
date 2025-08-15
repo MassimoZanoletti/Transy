@@ -28,6 +28,7 @@ import {InitLoggedUser, loggedUser} from "./services/users.service";
 import {utils} from "./common/utils";
 import {LogService} from "./services/log.service";
 import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
+import {PlayerCompComponent} from "./common/player-comp/player-comp.component";
 
 
 
@@ -43,7 +44,8 @@ import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
                   RouterModule,
                   MenuModule,
                   CommonModule,
-                  TimerCompComponent
+                  TimerCompComponent,
+                  PlayerCompComponent
                ],
                templateUrl:     './app.component.html',
                styleUrl:        './app.component.css',

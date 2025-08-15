@@ -1,0 +1,34 @@
+
+<div id="div-pc-main"
+     class="flex flex-column div-main"
+     [style.background-color]="GetMainBackgroundColor()"
+     (click)="onClick()">
+   <div id="div-pc-riga1"
+        class="flex div-riga1">
+      <div id="div-pc-number"
+           class="div-number">
+         {{playerNumber}}
+      </div>
+      <div id="div-pc-name"
+           class="div-name">
+         {{playerName}}
+      </div>
+   </div>
+   <div id="div-pc-riga2"
+        class="flex div-riga2">
+      <div id="div-pc-falli"
+            class="div-falli"
+           [style.background-color]="GetFoulsBackgroundColor()"
+           [style.color]="GetFoulsTextColor()">
+         {{playerFouls}}
+      </div>
+      <div id="div-pc-minutes"
+           class="div-minutes">
+         Min.: <span style="font-size: 1.2em; font-weight: 700; color: white;">{{playerMinutes}}</span>
+      </div>
+      <div id="div-pc-points"
+           class="div-points">
+         {{playerPoints}}
+      </div>
+   </div>
+</div>

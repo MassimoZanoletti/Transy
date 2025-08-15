@@ -67,9 +67,28 @@
          <p-card [style]="{ 'width': '100%', 'padding': '2px', 'margin-left': '30px' }"
                  header="Fase"
                  contentStyleClass="card-contenuto-ridotto">
-            <p>
-               tabella
-            </p>
+            <app-player-comp
+               componentId="pl1"
+               playerNumber="24"
+               playerName="Briant K."
+               [playerFouls]="4"
+               playerMinutes="00:00"
+               [playerPoints]="32"
+               colorSelected="#007700"
+               (componentClicked)="PlayerClicked($event)"
+               [isSelected]="'pl1' == currPlayer">
+            </app-player-comp>
+            <app-player-comp
+               componentId="pl2"
+               playerNumber="32"
+               playerName="James L."
+               [playerFouls]="2"
+               playerMinutes="00:00"
+               [playerPoints]="28"
+               colorSelected="#007700"
+               (componentClicked)="PlayerClicked($event)"
+               [isSelected]="'pl2' == currPlayer">
+            </app-player-comp>
          </p-card>
          <!--
          <p-table
