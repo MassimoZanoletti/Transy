@@ -37,6 +37,26 @@ export interface Champ
 }
 
 
+export interface Phase
+{
+   id: number;
+   nome: string;
+   abbrev: string;
+   champid_link: number;
+   exportfolder: string;
+}
+
+
+export interface Team
+{
+   id: number;
+   nome: string;
+   abbrev: string;
+   champid_link: number;
+   logo: string;
+}
+
+
 export namespace TipoEvento
 {
    export const EventoVuoto: number = 0;

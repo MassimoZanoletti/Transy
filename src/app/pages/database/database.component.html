@@ -57,7 +57,7 @@
                   <tr [pSelectableRow]="tabella">
                      <td style="width: 65px;"><span style="font-size: 0.6em;">{{ tabella.id }}</span></td>
                      <td style="width: 150px;">{{ tabella.nome }}</td>
-                     <td>{{ tabella.selName }}</td>
+                     <td style="color: yellow;"><i>{{ tabella.selName }}</i></td>
                   </tr>
                </ng-template>
             </p-table>
@@ -65,7 +65,9 @@
       </p-card>
       <p-divider class="vert-div"
                  layout="vertical"/>
-      <div id="div-dati-bottoni">
+      <div id="div-dati-bottoni"
+           class="dynamic-vert-pos"
+           [style.top]="currVertPos">
          <p-card class="custom-card-tabelle">
             <ng-template pTemplate="header">
                <div class="card-header-personalizzato">

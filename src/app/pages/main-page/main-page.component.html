@@ -54,9 +54,14 @@
                  header="Campionati"
                  contentStyleClass="card-contenuto-ridotto">
             <ng-template pTemplate="content">
-               <p>
-                  tabella
-               </p>
+               <div>
+                  <app-timer-comp
+                     instanceId="cronometro"
+                     (timeUpdated)="onTimeUpdate($event)"
+                     (started)="onTimerEvent($event)"
+                     (stopped)="onTimerEvent($event)">
+                  </app-timer-comp>
+               </div>
             </ng-template>
          </p-card>
          <p-card [style]="{ 'width': '100%', 'padding': '2px', 'margin-left': '30px' }"

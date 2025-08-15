@@ -87,6 +87,15 @@
 }
 
 
+.dynamic-vert-pos {
+   position: relative;
+   transition: top 0.25s ease;
+}
+
+
+
+
+
 ::ng-deep .custom-header-table .p-button {
    min-height: 2.5rem;
 }

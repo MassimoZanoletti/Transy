@@ -13,6 +13,7 @@ import {EventoEditComponent} from "./forms/evento-edit/evento-edit.component";
 import {LogTableComponent} from "./tables/log-table/log-table.component";
 import {DatabaseComponent} from "./pages/database/database.component";
 import {ChampEditComponent} from "./forms/champ-edit/champ-edit.component";
+import {PhaseEditComponent} from "./forms/phase-edit/phase-edit.component";
 
 
 export const routes: Routes = [
@@ -31,6 +32,7 @@ export const routes: Routes = [
    { path: 'logtable', component: LogTableComponent, canActivate: [AuthGuard] },
    { path: 'database', component: DatabaseComponent, canActivate: [AuthGuard] },
    { path: 'champedit', component: ChampEditComponent, canActivate: [AuthGuard] },
+   { path: 'phaseedit', component: PhaseEditComponent, canActivate: [AuthGuard] },
 
    // Questa rotta dovrebbe essere l'ULTIMA.
    // Reindirizza a 'login' per qualsiasi URL che non matcha le rotte precedenti.

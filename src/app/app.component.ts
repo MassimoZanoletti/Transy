@@ -27,6 +27,7 @@ import * as currentPackage from "../../package.json";
 import {InitLoggedUser, loggedUser} from "./services/users.service";
 import {utils} from "./common/utils";
 import {LogService} from "./services/log.service";
+import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
 
 
 
@@ -41,7 +42,8 @@ import {LogService} from "./services/log.service";
                   NgIf,
                   RouterModule,
                   MenuModule,
-                  CommonModule
+                  CommonModule,
+                  TimerCompComponent
                ],
                templateUrl:     './app.component.html',
                styleUrl:        './app.component.css',

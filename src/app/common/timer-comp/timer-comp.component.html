@@ -1,0 +1,125 @@
+
+<div [ngStyle]="{ 'background-color': colSfondo }">
+   <div *ngIf="inEditing"
+         style="height: 170px;">
+      <div>
+         <p-inputMask mask="99:99"
+                      placeholder="mm:ss"
+                      [(ngModel)]="newTimeValue">
+         </p-inputMask>
+      </div>
+      <div>
+         <button
+            pButton
+            type="button"
+            label="Annulla"
+            class="p-button-secondary"
+            (click)="CancelEditing()"
+         ></button>
+         <button
+            pButton
+            type="button"
+            label="OK"
+            class="p-button-primary"
+            (click)="SaveEditing()"
+         ></button>
+      </div>
+   </div>
+   <div class="time-container"
+        *ngIf="!inEditing"
+         style="">
+      <button pButton
+              severity="primary"
+              style=""
+              (click)="quartiVisible = true">
+         {{currQuarter}}
+      </button>
+      <h1>{{ displayTime }}</h1>
+      <button pButton
+              icon="pi pi-wrench"
+              severity="primary"
+              style=""
+              (click)="EditTime()">
+      </button>
+   </div>
+   <div class="time-container"
+        *ngIf="!inEditing"
+         style="">
+      <div style="margin: 1px; padding: 1px;">
+         <div style="margin: 1px; padding: 1px;">
+            <button
+               pButton
+               class="custom-icon-button"
+               severity="secondary"
+               pTooltip="Meno 5 sec"
+               tooltipPosition="top"
+               (click)="MenoCinque()"
+            >
+               <img src="assets/number-5-remove.svg" alt="Icona meno 5" />
+            </button>
+         </div>
+         <div style="margin: 1px; padding: 1px;">
+            <button
+               pButton
+               severity="secondary"
+               pTooltip="Meno 1 sec"
+               class="custom-icon-button"
+               (click)="MenoUno()"
+            >
+               <img src="assets/number-1-remove.svg" alt="Icona meno 1" />
+            </button>
+         </div>
+      </div>
+      <button pButton
+              *ngIf="!isRunning"
+              (click)="start()"
+              style="background-color: #4CAF50 !important; width: 150px !important; height: 80px !important; justify-content: center !important; align-items: center !important;" >
+         <img src="assets/media-play.svg" style="margin-right: 10px !important; width: 40px; "/>Start
+      </button>
+      <button pButton
+              *ngIf="isRunning"
+              (click)="stop()"
+              style="background-color: #f44336 !important; width: 150px !important; height: 80px !important; justify-content: center !important; align-items: center !important;" >
+         <img src="assets/media-stop.svg" style="margin-right: 10px !important; width: 40px; "/>Stop
+      </button>
+      <div>
+         <button
+            pButton
+            severity="secondary"
+            pTooltip="Più 1 sec"
+            class="custom-icon-button"
+            (click)="PiuUno()"
+         >
+            <img src="assets/number-1-add.svg" alt="Icona più 1" />
+         </button>
+      </div>
+   </div>
+</div>
+
+<!-- DIALOG PER SCELTA DEL QUARTO -->
+<p-dialog header="Selezionare periodo di gioco"
+          [modal]="true"
+          [(visible)]="quartiVisible"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <span class="p-text-secondary block mb-5">Periodo attuale: {{currQuarter}}</span>
+   <div class="flex align-items-center gap-3 mb-3">
+      <div class="flex flex-column align-items-center gap-3 mb-3">
+         <button pButton label="1° Quarto" [class]="currQuarter === '1q' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('1q')"></button>
+         <button pButton label="2° Quarto" [class]="currQuarter === '2q' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('2q')"></button>
+         <button pButton label="3° Quarto" [class]="currQuarter === '3q' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('3q')"></button>
+         <button pButton label="4° Quarto" [class]="currQuarter === '4q' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('4q')"></button>
+      </div>
+      <div class="flex flex-column align-items-center gap-3 mb-3">
+         <button pButton label="1° Extra time" [class]="currQuarter === '1et' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('1et')"></button>
+         <button pButton label="2° Extra time" [class]="currQuarter === '2et' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('2et')"></button>
+         <button pButton label="3° Extra time" [class]="currQuarter === '3et' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('3et')"></button>
+         <button pButton label="4° Extra time" [class]="currQuarter === '4et' ? 'p-button p-button-success' : 'p-button'" (click)="SelezionaQuarto('4et')"></button>
+      </div>
+   </div>
+   <div class="flex align-items-center gap-3 mb-5">
+   </div>
+   <div class="flex justify-content-end gap-2">
+      <p-button label="Annulla" severity="secondary" (onClick)="quartiVisible = false" />
+   </div>
+</p-dialog>

@@ -39,6 +39,7 @@ import {MessageDialogService} from "../../services/message-dialog.service";
 import {utils} from "../../common/utils";
 import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
+import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 
 
 
@@ -67,7 +68,8 @@ export interface CbTipoEvento
                   DividerModule,
                   CheckboxModule,
                   DialogModule,
-                  DynamicDialogModule
+                  DynamicDialogModule,
+                  TimerCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -96,6 +98,11 @@ export class MainPageComponent implements OnInit, OnDestroy
    scrollHeight: string = "110px";
    timerId: any;
    @ViewChild('eventsTable') pTable: Table | undefined;
+   //
+   private timerInterval: any;
+   private totalSeconds: number = 600; // 10 minuti * 60 secondi
+   public cronoTime: string = '10:00';
+   public isRunning: boolean = false;
 
 
    constructor (public router: Router,
@@ -142,6 +149,8 @@ export class MainPageComponent implements OnInit, OnDestroy
          //
          //this.isLoadingEv = true;
          await this.LoadEvents();
+         //
+         this.updateCrono();
       }
       catch (e)
       {
@@ -810,6 +819,63 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       setTimeout(() => { console.log("RICARICO"); window.location.reload(); }, 50);
       window.location.reload();
+   }
+
+
+   TimeStart()
+   {
+      if (!this.isRunning)
+      {
+         this.isRunning = true;
+         this.timerInterval = setInterval(() => {
+            if (this.totalSeconds > 0)
+            {
+               this.totalSeconds--;
+               this.updateCrono();
+               this.cdr.detectChanges();
+            }
+            else
+            {
+               this.TimeStop();
+               // Aggiungi qui la logica per quando il tempo è scaduto
+            }
+         }, 1000);
+      }
+
+   }
+
+
+   TimeStop(): void
+   {
+      if (this.timerInterval)
+      {
+         clearInterval(this.timerInterval);
+         this.isRunning = false;
+      }
+   }
+
+
+   private updateCrono(): void
+   {
+      const minutes = Math.floor(this.totalSeconds / 60);
+      const seconds = this.totalSeconds % 60;
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+      const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+      this.cronoTime = `${formattedMinutes}:${formattedSeconds}`;
+   }
+
+   onTimeUpdate (event: { id: string, time: number })
+   {
+      if (event.id === 'cronometro')
+         console.log(`Cronometro ${event.id}: tempo rimanente ${event.time}s`);
+   }
+
+   onTimerEvent(event: { id: string })
+   {
+      if (event.id === 'cronometro')
+      {
+         console.log(`Il cronometro ${event.id} è stato avviato`);
+      }
    }
 
 

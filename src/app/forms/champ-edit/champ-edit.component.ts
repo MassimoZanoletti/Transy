@@ -38,7 +38,7 @@ export class ChampEditComponent implements OnInit
    id: number = 0;
    nome = '';
    abbrev: string = "";
-   tenantId: number = 0;
+   seasonId: number = 0;
    theError = false;
    errorMessage: string = "Il campo non può essere vuoto";
    operazione: string = "";
@@ -56,7 +56,7 @@ export class ChampEditComponent implements OnInit
    ngOnInit ()
    {
       this.id = history.state.id;
-      this.tenantId = history.state.tenantId;
+      this.seasonId = history.state.seasonId;
       if (this.id > 0)
       {
          this.operazione = "Modifica ";
@@ -68,7 +68,7 @@ export class ChampEditComponent implements OnInit
                                                                        {
                                                                           this.nome = (data.elements as Champ).nome;
                                                                           this.abbrev = (data.elements as Champ).abbrev;
-                                                                          this.tenantId = (data.elements as Champ).seasonid_link;
+                                                                          this.seasonId = (data.elements as Champ).seasonid_link;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -96,7 +96,7 @@ export class ChampEditComponent implements OnInit
             this.theDataService.updateData (this.id,
                                              this.nome,
                                              this.abbrev,
-                                             this.tenantId).subscribe ({
+                                             this.seasonId).subscribe ({
                                                                           next:  (response) =>
                                                                                     {
                                                                                        if (response.ok)
@@ -134,7 +134,7 @@ export class ChampEditComponent implements OnInit
             // ADD NEW
             this.theDataService.addNewData(this.nome,
                                             this.abbrev,
-                                            this.tenantId).subscribe ({
+                                            this.seasonId).subscribe ({
                                                                          next:  (response) =>
                                                                                    {
                                                                                       if (response.ok)
