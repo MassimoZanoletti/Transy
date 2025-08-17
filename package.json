@@ -1,6 +1,6 @@
 {
   "name": "BasketBall Scouting",
-  "version": "0.1.3.508161",
+  "version": "0.1.4.508171",
   "copyrights": "© 2025/2026 by Massimo Zanoletti",
   "scripts": {
     "clean": ".bin\\clean.bat",

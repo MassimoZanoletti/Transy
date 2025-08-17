@@ -41,6 +41,8 @@
    color: #ffffff;
    font-size: 2.0em;
    font-weight: 700;
+   overflow: hidden;
+   white-space: nowrap;
 }
 
 .div-falli {

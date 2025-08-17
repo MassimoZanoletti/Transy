@@ -1,0 +1,46 @@
+
+<div id="div-be-main"
+     class="flex flex-column div-be-main"
+     [style.background-color]="GetMainBackgroundColor()"
+     (click)="onClick()">
+   <div id="div-be-riga1-numero-quint"
+        class="flex div-be-riga1-numero-quint align-items-center gap-1">
+      <div id="div-be-riga1-quint"
+           class="div-be-riga1-quint">
+         O
+      </div>
+      <div id="div-be-riga1-numero"
+           class="div-be-riga1-numero">
+         {{playerNum}}
+      </div>
+   </div>
+   <div id="div-be-riga2-nome"
+        class="div-be-riga2-nome">
+      {{playerName}}
+   </div>
+   <div id="div-be-riga3-falli-punti"
+        class="div-be-riga3-falli-punti flex align-items-center gap-1">
+      <div id="div-be-riga3-falli-tit"
+            class="div-be-riga3-falli-tit">
+         F:
+      </div>
+      <div id="div-be-riga3-falli"
+            class="div-be-riga3-falli"
+           [style.background-color]="GetFoulsBackgroundColor()"
+           [style.color]="GetFoulsTextColor()">
+         {{GetFalli()}}
+      </div>
+      <div id="div-be-riga3-punti-tit"
+            class="div-be-riga3-punti-tit">
+         P:
+      </div>
+      <div id="div-be-riga3-punti"
+            class="div-be-riga3-punti">
+         {{GetPunti()}}
+      </div>
+   </div>
+   <div id="div-be-riga4-tempo"
+        class="div-be-riga4-tempo">
+      00:00
+   </div>
+</div>

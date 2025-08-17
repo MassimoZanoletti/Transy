@@ -5,8 +5,79 @@
    (componentClicked)="TeamClicked($event)"
    [isSelected]="'t1' == currTeam"
 >
-
 </app-team-comp>
+<app-player-comp
+   componentId="pl1"
+   playerNumber="24"
+   playerName="Briant K."
+   [playerFouls]="4"
+   playerMinutes="00:00"
+   [playerPoints]="32"
+   colorSelected="#007700"
+   (componentClicked)="PlayerClicked($event)"
+   [isSelected]="'pl1' == currPlayer">
+</app-player-comp>
+<app-player-comp
+   componentId="pl2"
+   playerNumber="32"
+   playerName="James L."
+   [playerFouls]="2"
+   playerMinutes="00:00"
+   [playerPoints]="28"
+   colorSelected="#007700"
+   (componentClicked)="PlayerClicked($event)"
+   [isSelected]="'pl2' == currPlayer">
+</app-player-comp>
+<app-player-comp
+   componentId="pl3"
+   playerNumber="18"
+   playerName="Magic J."
+   [playerFouls]="4"
+   playerMinutes="00:00"
+   [playerPoints]="32"
+   colorSelected="#007700"
+   (componentClicked)="PlayerClicked($event)"
+   [isSelected]="'pl3' == currPlayer">
+</app-player-comp>
+<app-player-comp
+   componentId="pl4"
+   playerNumber="32"
+   playerName="Kareem A."
+   [playerFouls]="2"
+   playerMinutes="00:00"
+   [playerPoints]="36"
+   colorSelected="#007700"
+   (componentClicked)="PlayerClicked($event)"
+   [isSelected]="'pl4' == currPlayer">
+</app-player-comp>
+<app-player-comp
+   componentId="pl5"
+   playerNumber="8"
+   playerName="Chamberlein W."
+   [playerFouls]="4"
+   playerMinutes="00:00"
+   [playerPoints]="32"
+   colorSelected="#007700"
+   (componentClicked)="PlayerClicked($event)"
+   [isSelected]="'pl5' == currPlayer">
+</app-player-comp>
+
+<app-bench-comp
+   componentId="b1"
+   playerName="Briant K."
+   playerNum="24"
+   (componentClicked)="BenchClicked($event)"
+   [isSelected]="'b1' == currBench"
+>
+</app-bench-comp>
+<app-bench-comp
+   componentId="b2"
+   playerName="Chamberlein W."
+   playerNum="8"
+   (componentClicked)="BenchClicked($event)"
+   [isSelected]="'b2' == currBench"
+>
+</app-bench-comp>
 
 
 <div id="main_container">
@@ -77,28 +148,6 @@
          <p-card [style]="{ 'width': '100%', 'padding': '2px', 'margin-left': '30px' }"
                  header="Fase"
                  contentStyleClass="card-contenuto-ridotto">
-            <app-player-comp
-               componentId="pl1"
-               playerNumber="24"
-               playerName="Briant K."
-               [playerFouls]="4"
-               playerMinutes="00:00"
-               [playerPoints]="32"
-               colorSelected="#007700"
-               (componentClicked)="PlayerClicked($event)"
-               [isSelected]="'pl1' == currPlayer">
-            </app-player-comp>
-            <app-player-comp
-               componentId="pl2"
-               playerNumber="32"
-               playerName="James L."
-               [playerFouls]="2"
-               playerMinutes="00:00"
-               [playerPoints]="28"
-               colorSelected="#007700"
-               (componentClicked)="PlayerClicked($event)"
-               [isSelected]="'pl2' == currPlayer">
-            </app-player-comp>
             <p-divider></p-divider>
          </p-card>
          <!--

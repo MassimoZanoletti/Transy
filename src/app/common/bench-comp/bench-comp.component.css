@@ -1,0 +1,65 @@
+
+.div-be-main {
+   border: #ffffff solid 1px;
+   margin: 0px;
+   padding: 2px;
+   width: 80px;
+   height: 77px;
+   box-sizing: border-box;
+   font-size: 14px;
+}
+
+
+.div-be-riga1-numero-quint {
+   background-color: transparent !important;
+   margin: 0px;
+   padding: 0px;
+}
+
+
+.div-be-riga1-quint {
+
+}
+
+
+.div-be-riga1-numero {
+   font-size: 1.2em;
+   font-weight: bold;
+   color: yellow;
+}
+
+
+.div-be-riga2-nome {
+   margin: 0;
+   font-size: 1.0em;
+   font-weight: bold;
+   overflow: hidden;
+   white-space: nowrap;
+   min-height: 1.2em !important;
+}
+
+
+.div-be-riga3-falli-punti {
+   margin: 0;
+   font-size: 1.0em;
+}
+
+
+.div-be-riga3-falli {
+   font-weight: bold;
+   padding: 2px 4px;
+}
+
+
+.div-be-riga3-punti {
+   font-weight: bold;
+   color: #73ff73 !important;
+}
+
+
+.div-be-riga4-tempo {
+   font-size: 1.0em;
+   font-weight: bold;
+}
+
+

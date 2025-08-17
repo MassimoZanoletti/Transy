@@ -136,12 +136,6 @@ export interface LogMessage
 }
 
 
-export namespace globs
-{
-   export let appName: string = "";
-   export let appVersion: string = "";
-}
-
 
 
 

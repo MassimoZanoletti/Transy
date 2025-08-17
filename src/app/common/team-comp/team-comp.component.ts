@@ -9,6 +9,7 @@ import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import Color from 'Color';
+import { globs} from "../utils";
 
 
 
@@ -31,8 +32,8 @@ export class TeamCompComponent implements OnInit, OnDestroy
    @Input() componentId!: string;
    @Input() teamName: string = "";
    @Input() teamColor: string = "#ffffff";
-   @Input() colorNormal: string = "#333333";
-   @Input() colorSelected: string = "#007700";
+   @Input() colorNormal: string = globs.colorNotSelected
+   @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
 
    @Output() componentClicked = new EventEmitter<string>();
@@ -42,8 +43,6 @@ export class TeamCompComponent implements OnInit, OnDestroy
    colorNormal2: string = "";
    colorSelected1: string = "";
    colorSelected2: string = "";
-   bckColorFalli: Array<string> = ["#6c6c6c", "#ffaaaa", "#ffff99", "#ffbbbb", "#ff00ff", "#000000"];
-   txtColorFalli: Array<string> = ["#00b400", "#0000ff", "#009900", "#ff0000", "#ffff00", "#ffffff"];
 
 
    constructor ()

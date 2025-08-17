@@ -42,6 +42,7 @@ import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
 import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
+import {BenchCompComponent} from "../../common/bench-comp/bench-comp.component";
 
 
 
@@ -73,7 +74,8 @@ export interface CbTipoEvento
                   DynamicDialogModule,
                   TimerCompComponent,
                   PlayerCompComponent,
-                  TeamCompComponent
+                  TeamCompComponent,
+                  BenchCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -109,6 +111,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    public isRunning: boolean = false;
    public currPlayer: string = "";
    public currTeam: string = "";
+   public currBench: string = "";
 
 
    constructor (public router: Router,
@@ -898,6 +901,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    TeamClicked(id: string)
    {
       this.currTeam = id;
+   }
+
+
+   BenchClicked(id: string)
+   {
+      this.currBench = id;
    }
 
 

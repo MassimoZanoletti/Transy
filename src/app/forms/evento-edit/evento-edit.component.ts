@@ -12,7 +12,7 @@ import { LogService } from "../../services/log.service";
 import { loggedUser } from "../../services/users.service";
 import {
    MessDlgData,
-   EventoElement, globs, TipoEvento
+   EventoElement, TipoEvento
 } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 

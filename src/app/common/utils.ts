@@ -9,13 +9,26 @@
 
 
 
-export const RecMsgClientPrefix:    string = `${String.fromCharCode(0x2192)}${String.fromCharCode(0x2192)}        `;// →→ freccia destra
-export const RecMsgServerPrefix:    string = `${String.fromCharCode(0x21D2)}${String.fromCharCode(0x21D2)}${String.fromCharCode(0x21D2)}               `;  // ⇒⇒⇒ freccia destra doppia
-export const SendMsgPrefix:         string = `${String.fromCharCode(0x2190)} `; // ← freccia sinistra
-export const SendHTTPMsgPrefix:     string = `${String.fromCharCode(0x2B9C)} `; // ⮜ DART a sinistra
-export const RecHTTPMsgPrefix:      string = `${String.fromCharCode(0x2B9E)}        `; // ⮞ DART a destra
-export const GenericInfoPrefix:     string = `👀 `; // 👀 numero 1 su fondo nero
-export const RabbitMessagePrefix:   string = `📣 `; // 📣
+import {Input} from "@angular/core";
+
+
+export namespace globs
+{
+   export let appName: string = "";
+   export let appVersion: string = "";
+   export let colorNotSelected: string = "#333333";
+   export let colorSelected: string = "#007700";
+
+   export const RecMsgClientPrefix: string = `${String.fromCharCode (0x2192)}${String.fromCharCode (0x2192)}        `;// →→ freccia destra
+   export const RecMsgServerPrefix: string = `${String.fromCharCode (0x21D2)}${String.fromCharCode (0x21D2)}${String.fromCharCode (0x21D2)}               `;  // ⇒⇒⇒ freccia destra doppia
+   export const SendMsgPrefix: string = `${String.fromCharCode (0x2190)} `; // ← freccia sinistra
+   export const SendHTTPMsgPrefix: string = `${String.fromCharCode (0x2B9C)} `; // ⮜ DART a sinistra
+   export const RecHTTPMsgPrefix: string = `${String.fromCharCode (0x2B9E)}        `; // ⮞ DART a destra
+   export const GenericInfoPrefix: string = `👀 `; // 👀 numero 1 su fondo nero
+   export const RabbitMessagePrefix: string = `📣 `; // 📣
+   export const bckColorFalli: Array<string> = ["#6c6c6c", "#ffaaaa", "#ffff99", "#ffbbbb", "#ff00ff", "#000000"];
+   export const txtColorFalli: Array<string> = ["#00b400", "#0000ff", "#009900", "#ff0000", "#ffff00", "#ffffff"];
+};
 
 
 
