@@ -1,3 +1,13 @@
+<app-team-comp
+   componentId="t1"
+   teamName="Sarezzo"
+   teamColor="#ff0000"
+   (componentClicked)="TeamClicked($event)"
+   [isSelected]="'t1' == currTeam"
+>
+
+</app-team-comp>
+
 
 <div id="main_container">
    <div class="card flex justify-content-start"
@@ -89,6 +99,7 @@
                (componentClicked)="PlayerClicked($event)"
                [isSelected]="'pl2' == currPlayer">
             </app-player-comp>
+            <p-divider></p-divider>
          </p-card>
          <!--
          <p-table

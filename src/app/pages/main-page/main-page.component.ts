@@ -41,6 +41,7 @@ import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
+import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
 
 
 
@@ -71,7 +72,8 @@ export interface CbTipoEvento
                   DialogModule,
                   DynamicDialogModule,
                   TimerCompComponent,
-                  PlayerCompComponent
+                  PlayerCompComponent,
+                  TeamCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -106,6 +108,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    public cronoTime: string = '10:00';
    public isRunning: boolean = false;
    public currPlayer: string = "";
+   public currTeam: string = "";
 
 
    constructor (public router: Router,
@@ -133,6 +136,7 @@ export class MainPageComponent implements OnInit, OnDestroy
       {
          await this.GetWindowSize();
          //
+         /*
          const tmpTipo: CbTipoEvento | null = utils.GetFromLocalStorage<CbTipoEvento> ("BBS_CurrTipoEvento");
          if (tmpTipo != null)
          {
@@ -152,6 +156,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          //
          //this.isLoadingEv = true;
          await this.LoadEvents();
+         */
          //
          this.updateCrono();
       }
@@ -867,11 +872,13 @@ export class MainPageComponent implements OnInit, OnDestroy
       this.cronoTime = `${formattedMinutes}:${formattedSeconds}`;
    }
 
+
    onTimeUpdate (event: { id: string, time: number })
    {
       if (event.id === 'cronometro')
          console.log(`Cronometro ${event.id}: tempo rimanente ${event.time}s`);
    }
+
 
    onTimerEvent(event: { id: string })
    {
@@ -885,6 +892,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    PlayerClicked(id: string)
    {
       this.currPlayer = id;
+   }
+
+
+   TeamClicked(id: string)
+   {
+      this.currTeam = id;
    }
 
 

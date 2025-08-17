@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ResScheduler-PrimeNG": {
+    "bbs": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/ResScheduler",
+            "outputPath": "dist/bbs",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -75,10 +75,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ResScheduler-PrimeNG:build:production"
+              "buildTarget": "bbs:build:production"
             },
             "development": {
-              "buildTarget": "ResScheduler-PrimeNG:build:development"
+              "buildTarget": "bbs:build:development"
             }
           },
           "defaultConfiguration": "development"

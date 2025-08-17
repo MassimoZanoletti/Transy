@@ -3,6 +3,8 @@
    border: #ffffff solid 1px;
    margin: 0px;
    padding: 0px;
+   width: 250px;
+   box-sizing: border-box;
 }
 
 .div-riga1 {

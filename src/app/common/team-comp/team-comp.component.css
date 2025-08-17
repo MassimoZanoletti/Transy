@@ -1,0 +1,221 @@
+
+.div-te-main {
+   border: #ffffff solid 1px;
+   margin: 0px;
+   padding: 0px;
+   width: 400px;
+   box-sizing: border-box;
+}
+
+.div-riga1 {
+   background-color: transparent !important;
+   border: #00ffff solid 1px;
+   margin: 0px;
+   padding: 0px;
+   border-bottom: solid 1px white;
+}
+
+.div-riga2 {
+   background-color: transparent !important;
+   border: silver solid 1px;
+   margin: 0px;
+   padding: 0px;
+   display: flex;
+   align-items: center;
+}
+
+.div-riga1-sx {
+   background-color: transparent !important;
+   color: #ffff99;
+   /*
+   font-size: 2.0em;
+   font-weight: 700;
+   */
+   padding-right: 10px;
+}
+
+.div-te-riga-nome {
+   background-color: transparent !important;
+   color: #ffff99;
+}
+
+.div-te-riga-info {
+   /*background-color: transparent !important;*/
+   color: #ffff99;
+}
+
+.div-pti-cont {
+   background-color: transparent !important;
+   color: #ffffff;
+   font-size: 2.0em;
+   font-weight: 700;
+   margin-left: auto !important;
+   align-content: center;
+}
+
+.div-pti-tot {
+   background-color: transparent !important;
+   color: #ffffff;
+   font-size: 1.3em;
+   font-weight: 700;
+   align-items: center;
+   justify-content: center;
+   display: flex;
+}
+
+.div-pti-quarto {
+   background-color: transparent !important;
+   color: #ffffff;
+   font-size: 0.6em;
+   font-weight: 700;
+}
+
+.div-falli {
+   font-size: 1.2em;
+   font-weight: 700;
+   padding: 4px 10px !important;
+   margin: 2px !important;
+}
+
+.div-minutes {
+   background-color: transparent;
+   color: #aaaaaa;
+   font-size: 0.85em;
+   margin: 3px !important;
+   display: flex;
+   align-items: center;
+}
+
+.div-points {
+   background-color: transparent !important;
+   border: solid 2px yellow;
+   margin-left: auto !important;
+   font-size: 1.3em;
+   font-weight: 700;
+   padding: 3px 10px !important;
+   color: white;
+}
+
+.div-te-team-color {
+   width: 35px !important;
+   height: 35px !important;
+}
+
+.div-te-team-name {
+   font-size: 1.5em;
+   font-weight: 700;
+   max-width: 300px !important;
+   overflow: hidden;
+   white-space: nowrap;
+}
+
+
+.div-te-team-tout {
+   background-color: transparent !important;
+}
+
+.div-te-team-tout-dati {
+   background-color: transparent !important;
+}
+
+.div-te-team-tout-btn {
+   background-color: #ab7a39 !important;
+}
+
+.btn-te-timeout {
+   font-weight: 700;
+   padding: 10px;
+}
+
+.div-te-team-tout-1t {
+   padding: 1px !important;
+   margin: 0 !important;
+}
+
+.div-te-team-tout-2t {
+   padding: 1px !important;
+   margin: 0 !important;
+   border-top: 1px solid silver;
+}
+
+.div-te-team-tout-et {
+   padding: 1px !important;
+   margin: 0 !important;
+   border-top: 1px solid silver;
+}
+
+.div-te-team-tout-text {
+   padding: 1px !important;
+   margin: 0 !important;
+   font-size: 0.8em;
+   color: white;
+}
+
+.div-te-team-falli {
+   padding-top: 5px;
+   padding-bottom: 5px;
+   margin-left: 10px;
+   border: 1px solid silver;
+}
+
+.div-te-team-falli-tit {
+   background-color: transparent !important;
+   font-size: 0.8em;
+   color: silver;
+   justify-content: center !important;
+   align-items: center !important;
+}
+
+.div-te-team-falli-num {
+   background-color: transparent !important;
+   font-size: 1.5em;
+   font-weight: bold;
+   color: #ff6565;
+   padding: 3px 4px !important;
+   margin: 3px 4px !important;
+}
+
+
+.div-te-team-falli-bonus {
+   background-color: #ffc9c9 !important;
+   border: 1px solid white;
+   font-size: 1.5em;
+   font-weight: bold;
+   color: red;
+   padding: 3px 4px !important;
+   margin: 3px 4px !important;
+}
+
+.div-te-stat1 {
+   margin: 0px !important;
+}
+
+.div-te-stat2 {
+   margin: 0px !important;
+   padding-left: 10px;
+   border-left: 1px solid silver;
+}
+
+.div-te-stat3 {
+   margin: 0px !important;
+   padding-left: 10px;
+   border-left: 1px solid silver;
+}
+
+.p-stat {
+   margin: 0px !important;
+   padding: 4px 0px !important;
+}
+
+.span-stat-titles {
+   background-color: transparent !important;
+   font-size: 0.8em;
+   color: silver;
+}
+
+.span-stat-data {
+   background-color: transparent !important;
+   font-size: 1.0em;
+   font-weight: bold;
+   color: white;
+}

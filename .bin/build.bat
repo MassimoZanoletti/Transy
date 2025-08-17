@@ -10,7 +10,7 @@ echo "Copia risorse..."
 copy /Y "assets\*" "node_modules\primeng\resources\images\"
 
 echo "Building..."
-ng build
+call ng build
 
 echo "Fine"
 

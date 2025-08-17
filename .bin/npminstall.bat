@@ -1,2 +1,2 @@
 
-npm install --ddd
+call npm install --ddd

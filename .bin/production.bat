@@ -1,3 +1,6 @@
 
 rmdir /S /Q  dist
-ng build -c production --base-href /code/yessched/
+call ng build -c production --base-href /code/bbs/
+echo "Copia .htaccess"
+copy src\.htaccess dist\bbs\browser
+

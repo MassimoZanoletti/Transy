@@ -80,7 +80,8 @@ export class LogService
    async AddToLog (aUser: User,
                    aMessage: string): Promise<any>
    {
-      return await lastValueFrom(this.internalAddToLog(aUser, aMessage));
+      //return await lastValueFrom(this.internalAddToLog(aUser, aMessage));
+      return;
    }
 
 

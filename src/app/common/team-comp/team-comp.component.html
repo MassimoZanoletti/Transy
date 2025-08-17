@@ -1,0 +1,132 @@
+
+<div id="div-te-main"
+     class="flex flex-column div-te-main"
+     [style.background-color]="GetMainBackgroundColor()"
+     (click)="onClick()">
+   <div id="div-te-riga1"
+        class="flex div-riga1">
+      <div id="div-te-riga1-sx"
+           class="div-riga1-sx">
+         <div id="div-te-riga-nome"
+               class="div-te-riga-nome flex align-items-center gap-1">
+            <div id="div-te-team-color"
+                  class="div-te-team-color"
+                 [style.background-color]="GetTeamBackgroundColor()">
+            </div>
+            <div id="div-te-team-name"
+                 class="div-te-team-name">
+               {{teamName}}
+            </div>
+         </div>
+         <div id="div-te-riga-info"
+              [style.background-color]="GetBackgroundColor1()"
+              class="div-te-riga-info flex align-items-center gap-1">
+            <div id="div-te-team-tout"
+                 class="div-te-team-tout flex align-items-center gap-1">
+               <div id="div-te-team-tout-dati"
+                    class="div-te-team-tout-dati">
+                  <div id="div-te-team-tout-1t"
+                       class="div-te-team-tout-1t">
+                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">1° T:</span> <b>O O</b></p>
+                  </div>
+                  <div id="div-te-team-tout-2t"
+                       class="div-te-team-tout-2t">
+                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">2° T:</span> <b>O O O</b></p>
+                  </div>
+                  <div id="div-te-team-tout-et"
+                       class="div-te-team-tout-et">
+                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">Extra T:</span></p>
+                     <p class="div-te-team-tout-text"><b>O O O O</b></p>
+                  </div>
+               </div>
+               <div id="div-te-team-tout-btn"
+                    class="div-te-team-tout-btn">
+                  <button pButton
+                          class="btn-te-timeout"
+                  >
+                     Time<br>Out
+                  </button>
+               </div>
+            </div>
+            <div id="div-te-team-falli"
+                 [style.background-color]="GetBackgroundColor2()"
+                 class="div-te-team-falli">
+               <div id="div-te-team-falli-tit"
+                    class="div-te-team-falli-tit">
+                  Falli qrt
+               </div>
+               <div id="div-te-team-falli-dati"
+                    class="div-te-team-falli-dati flex align-items-center gap-1">
+                  <div id="div-te-team-falli-num"
+                        class="div-te-team-falli-num">
+                     0
+                  </div>
+                  <div id="div-te-team-falli-bonus"
+                       class="div-te-team-falli-bonus">
+                     B
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div id="div-te-pti-cont"
+           class="div-pti-cont">
+         <div id="div-pti-tot"
+              class="div-pti-tot">
+            123
+         </div>
+         <div id="div-pti-quarto"
+              class="div-pti-quarto">
+            P qrt: 123
+         </div>
+      </div>
+   </div>
+   <div id="div-te-riga2"
+        class="flex div-riga2 flex align-items-center gap-1">
+      <div id="div-te-stat1"
+           class="div-te-stat1">
+         <p class="p-stat">
+            <span class="span-stat-titles">TL:</span>
+            <span class="span-stat-data">{{GetStatTL()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">T2:</span>
+            <span class="span-stat-data">{{GetStatT2()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">T3:</span>
+            <span class="span-stat-data">{{GetStatT3()}}</span>
+         </p>
+      </div>
+      <div id="div-te-stat2"
+           class="div-te-stat2">
+         <p class="p-stat">
+            <span class="span-stat-titles">TdC:</span>
+            <span class="span-stat-data">{{GetStatTdC()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">PPer:</span>
+            <span class="span-stat-data">{{GetStatPPer()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">PRec:</span>
+            <span class="span-stat-data">{{GetStatPRec()}}</span>
+         </p>
+      </div>
+      <div id="div-te-stat3"
+           class="div-te-stat3">
+         <p class="p-stat">
+            <span class="span-stat-titles">FF:</span>
+            <span class="span-stat-data">{{GetStatFFat()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">FS:</span>
+            <span class="span-stat-data">{{GetStatFSub()}}</span>
+         </p>
+         <p class="p-stat">
+            <span class="span-stat-titles">Rimb (d/a):</span>
+            <span class="span-stat-data">{{GetStatRimb()}}</span>
+         </p>
+      </div>
+   </div>
+</div>

@@ -29,6 +29,7 @@ import {utils} from "./common/utils";
 import {LogService} from "./services/log.service";
 import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "./common/player-comp/player-comp.component";
+import {TeamCompComponent} from "./common/team-comp/team-comp.component";
 
 
 
@@ -45,7 +46,8 @@ import {PlayerCompComponent} from "./common/player-comp/player-comp.component";
                   MenuModule,
                   CommonModule,
                   TimerCompComponent,
-                  PlayerCompComponent
+                  PlayerCompComponent,
+                  TeamCompComponent
                ],
                templateUrl:     './app.component.html',
                styleUrl:        './app.component.css',
@@ -55,7 +57,7 @@ export class AppComponent implements AfterViewInit, OnInit
 {
    public pkg: { name: string; version: string; copyrights: string } = currentPackage;
 
-   title = 'ResSchedulerAuth';
+   title = 'BBSAuth';
    mnuPartita: MenuItem[] | undefined;
    mnuStrumenti: MenuItem[] | undefined;
    appVersion: string = "V. ";
