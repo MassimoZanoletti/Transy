@@ -43,6 +43,7 @@ import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
 import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
 import {BenchCompComponent} from "../../common/bench-comp/bench-comp.component";
+import {PointsCompComponent} from "../../common/points-comp/points-comp.component";
 
 
 
@@ -75,7 +76,8 @@ export interface CbTipoEvento
                   TimerCompComponent,
                   PlayerCompComponent,
                   TeamCompComponent,
-                  BenchCompComponent
+                  BenchCompComponent,
+                  PointsCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog

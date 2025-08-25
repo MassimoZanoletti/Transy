@@ -1,0 +1,54 @@
+
+<div id="div-pti-main"
+     class="div-pti-main"
+     [style]="{'background-image': GetGradientBackground()}"
+     (click)="onClick()">
+   <div it="div-pti-title"
+        class="div-pti-title">
+      {{title}}
+   </div>
+   <div id="div-pti-riga1"
+        class="flex div-pti-riga1 "
+      >
+      <button pButton
+              id="btn-pti-minus"
+              class="btn-pti"
+              icon="pi pi-minus"
+              severity="primary"
+              style="">
+      </button>
+      <div id="div-pti-punti">
+         00/00
+      </div>
+      <button pButton
+              id="btn-pti-plus"
+              class="btn-pti"
+              icon="pi pi-plus"
+              severity="primary"
+              style="">
+      </button>
+   </div>
+   <div id="div-pti-riga2"
+        class="flex div-pti-riga2"
+   >
+      riga 2
+   </div>
+   <div id="div-pti-riga3"
+        class="div-pti-riga3"
+   >
+      <button pButton
+              id="btn-pti-minus-2"
+              class="btn-pti"
+              severity="primary"
+              *ngIf="btn1Label!=''"
+              [innerHTML]="btn1Label">
+      </button>
+      <button pButton
+              id="btn-pti-plus-2"
+              class="btn-pti"
+              severity="primary"
+              *ngIf="btn2Label!=''"
+              [innerHTML]="btn2Label">
+      </button>
+   </div>
+</div>

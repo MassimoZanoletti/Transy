@@ -4,7 +4,10 @@ import {
    OnInit,
    AfterViewInit,
    ChangeDetectionStrategy,
-   ChangeDetectorRef, isDevMode
+   ChangeDetectorRef,
+   isDevMode,
+   HostListener,
+   OnDestroy
 } from '@angular/core';
 import {
    RouterOutlet,
@@ -53,7 +56,7 @@ import {TeamCompComponent} from "./common/team-comp/team-comp.component";
                styleUrl:        './app.component.css',
                changeDetection: ChangeDetectionStrategy.OnPush
             })
-export class AppComponent implements AfterViewInit, OnInit
+export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 {
    public pkg: { name: string; version: string; copyrights: string } = currentPackage;
 
@@ -154,6 +157,7 @@ export class AppComponent implements AfterViewInit, OnInit
 
    ngOnInit ()
    {
+      window.addEventListener('beforeunload', this.beforeUnloadHandler);
       this.cdr.detectChanges ();
       console.log (`User: ${loggedUser.nome}`);
    }
@@ -230,6 +234,19 @@ export class AppComponent implements AfterViewInit, OnInit
       return (loggedUser.attributo >= 255);
    }
 
+
+   ngOnDestroy() {
+      window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+   }
+
+
+   beforeUnloadHandler(event: BeforeUnloadEvent)
+   {
+      const msg: String = "Se veramente sicuro di voler chiudere l'applicazione?"; // Un valore qualsiasi o una stringa vuota
+      event.preventDefault(); // Necessario in alcuni browser, ma obsoleto in altri
+      event.returnValue = msg;
+      return false; // Per compatibilità con i browser meno recenti
+   }
 
    protected readonly loggedUser = loggedUser;
 }

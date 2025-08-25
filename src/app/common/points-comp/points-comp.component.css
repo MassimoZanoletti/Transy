@@ -1,0 +1,76 @@
+
+.div-pti-main {
+   position: relative;
+   border: #ffffff solid 1px;
+   width: 150px;
+   height: 120px;
+   box-sizing: border-box;
+   font-size: 50px;
+   font-weight: bold;
+   align-items: center;
+   justify-content: space-between;
+   margin: 0 !important;
+   padding: 2px 1px !important;
+   display: flex;
+   flex-direction: column;
+}
+
+.div-pti-title {
+   position: absolute; /* Posizionamento assoluto all'interno del contenitore .div-pti-main */
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%); /* Centra l'elemento in orizzontale e verticale */
+   z-index: 1; /* Posiziona l'elemento dietro agli altri div */
+   font-size: 50px;
+   font-weight: bold;
+   color: #444444 !important;
+}
+
+.div-pti-riga1 {
+   background-color: transparent !important;
+   font-size: 12px;
+   font-weight: bold;
+   align-items: center;
+   justify-content: center;
+   z-index: 2;
+   margin: 0 !important;
+   padding: 0 !important;
+   width: 100%;
+   justify-content: space-between !important;
+}
+
+.div-pti-riga2 {
+   background-color: transparent !important;
+   font-size: 12px;
+   font-weight: bold;
+   align-items: center;
+   justify-content: center;
+   z-index: 2;
+   width: 100%;
+}
+
+.div-pti-riga3 {
+   background-color: transparent !important;
+   display: flex;
+   justify-content: space-between !important;
+   font-size: 12px;
+   font-weight: bold;
+   align-items: center;
+   z-index: 2;
+   width: 100%;
+   margin: 0 !important;
+   padding: 0 !important;
+}
+
+
+
+.btn-pti {
+   margin: 0 !important;
+   padding: 0 !important;
+   width: 40px;
+   height: 40px;
+   font-weight: bold;
+   align-items: center;
+   justify-content: center;
+}
+
