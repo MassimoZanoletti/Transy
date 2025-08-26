@@ -44,6 +44,7 @@ import {PlayerCompComponent} from "../../common/player-comp/player-comp.componen
 import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
 import {BenchCompComponent} from "../../common/bench-comp/bench-comp.component";
 import {PointsCompComponent} from "../../common/points-comp/points-comp.component";
+import {DataCompComponent} from "../../common/data-comp/data-comp.component";
 
 
 
@@ -77,7 +78,8 @@ export interface CbTipoEvento
                   PlayerCompComponent,
                   TeamCompComponent,
                   BenchCompComponent,
-                  PointsCompComponent
+                  PointsCompComponent,
+                  DataCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog

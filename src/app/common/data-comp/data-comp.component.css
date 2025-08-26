@@ -1,5 +1,5 @@
 
-.div-pti-main {
+.div-dat-main {
    position: relative;
    border: #ffffff solid 1px;
    width: 150px;
@@ -15,8 +15,8 @@
    flex-direction: column;
 }
 
-.div-pti-title {
-   position: absolute; /* Posizionamento assoluto all'interno del contenitore .div-pti-main */
+.div-dat-title {
+   position: absolute; /* Posizionamento assoluto all'interno del contenitore .div-dat-main */
    top: 50%;
    left: 50%;
    transform: translate(-50%, -50%); /* Centra l'elemento in orizzontale e verticale */
@@ -26,7 +26,7 @@
    color: #222222 !important;
 }
 
-.div-pti-riga1 {
+.div-dat-riga1 {
    background-color: transparent !important;
    font-size: 12px;
    font-weight: bold;
@@ -39,7 +39,7 @@
    justify-content: space-between !important;
 }
 
-.div-pti-riga2 {
+.div-dat-riga2 {
    background-color: transparent !important;
    font-size: 22px;
    font-weight: bold;
@@ -49,7 +49,7 @@
    width: 100%;
 }
 
-.div-pti-riga3 {
+.div-dat-riga3 {
    background-color: transparent !important;
    display: flex;
    justify-content: space-between !important;
@@ -62,7 +62,7 @@
    padding: 0 !important;
 }
 
-.btn-pti {
+.btn-dat {
    margin: 0 !important;
    padding: 0 !important;
    width: 40px;
@@ -72,7 +72,7 @@
    justify-content: center;
 }
 
-.div-pti-punti {
+.div-dat-punti {
    font-size: 18px !important;
    font-weight: bold !important;
 }

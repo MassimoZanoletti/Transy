@@ -1,0 +1,56 @@
+
+<div id="div-dat-main"
+     class="div-dat-main"
+     [style]="{'background-image': GetGradientBackground()}"
+     (click)="onClick()">
+   <div it="div-dat-title"
+        class="div-dat-title">
+      {{title}}
+   </div>
+   <div id="div-dat-riga1"
+        class="flex div-dat-riga1 ">
+      <div id="div-dat-titolo1"
+           class="div-dat-punti">
+         {{titolo1}}
+      </div>
+      <div id="div-dat-dato1"
+           class="div-dat-punti"
+           [style]="{'color': colorDato1}">
+         {{dato1}}
+      </div>
+      <button pButton
+              id="btn-dat-plus1"
+              class="btn-dat"
+              icon="pi pi-plus"
+              severity="secondary"
+              [style]="{'background-color': colorDato1}">
+      </button>
+   </div>
+   <div id="div-dat-riga2"
+        class="flex div-dat-riga2">
+      {{dato}}
+   </div>
+   <div id="div-dat-riga3"
+        class="div-dat-riga3">
+      <div id="div-dat-titolo2"
+           class="div-dat-punti"
+           *ngIf="titolo2!=''">
+         {{titolo2}}
+      </div>
+      <div id="div-dat-dato2"
+           class="div-dat-punti"
+           *ngIf="titolo2!=''"
+           [style]="{'color': colorDato2}">
+         {{dato2}}
+      </div>
+      <button pButton
+              id="btn-dat-plus2"
+              class="btn-dat"
+              icon="pi pi-plus"
+              severity="secondary"
+              *ngIf="titolo2!=''"
+              [innerHTML]="btn2Label"
+              [style]="{'background-color': colorDato2}">
+      </button>
+   </div>
+</div>

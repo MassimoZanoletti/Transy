@@ -79,43 +79,125 @@
 >
 </app-bench-comp>
 
-<app-points-comp
-   componentId="tl"
-   title="T.L."
-   colorNormal1="#002200"
-   colorNormal2="#007700"
-   colorSelected1="#dddddd"
-   colorSelected2="#dddddd"
-   (componentClicked)="BenchClicked($event)"
-   [isSelected]="'tl' == currBench"
->
-</app-points-comp>
-<app-points-comp
-   componentId="t2"
-   title="T.2"
-   colorNormal1="#004400"
-   colorNormal2="#009900"
-   colorSelected1="#dddddd"
-   colorSelected2="#dddddd"
-   btn1Label="Tap<br>OUT"
-   btn2Label="Tap<br>IN"
-   (componentClicked)="BenchClicked($event)"
-   [isSelected]="'t2' == currBench"
->
-</app-points-comp>
-<app-points-comp
-   componentId="t3"
-   title="T.3"
-   colorNormal1="#006600"
-   colorNormal2="#00bb00"
-   colorSelected1="#dddddd"
-   colorSelected2="#dddddd"
-   (componentClicked)="BenchClicked($event)"
-   [isSelected]="'t3' == currBench"
->
-</app-points-comp>
-
-
+<div class="flex"
+     style="display: flex; align-items: stretch; gap: 10px;">
+   <div style="display: flex; flex-direction: column; gap: 5px;">
+      <app-points-comp
+         componentId="tl"
+         title="T.L."
+         colorNormal1="#444400"
+         colorNormal2="#888800"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'tl' == currBench">
+      </app-points-comp>
+      <app-points-comp
+         componentId="t2"
+         title="T.2"
+         colorNormal1="#444400"
+         colorNormal2="#888800"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         btn1Label="Tap<br>OUT"
+         btn2Label="Tap<br>IN"
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'t2' == currBench">
+      </app-points-comp>
+      <app-points-comp
+         componentId="t3"
+         title="T.3"
+         colorNormal1="#444400"
+         colorNormal2="#888800"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'t3' == currBench">
+      </app-points-comp>
+   </div>
+   <div style="display: flex; flex-direction: column; gap: 5px;">
+      <app-data-comp
+         componentId="d1"
+         title="Rimb."
+         colorNormal1="#004444"
+         colorNormal2="#008888"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         titolo1="Difesa"
+         dato1="12"
+         titolo2="Attacco"
+         dato2="10"
+         dato="Totali 22"
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'d1' == currBench">
+      </app-data-comp>
+      <app-data-comp
+         componentId="d2"
+         title="Palle"
+         colorNormal1="#004444"
+         colorNormal2="#008888"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         titolo1="Perse"
+         dato1="12"
+         colorDato1="#ff7777"
+         titolo2="Recup."
+         dato2="10"
+         colorDato2="#77ff77"
+         dato=""
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'d2' == currBench">
+      </app-data-comp>
+      <app-data-comp
+         componentId="d3"
+         title="Stop."
+         colorNormal1="#004444"
+         colorNormal2="#008888"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         titolo1="Subite"
+         dato1="12"
+         colorDato1="#ff7777"
+         titolo2="Fatte"
+         dato2="10"
+         colorDato2="#77ff77"
+         dato=""
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'d3' == currBench">
+      </app-data-comp>
+   </div>
+   <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 5px;">
+      <app-data-comp
+         componentId="d2"
+         title="Ass."
+         colorNormal1="#004444"
+         colorNormal2="#008888"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         titolo1="Assist"
+         dato1="12"
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'d2' == currBench">
+      </app-data-comp>
+      <app-data-comp
+         componentId="d3"
+         title="Falli"
+         colorNormal1="#4d3434"
+         colorNormal2="#a42e2e"
+         colorSelected1="#dddddd"
+         colorSelected2="#dddddd"
+         titolo1="Fatti"
+         dato1="12"
+         colorDato1="#ff7777"
+         titolo2="Subiti"
+         dato2="10"
+         colorDato2="#77ff77"
+         dato=""
+         (componentClicked)="BenchClicked($event)"
+         [isSelected]="'d3' == currBench">
+      </app-data-comp>
+   </div>
+</div>
 <div id="main_container">
    <div class="card flex justify-content-start"
         id="div-page-header">
