@@ -132,3 +132,393 @@
       </div>
    </div>
 </div>
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG SOCIETA'
+------------------------------------------------------------------>
+<p-dialog id="dialog-societa"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Societa"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('tenant')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('tenant')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG SOCIETA'   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG SEASON
+------------------------------------------------------------------>
+<p-dialog id="dialog-season"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Season"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Abbrev:</label>
+               <input type="text"
+                      id="abbrev"
+                      [(ngModel)]="dialogValue_Abbrev"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('season')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('season')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG SEASON   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG CHAMP
+------------------------------------------------------------------>
+<p-dialog id="dialog-champ"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Champ"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Abbrev:</label>
+               <input type="text"
+                      id="abbrev"
+                      [(ngModel)]="dialogValue_Abbrev"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('champ')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('champ')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG CHAMP   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PHASE
+------------------------------------------------------------------>
+<p-dialog id="dialog-phase"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Phase"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Abbrev:</label>
+               <input type="text"
+                      id="abbrev"
+                      [(ngModel)]="dialogValue_Abbrev"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('phase')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('phase')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PHASE   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG TEAM
+------------------------------------------------------------------>
+<p-dialog id="dialog-team"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Team"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Abbrev:</label>
+               <input type="text"
+                      id="abbrev"
+                      [(ngModel)]="dialogValue_Abbrev"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('team')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('team')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG TEAM   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYER
+------------------------------------------------------------------>
+<p-dialog id="dialog-team"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Player"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Numero:</label>
+               <input type="text"
+                      id="numero"
+                      [(ngModel)]="dialogValue_Numero"
+                      pInputText
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Ruolo:</label>
+               <input type="text"
+                      id="ruolo"
+                      [(ngModel)]="dialogValue_Ruolo"
+                      pInputText
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Anno:</label>
+               <input type="number"
+                      id="anno"
+                      [(ngModel)]="dialogValue_Anno"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div class="form-group">
+               <label for="abbrev">Altezza:</label>
+               <input type="number"
+                      id="altezza"
+                      [(ngModel)]="dialogValue_Altezza"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('player')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('player')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYER   --->

@@ -57,6 +57,18 @@ export interface Team
 }
 
 
+export interface Player
+{
+   id: number;
+   nomedisp: string;
+   anno: number;
+   ruolo: string;
+   numero: string;
+   altezza: number;
+   teamid_link: number;
+}
+
+
 export namespace TipoEvento
 {
    export const EventoVuoto: number = 0;
