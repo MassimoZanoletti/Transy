@@ -1,8 +1,7 @@
 
 <div id="div-pti-main"
      class="div-pti-main"
-     [style]="{'background-image': GetGradientBackground()}"
-     (click)="onClick()">
+     [style]="{'background-image': GetGradientBackground()}">
    <div it="div-pti-title"
         class="div-pti-title">
       {{title}}
@@ -15,7 +14,8 @@
               class="btn-pti"
               icon="pi pi-plus"
               severity="primary"
-              style="background-color: #ff6565;">
+              style="background-color: #ff6565;"
+              (click)="onMinus1Click()">
       </button>
       <div id="div-pti-punti"
            class="div-pti-punti">
@@ -26,7 +26,8 @@
               class="btn-pti"
               icon="pi pi-plus"
               severity="primary"
-              style="background-color: #82ff86">
+              style="background-color: #82ff86"
+              (click)="onPlus1Click()">
       </button>
    </div>
    <div id="div-pti-riga2"
@@ -42,14 +43,16 @@
               class="btn-pti"
               severity="primary"
               *ngIf="btn1Label!=''"
-              [innerHTML]="btn1Label">
+              [innerHTML]="btn1Label"
+              (click)="onMinus2Click()">
       </button>
       <button pButton
               id="btn-pti-plus-2"
               class="btn-pti"
               severity="primary"
               *ngIf="btn2Label!=''"
-              [innerHTML]="btn2Label">
+              [innerHTML]="btn2Label"
+              (click)="onPlus2Click()">
       </button>
    </div>
 </div>

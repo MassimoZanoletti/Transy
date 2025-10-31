@@ -87,29 +87,29 @@ export class DatabaseComponent implements OnInit
    currDati: any = null;
    //
    colSocieta: any[] = [
-      { field: 'nome', header: 'Nome' }
+      { field: 'nome', header: 'Nome', style: "" }
    ]
    colSeason: any[] = [
-      { field: 'nome', header: 'Nome' },
-      { field: 'abbrev', header: 'Abbr.' }
+      { field: 'nome', header: 'Nome', style: "" },
+      { field: 'abbrev', header: 'Abbr.', style: "" }
    ]
    colChamp: any[] = [
-      { field: 'nome', header: 'Nome' },
-      { field: 'abbrev', header: 'Abbr.' }
+      { field: 'nome', header: 'Nome', style: "" },
+      { field: 'abbrev', header: 'Abbr.', style: "" }
    ]
    colPhase: any[] = [
-      { field: 'nome', header: 'Nome' },
-      { field: 'abbrev', header: 'Abbr.' },
-      { field: 'exportfolder', header: 'Exp. Fldr.' }
+      { field: 'nome', header: 'Nome', style: "" },
+      { field: 'abbrev', header: 'Abbr.', style: "" },
+      { field: 'exportfolder', header: 'Exp. Fldr.', style: "" }
    ]
    colTeam: any[] = [
-      { field: 'nome', header: 'Nome' },
-      { field: 'abbrev', header: 'Abbr.' }
+      { field: 'nome', header: 'Nome', style: "font-weight: 700; font-size: 1.2em; color: lime;" },
+      { field: 'abbrev', header: 'Abbr.', style: "" }
    ]
    colPlayer: any[] = [
-      { field: 'numero', header: 'Num.' },
-      { field: 'nomedisp', header: 'Nome' },
-      { field: 'anno', header: 'Anno' }
+      { field: 'numero', header: 'Num.', style: "font-weight: 700; font-size: 1.3em;" },
+      { field: 'nomedisp', header: 'Nome', style: "font-weight: 700; font-size: 1.2em; color: lime;" },
+      { field: 'anno', header: 'Anno', style: "" }
    ]
    //
    selSocieta: Societa | null = null;
@@ -122,6 +122,7 @@ export class DatabaseComponent implements OnInit
    //
    vertDataPositions: string[] = ['0px', '52px', '104px', '156px', '208px', '260px', '312px'];
    currVertPos: string = this.vertDataPositions[0];
+   currTblHeight: string = "100px";
 
    /////////////////////////////////////////////////////
    //  Variabili per gestire le dialog
@@ -260,7 +261,7 @@ export class DatabaseComponent implements OnInit
    }
 
 
-   LoadTabellaStagioni()
+   async LoadTabellaStagioni()
    {
       this.isLoading = true;
       let socId: number | null = null;
@@ -350,8 +351,8 @@ export class DatabaseComponent implements OnInit
    {
       this.isLoading = true;
       let champId: number | null = null;
-      if (this.selSeason)
-         champId = this.selSeason.id;
+      if (this.selChamp)
+         champId = this.selChamp.id;
       this.servPhase.getAllData(champId).subscribe (data =>
                                                    {
                                                       if (data)
@@ -503,6 +504,11 @@ export class DatabaseComponent implements OnInit
       if (this.currTabella != null)
       {
          this.currVertPos = this.vertDataPositions[this.currTabella.id-1];
+         let tmp: number = (window.innerHeight-380) - ((this.currTabella.id-1)*52);
+         if (tmp < 130)
+            tmp = 130;
+         this.currTblHeight = `${tmp}px`;
+         console.log(`${window.innerHeight} - ${this.currTblHeight}`);
          utils.SaveToSessionStorage ("BBS_Editing_Event_Id", this.currTabella.id);
          if (this.currTabella.nome == "Società")
          {
@@ -777,25 +783,65 @@ export class DatabaseComponent implements OnInit
          return;
       if (this.currTabella.nome == "Società")
       {
-         this.router.navigate ([`/societaedit`], {state: {id: 0}});
+         this.dialogOperation = "ADD";
+         servToUse = this.servSocieta;
+         this.dialogVisible_Societa = true;
+         this.dialogTitle = "Società";
+         this.dialogOperazione = "Nuova società";
+         this.dialogError = false;
+         this.dialogErrorMessage = "";
+         this.dialogValue_Nome = "";
       }
-      if (this.currTabella.nome == "Stagioni")
+      else if (this.currTabella.nome == "Stagioni")
       {
-         this.router.navigate ([`/seasonedit`], {state: {id: 0, tenantId: this.selSocieta?.id}});
+         this.dialogOperation = "ADD";
+         servToUse = this.servSeason;
+         this.dialogVisible_Season = true;
+         this.dialogTitle = "Statione";
+         this.dialogOperazione = "Nuova stagione";
+         this.dialogError = false;
+         this.dialogErrorMessage = "";
+         this.dialogValue_Nome = "";
+         this.dialogValue_Abbrev = "";
       }
-      if (this.currTabella.nome == "Campionati")
+      else if (this.currTabella.nome == "Campionati")
       {
-         this.router.navigate ([`/champedit`], {state: {id: 0, seasonId: this.selSeason?.id}});
+         this.dialogOperation = "ADD";
+         servToUse = this.servChamp;
+         this.dialogVisible_Champ = true;
+         this.dialogTitle = "Campionato";
+         this.dialogOperazione = "Nuovo campionato";
+         this.dialogError = false;
+         this.dialogErrorMessage = "";
+         this.dialogValue_Nome = "";
+         this.dialogValue_Abbrev = "";
       }
-      if (this.currTabella.nome == "Fasi")
+      else if (this.currTabella.nome == "Fasi")
       {
-         this.router.navigate ([`/phaseedit`], {state: {id: 0, champId: this.selPhase?.id}});
+         this.dialogOperation = "ADD";
+         servToUse = this.servPhase;
+         this.dialogVisible_Phase = true;
+         this.dialogTitle = "Fase";
+         this.dialogOperazione = "Nuova fase";
+         this.dialogError = false;
+         this.dialogErrorMessage = "";
+         this.dialogValue_Nome = "";
+         this.dialogValue_Abbrev = "";
       }
-      if (this.currTabella.nome == "Squadre")
+      else if (this.currTabella.nome == "Squadre")
       {
-         this.router.navigate ([`/teamedit`], {state: {id: 0, champId: this.selTeam?.id}});
+         this.dialogOperation = "ADD";
+         servToUse = this.servPhase;
+         this.dialogVisible_Team = true;
+         this.dialogTitle = "Squadra";
+         this.dialogOperazione = "Nuova squadra";
+         this.dialogError = false;
+         this.dialogErrorMessage = "";
+         this.dialogValue_Nome = "";
+         this.dialogValue_Abbrev = "";
+         this.dialogValue_Logo = "";
       }
-      if (this.currTabella.nome == "Giocatori")
+      else if (this.currTabella.nome == "Giocatori")
       {
          servToUse = this.servPlayer;
          this.dialogTitle = "Giocatore";
@@ -828,14 +874,7 @@ export class DatabaseComponent implements OnInit
          return;
       if (this.currTabella.nome == "Società")
       {
-         /*
-         this.selSocieta = (this.currDati as Societa);
-         currId = Number(this.selSocieta.id);
-         currName = this.selSocieta.nome;
-         nomeTabella = "la Società";
-         servToUse = this.servSocieta;
-         this.router.navigate ([`/societaedit`], {state: {id: currId}});
-         */
+         this.dialogOperation = "EDIT";
          servToUse = this.servSocieta;
          this.dialogVisible_Societa = true;
          this.dialogTitle = "Società";
@@ -843,18 +882,12 @@ export class DatabaseComponent implements OnInit
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selSocieta = (this.currDati as Societa);
+         this.selId = this.selSocieta.id;
          this.dialogValue_Nome = this.selSocieta.nome;
       }
       else if (this.currTabella.nome == "Stagioni")
       {
-         /*
-         this.selSeason = (this.currDati as Season);
-         currId = this.selSeason.id;
-         currName = this.selSeason.nome;
-         nomeTabella = "la Stagione";
-         servToUse = this.servSeason;
-         this.router.navigate ([`/seasonedit`], {state: {id: currId}});
-         */
+         this.dialogOperation = "EDIT";
          servToUse = this.servSeason;
          this.dialogVisible_Season = true;
          this.dialogTitle = "Statione";
@@ -862,19 +895,13 @@ export class DatabaseComponent implements OnInit
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selSeason = (this.currDati as Season);
+         this.selId = this.selSeason.id;
          this.dialogValue_Nome = this.selSeason.nome;
          this.dialogValue_Abbrev = this.selSeason.abbrev;
       }
       else if (this.currTabella.nome == "Campionati")
       {
-         /*
-         this.selChamp = (this.currDati as Champ);
-         currId = this.selChamp.id;
-         currName = this.selChamp.nome;
-         nomeTabella = "il Campionato";
-         servToUse = this.servChamp;
-         this.router.navigate ([`/champedit`], {state: {id: currId}});
-         */
+         this.dialogOperation = "EDIT";
          servToUse = this.servChamp;
          this.dialogVisible_Champ = true;
          this.dialogTitle = "Campionato";
@@ -882,19 +909,13 @@ export class DatabaseComponent implements OnInit
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selChamp = (this.currDati as Champ);
+         this.selId = this.selChamp.id;
          this.dialogValue_Nome = this.selChamp.nome;
          this.dialogValue_Abbrev = this.selChamp.abbrev;
       }
       else if (this.currTabella.nome == "Fasi")
       {
-         /*
-         this.selPhase = (this.currDati as Phase);
-         currId = this.selPhase.id;
-         currName = this.selPhase.nome;
-         nomeTabella = "la Fase";
-         servToUse = this.servPhase;
-         this.router.navigate ([`/phaseedit`], {state: {id: currId}});
-         */
+         this.dialogOperation = "EDIT";
          servToUse = this.servPhase;
          this.dialogVisible_Phase = true;
          this.dialogTitle = "Fase";
@@ -902,19 +923,13 @@ export class DatabaseComponent implements OnInit
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selPhase = (this.currDati as Phase);
+         this.selId = this.selPhase.id;
          this.dialogValue_Nome = this.selPhase.nome;
          this.dialogValue_Abbrev = this.selPhase.abbrev;
       }
       else if (this.currTabella.nome == "Squadre")
       {
-         /*
-         this.selTeam = (this.currDati as Team);
-         currId = this.selTeam.id;
-         currName = this.selTeam.nome;
-         nomeTabella = "la Squadra";
-         servToUse = this.servPhase;
-         this.router.navigate ([`/teamedit`], {state: {id: currId}});
-         */
+         this.dialogOperation = "EDIT";
          servToUse = this.servPhase;
          this.dialogVisible_Team = true;
          this.dialogTitle = "Squadra";
@@ -922,18 +937,21 @@ export class DatabaseComponent implements OnInit
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selTeam = (this.currDati as Team);
+         this.selId = this.selTeam.id;
          this.dialogValue_Nome = this.selTeam.nome;
          this.dialogValue_Abbrev = this.selTeam.abbrev;
          this.dialogValue_Logo = this.selTeam.logo;
       }
       else if (this.currTabella.nome == "Giocatori")
       {
+         this.dialogOperation = "EDIT";
          servToUse = this.servPlayer;
          this.dialogTitle = "Giocatore";
          this.dialogOperazione = "Modifica giocatore";
          this.dialogError = false;
          this.dialogErrorMessage = "";
          this.selPlayer = (this.currDati as Player);
+         this.selId = this.selPlayer.id;
          this.dialogValue_Nome = this.selPlayer.nomedisp;
          this.dialogValue_Anno = this.selPlayer.anno;
          this.dialogValue_Ruolo = this.selPlayer.ruolo;
@@ -996,6 +1014,17 @@ export class DatabaseComponent implements OnInit
          nomeTabella = "la Fase";
          servToUse = this.servPhase;
       }
+      else if (this.currTabella.nome == "Giocatori")
+      {
+         this.selPlayer = (this.currDati as Player);
+         currId = this.selPlayer.id;
+         currName = this.selPlayer.nomedisp;
+         nomeTabella = "il Giocatore";
+         servToUse = this.servPlayer;
+      }
+      else if (this.currTabella.nome == "Allenatori")
+      {
+      }
       else
       {
       }
@@ -1019,6 +1048,26 @@ export class DatabaseComponent implements OnInit
                                                                                  if (this.currTabella?.nome == "Stagioni")
                                                                                  {
                                                                                     this.DeleteStagione(currId);
+                                                                                 }
+                                                                                 if (this.currTabella?.nome == "Campionati")
+                                                                                 {
+                                                                                    this.DeleteChamp(currId);
+                                                                                 }
+                                                                                 if (this.currTabella?.nome == "Fasi")
+                                                                                 {
+                                                                                    this.DeletePhase(currId);
+                                                                                 }
+                                                                                 if (this.currTabella?.nome == "Squadre")
+                                                                                 {
+                                                                                    this.DeleteTeam(currId);
+                                                                                 }
+                                                                                 if (this.currTabella?.nome == "Giocatori")
+                                                                                 {
+                                                                                    this.DeletePlayer(currId);
+                                                                                 }
+                                                                                 if (this.currTabella?.nome == "Allenatori")
+                                                                                 {
+                                                                                    //this.DeleteCoach(currId);
                                                                                  }
                                                                               }
                                                                            });
@@ -1139,6 +1188,120 @@ export class DatabaseComponent implements OnInit
    }
 
 
+   DeletePhase (id: number)
+   {
+      this.servPhase.DeleteData (id).subscribe (data =>
+                                                {
+                                                   if (data)
+                                                   {
+                                                      if (data.ok)
+                                                      {
+                                                         this.LoadTabellaFasi();
+                                                      }
+                                                      else
+                                                      {
+                                                         const dlgData: MessDlgData = {
+                                                            title:      'ERRORE',
+                                                            subtitle:   'Errore durante la cancellazione del dato',
+                                                            message:    `${data.message}`,
+                                                            messtype:   'error',
+                                                            btncaption: 'Chiudi'
+                                                         };
+                                                         this.messageDialogService.showMessage (dlgData, '600px');
+                                                      }
+                                                   }
+                                                   else
+                                                   {
+                                                      const dlgData: MessDlgData = {
+                                                         title:      'ERRORE',
+                                                         subtitle:   'Errore durante la cancellazione del dato',
+                                                         message:    `Nessun dato ritornato`,
+                                                         messtype:   'error',
+                                                         btncaption: 'Chiudi'
+                                                      };
+                                                      this.messageDialogService.showMessage (dlgData, '600px');
+                                                   }
+                                                   this.isLoading = false;
+                                                })
+   }
+
+
+   DeleteTeam (id: number)
+   {
+      this.servTeam.DeleteData (id).subscribe (data =>
+                                                {
+                                                   if (data)
+                                                   {
+                                                      if (data.ok)
+                                                      {
+                                                         this.LoadTabellaTeam();
+                                                      }
+                                                      else
+                                                      {
+                                                         const dlgData: MessDlgData = {
+                                                            title:      'ERRORE',
+                                                            subtitle:   'Errore durante la cancellazione del dato',
+                                                            message:    `${data.message}`,
+                                                            messtype:   'error',
+                                                            btncaption: 'Chiudi'
+                                                         };
+                                                         this.messageDialogService.showMessage (dlgData, '600px');
+                                                      }
+                                                   }
+                                                   else
+                                                   {
+                                                      const dlgData: MessDlgData = {
+                                                         title:      'ERRORE',
+                                                         subtitle:   'Errore durante la cancellazione del dato',
+                                                         message:    `Nessun dato ritornato`,
+                                                         messtype:   'error',
+                                                         btncaption: 'Chiudi'
+                                                      };
+                                                      this.messageDialogService.showMessage (dlgData, '600px');
+                                                   }
+                                                   this.isLoading = false;
+                                                })
+   }
+
+
+   DeletePlayer (id: number)
+   {
+      this.servPlayer.DeleteData (id).subscribe (data =>
+                                                {
+                                                   if (data)
+                                                   {
+                                                      if (data.ok)
+                                                      {
+                                                         this.LoadTabellaPlayer();
+                                                      }
+                                                      else
+                                                      {
+                                                         const dlgData: MessDlgData = {
+                                                            title:      'ERRORE',
+                                                            subtitle:   'Errore durante la cancellazione del dato',
+                                                            message:    `${data.message}`,
+                                                            messtype:   'error',
+                                                            btncaption: 'Chiudi'
+                                                         };
+                                                         this.messageDialogService.showMessage (dlgData, '600px');
+                                                      }
+                                                   }
+                                                   else
+                                                   {
+                                                      const dlgData: MessDlgData = {
+                                                         title:      'ERRORE',
+                                                         subtitle:   'Errore durante la cancellazione del dato',
+                                                         message:    `Nessun dato ritornato`,
+                                                         messtype:   'error',
+                                                         btncaption: 'Chiudi'
+                                                      };
+                                                      this.messageDialogService.showMessage (dlgData, '600px');
+                                                   }
+                                                   this.isLoading = false;
+                                                })
+   }
+
+
    async DialogAnnulla(senderName: string)
    {
       this.dialogVisible_Societa = false;
@@ -1159,57 +1322,376 @@ export class DatabaseComponent implements OnInit
       this.dialogVisible_Team = false;
       this.dialogVisible_Player = false;
       //
-      if (senderName == "player")
+      try
       {
-         if (this.dialogOperation == "ADD")
+         if (senderName == "tenant")
          {
-            if (this.selTeam)
+            if (this.dialogOperation == "ADD")
             {
-               const response = await firstValueFrom (this.servPlayer.addNewData ("", "", this.dialogValue_Nome, this.dialogValue_Anno, this.dialogValue_Ruolo, this.dialogValue_Numero, this.dialogValue_Altezza, "", this.selTeam.id));
-               if (response.ok)
+               if (this.selSocieta)
                {
-                  //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
-                  this.LoadTabellaPlayer ();
+                  const response = await firstValueFrom (this.servSocieta.addNewData(this.dialogValue_Nome));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     await this.LoadTabellaSocieta();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
                }
-               else
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               if (this.selId > 0)
                {
-                  const dlgData: MessDlgData = {
-                     title:      'ERRORE',
-                     subtitle:   "Errore nell'inserimento dei dati",
-                     message:    `${response.message}`,
-                     messtype:   'error',
-                     btncaption: 'Chiudi'
-                  };
-                  this.messageDialogService.showMessage (dlgData, '600px');
+                  const response = await firstValueFrom (this.servSocieta.updateData(this.selId, this.dialogValue_Nome));
+                  if (response.ok)
+                  {
+                     await this.LoadTabellaSocieta();
+                     this.cdr.detectChanges ();
+                     this.selSocieta = (this.tabellaDati.find(item => item.id === this.selId) as Societa) || null;
+                     if (this.selSocieta)
+                     {
+                        this.selSocieta.nome = this.dialogValue_Nome;
+                        console.log (this.selSocieta.nome);
+                        await this.SetSerlectedValueTo (this.selSocieta.nome);
+                     }
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
                }
-               this.cdr.detectChanges ();
             }
          }
-         if (this.dialogOperation == "EDIT")
+         if (senderName == "season")
          {
-            if ((this.selTeam) && (this.selId > 0))
+            if (this.dialogOperation == "ADD")
             {
-               const response = await firstValueFrom (this.servPlayer.updateData(this.selId, "", "", this.dialogValue_Nome, this.dialogValue_Anno, this.dialogValue_Ruolo, this.dialogValue_Numero, this.dialogValue_Altezza, "", this.selTeam.id));
-               if (response.ok)
+               if (this.selSocieta)
                {
-                  //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
-                  this.LoadTabellaPlayer ();
+                  const response = await firstValueFrom (this.servSeason.addNewData(this.dialogValue_Nome, this.dialogValue_Abbrev, this.selSocieta.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     await this.LoadTabellaStagioni();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
                }
-               else
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               if ((this.selSocieta) && (this.selId > 0))
                {
-                  const dlgData: MessDlgData = {
-                     title:      'ERRORE',
-                     subtitle:   "Errore nella modifica dei dati",
-                     message:    `${response.message}`,
-                     messtype:   'error',
-                     btncaption: 'Chiudi'
-                  };
-                  this.messageDialogService.showMessage (dlgData, '600px');
+                  const response = await firstValueFrom (this.servSeason.updateData(this.selId, this.dialogValue_Nome, this.dialogValue_Abbrev, this.selSocieta.id));
+                  if (response.ok)
+                  {
+                     await this.LoadTabellaStagioni();
+                     this.cdr.detectChanges ();
+                     this.selSeason = (this.tabellaDati.find(item => item.id === this.selId) as Season) || null;
+                     if (this.selSeason)
+                     {
+                        this.selSeason.nome = this.dialogValue_Nome;
+                        console.log (this.selSeason.nome);
+                        await this.SetSerlectedValueTo (this.selSeason.nome);
+                     }
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
                }
-               this.cdr.detectChanges ();
+            }
+         }
+         if (senderName == "champ")
+         {
+            if (this.dialogOperation == "ADD")
+            {
+               if (this.selSeason)
+               {
+                  const response = await firstValueFrom (this.servChamp.addNewData(this.dialogValue_Nome, this.dialogValue_Abbrev, this.selSeason.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     await this.LoadTabellaCampionati();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               if ((this.selSeason) && (this.selId > 0))
+               {
+                  const response = await firstValueFrom (this.servChamp.updateData(this.selId, this.dialogValue_Nome, this.dialogValue_Abbrev, this.selSeason.id));
+                  if (response.ok)
+                  {
+                     await this.LoadTabellaCampionati();
+                     this.cdr.detectChanges ();
+                     this.selChamp = (this.tabellaDati.find(item => item.id === this.selId) as Champ) || null;
+                     if (this.selChamp)
+                     {
+                        this.selChamp.nome = this.dialogValue_Nome;
+                        console.log (this.selChamp.nome);
+                        await this.SetSerlectedValueTo (this.selChamp.nome);
+                     }
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+         }
+         if (senderName == "phase")
+         {
+            if (this.dialogOperation == "ADD")
+            {
+               if (this.selChamp)
+               {
+                  this.dialogValue_Logo = "";
+                  const response = await firstValueFrom (this.servPhase.addNewData(this.dialogValue_Nome, this.dialogValue_Abbrev, this.dialogValue_Logo, this.selChamp.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     await this.LoadTabellaFasi();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               this.dialogValue_Logo = "";
+               if ((this.selChamp) && (this.selId > 0))
+               {
+                  const response = await firstValueFrom (this.servPhase.updateData(this.selId, this.dialogValue_Nome, this.dialogValue_Abbrev, this.dialogValue_Logo, this.selChamp.id));
+                  if (response.ok)
+                  {
+                     await this.LoadTabellaFasi();
+                     this.cdr.detectChanges ();
+                     this.selPhase = (this.tabellaDati.find(item => item.id === this.selId) as Phase) || null;
+                     if (this.selPhase)
+                     {
+                        this.selPhase.nome = this.dialogValue_Nome;
+                        console.log (this.selPhase.nome);
+                        await this.SetSerlectedValueTo (this.selPhase.nome);
+                     }
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+         }
+         if (senderName == "team")
+         {
+            if (this.dialogOperation == "ADD")
+            {
+               if (this.selChamp)
+               {
+                  const response = await firstValueFrom (this.servTeam.addNewData(this.dialogValue_Nome, this.dialogValue_Abbrev, this.dialogValue_Logo, this.selChamp.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     await this.LoadTabellaTeam();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               if ((this.selChamp) && (this.selId > 0))
+               {
+                  const response = await firstValueFrom (this.servTeam.updateData(this.selId, this.dialogValue_Nome, this.dialogValue_Abbrev, this.dialogValue_Logo, this.selChamp.id));
+                  if (response.ok)
+                  {
+                     await this.LoadTabellaTeam();
+                     this.cdr.detectChanges ();
+                     this.selTeam = (this.tabellaDati.find(item => item.id === this.selId) as Team) || null;
+                     if (this.selTeam)
+                     {
+                        this.selTeam.nome = this.dialogValue_Nome;
+                        console.log (this.selTeam.nome);
+                        await this.SetSerlectedValueTo (this.selTeam.nome);
+                     }
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+         }
+         if (senderName == "player")
+         {
+            if (this.dialogOperation == "ADD")
+            {
+               if (this.selTeam)
+               {
+                  const response = await firstValueFrom (this.servPlayer.addNewData ("", "", this.dialogValue_Nome, this.dialogValue_Anno, this.dialogValue_Ruolo, this.dialogValue_Numero, this.dialogValue_Altezza, "", this.selTeam.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     this.LoadTabellaPlayer ();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nell'inserimento dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+               if ((this.selTeam) && (this.selId > 0))
+               {
+                  const response = await firstValueFrom (this.servPlayer.updateData(this.selId, "", "", this.dialogValue_Nome, this.dialogValue_Anno, this.dialogValue_Ruolo, this.dialogValue_Numero, this.dialogValue_Altezza, "", this.selTeam.id));
+                  if (response.ok)
+                  {
+                     //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+                     this.LoadTabellaPlayer ();
+                  }
+                  else
+                  {
+                     const dlgData: MessDlgData = {
+                        title:      'ERRORE',
+                        subtitle:   "Errore nella modifica dei dati",
+                        message:    `${response.message}`,
+                        messtype:   'error',
+                        btncaption: 'Chiudi'
+                     };
+                     this.messageDialogService.showMessage (dlgData, '600px');
+                  }
+                  this.cdr.detectChanges ();
+               }
+            }
+         }
+         if (senderName == "coach")
+         {
+            if (this.dialogOperation == "ADD")
+            {
+            }
+            if (this.dialogOperation == "EDIT")
+            {
+
             }
          }
       }
+      catch (e)
+      {
+         console.error (JSON.stringify(e,null,3));
+      }
+   }
+
+
+   async SetSerlectedValueTo (aValue: string)
+   {
+      if (this.currTabella)
+      {
+         this.currTabella.selName = aValue;
+      }
+      this.cdr.detectChanges ();
    }
 
 }

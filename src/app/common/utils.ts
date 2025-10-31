@@ -32,6 +32,21 @@ export namespace globs
 
 
 
+export namespace jobStatusType
+{
+   export const notPlayed: string   = "NotPl";
+   export const playing: string     = "InPlay";
+   export const terminated: string  = "Termin";
+}
+
+
+
+export namespace timeouts
+{
+   export const timeoutYes: string  = "X";
+   export const timeoutNo: string   = "o";
+   export const timeoutAll: string  = "ooooooooo";
+}
 
 
 /*==============================================================

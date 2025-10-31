@@ -1,0 +1,160 @@
+
+<div id="match-header-form"
+     class="form-container">
+   <p-card header="{{mhTitle}}">
+      <ng-template pTemplate="content">
+         <div class="form-group">
+            <label for="stagione">Stagione:</label>
+            <label id="stagione">{{ mhStagione }}</label>
+         </div>
+
+         <div class="form-group">
+            <label for="campionato">Campionato:</label>
+            <label id="campionato">{{ mhMatchHeader.champNome_lk }}</label>
+         </div>
+
+         <div class="form-group">
+            <label for="fase">Fase:</label>
+            <label id="fase">{{ mhMatchHeader.phaseNome_lk }}</label>
+         </div>
+
+         <div class="form-group">
+            <label for="giornata">Giornata:</label>
+            <input type="text"
+                   id="giornata"
+                   [style]="{'max-width': '100px'}"
+                   [(ngModel)]="mhMatchHeader.giornata"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="athome">Casa/Treas.:</label>
+            <input type="text"
+                   id="athome"
+                   [(ngModel)]="mhMatchHeader.atHome"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="myteam">My Team:</label>
+            <p-dropdown
+               [style]="{'min-width': '255px'}"
+               [options]="listaTeams"
+               optionLabel="nome"
+               optionValue="nome"
+               [(ngModel)]="mhMatchHeader.myTeamNome_lk"
+               [checkmark]="true"
+               [scrollHeight]="'300px'"/>
+            <div class="card flex justify-content-center">
+               <p-colorPicker id="myteamcolor" [(ngModel)]="mhMatchHeader.myTeamColor" format="hex"></p-colorPicker>
+               <span style="margin-left: 6px; position: relative; top: 6px;">{{ mhMatchHeader.myTeamColor }}</span>
+            </div>
+         </div>
+
+         <div class="form-group">
+            <label for="oppoteam">Opponent Team:</label>
+            <p-dropdown
+               [style]="{'min-width': '255px'}"
+               [options]="listaTeams"
+               optionLabel="nome"
+               optionValue="nome"
+               [(ngModel)]="mhMatchHeader.oppoTeamNome_lk"
+               [checkmark]="true"
+               [scrollHeight]="'300px'"/>
+            <div class="card flex justify-content-center">
+               <p-colorPicker id="oppoteamcolor" [(ngModel)]="mhMatchHeader.oppoTeamColor" format="hex"></p-colorPicker>
+               <span style="margin-left: 6px; position: relative; top: 6px;">{{ mhMatchHeader.oppoTeamColor }}</span>
+            </div>
+         </div>
+
+         <div class="form-group">
+            <label for="matchnumber">Num. Gara:</label>
+            <input type="text"
+                   id="matchnumber"
+                   [style]="{'max-width': '200px'}"
+                   [(ngModel)]="mhMatchHeader.matchNumber"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="matchdate">Data:</label>
+            <p-calendar
+               [(ngModel)]="mhMatchDate"
+               name="matchDateInput"
+               [showIcon]="true"
+               [showOnFocus]="false"
+               inputId="data"
+               dateFormat="dd/mm/yy"
+            ></p-calendar>
+         </div>
+
+         <div class="form-group">
+            <label for="location">Luogo:</label>
+            <input type="text"
+                   id="location"
+                   [style]="{'max-width': '300px'}"
+                   [(ngModel)]="this.mhMatchHeader.location"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="arbitro1">Arbitro 1:</label>
+            <input type="text"
+                   id="arbitro1"
+                   [style]="{'max-width': '300px'}"
+                   [(ngModel)]="mhMatchHeader.arbitro1"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="arbitro2">Arbitro 2:</label>
+            <input type="text"
+                   id="arbitro2"
+                   [style]="{'max-width': '300px'}"
+                   [(ngModel)]="mhMatchHeader.arbitro2"
+                   pInputText
+                   required/>
+         </div>
+
+         <div class="form-group">
+            <label for="title">Titolo:</label>
+            <p-inputGroup>
+               <input type="text"
+                      id="title"
+                      [style]="{'min-width': '410px'}"
+                      [(ngModel)]="mhMatchHeader.title"
+                      pInputText
+                      required/>
+               <button type="button"
+                       pButton
+                       icon="pi pi-search">
+               </button>
+            </p-inputGroup>
+         </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+         <div class="dialog-footer-buttons">
+            <button
+               pButton
+               type="button"
+               label="Annulla"
+               class="p-button-secondary"
+               (click)="Annulla()"
+            ></button>
+            <button
+               pButton
+               type="button"
+               label="OK"
+               class="p-button-primary"
+               (click)="Salva()"
+            ></button>
+         </div>
+      </ng-template>
+   </p-card>
+</div>

@@ -8,20 +8,31 @@ import {ChangeDetectorRef,
          ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
-import {Router} from "@angular/router";
+import {Router,
+         RouterLink} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 
 // primeng
 import {Table,
          TableModule} from 'primeng/table';
+import {DataViewModule} from "primeng/dataview";
 import {ButtonModule} from "primeng/button";
 import {TooltipModule} from 'primeng/tooltip';
 import {CardModule} from 'primeng/card';
 import {DropdownModule} from "primeng/dropdown";
-import {EventoElement,
-         MessDlgData,
-         Season,
-         TipoEvento} from "../../models/datamod";
+import {CalendarModule} from "primeng/calendar";
+import {
+   Champ,
+   EventoElement,
+   MatchHeaderDb,
+   MatchHeader,
+   MessDlgData,
+   Phase,
+   Season,
+   Societa,
+   TipoEvento,
+   CreateEmptyMatchHeader, Team
+} from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
 import {DividerModule} from 'primeng/divider';
@@ -34,9 +45,16 @@ import {MessageService} from 'primeng/api';
 
 // other
 import {SeasonsService} from "../../services/seasons.service";
+import {SocietaService} from "../../services/societa.service";
 import {EventiService} from "../../services/eventi.service";
+import {CampionatiService} from "../../services/campionati.service";
+import {PhaseService} from "../../services/phase.service";
+import {MatchheaderService} from "../../services/matchheader.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
-import {utils} from "../../common/utils";
+import {TeamService} from "../../services/team.service";
+import { utils,
+         jobStatusType,
+         timeouts } from "../../common/utils";
 import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
@@ -45,6 +63,10 @@ import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
 import {BenchCompComponent} from "../../common/bench-comp/bench-comp.component";
 import {PointsCompComponent} from "../../common/points-comp/points-comp.component";
 import {DataCompComponent} from "../../common/data-comp/data-comp.component";
+import {MenuModule} from "primeng/menu";
+import {InputTextModule} from "primeng/inputtext";
+import {DataView} from "primeng/dataview";
+import { MatchheaderCompComponent } from "../../common/matchheader-comp/matchheader-comp.component";
 
 
 
@@ -74,12 +96,18 @@ export interface CbTipoEvento
                   CheckboxModule,
                   DialogModule,
                   DynamicDialogModule,
+                  DataViewModule,
                   TimerCompComponent,
                   PlayerCompComponent,
                   TeamCompComponent,
                   BenchCompComponent,
                   PointsCompComponent,
-                  DataCompComponent
+                  DataCompComponent,
+                  MatchheaderCompComponent,
+                  MenuModule,
+                  RouterLink,
+                  InputTextModule,
+                  CalendarModule
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -97,8 +125,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    isLoadingData: number = 0;
    listaEventi: Array<EventoElement> = [];
    currEvent: EventoElement | null = null;
+   listaSocieta: Array<Societa> = [];
+   currSocieta: Societa | null = null;
+   oldSocieta: Societa | null = null;
    listaStagioni: Array<Season> = [];
    currSeason: Season | null = null;
+   oldSeason: Season | null = null;
    debug: number = 0;
    fltrDlgRef: DynamicDialogRef | undefined;
    totRec: number = 0;
@@ -107,8 +139,19 @@ export class MainPageComponent implements OnInit, OnDestroy
    windowHeight: number = 110;
    scrollHeight: string = "110px";
    timerId: any;
+   listaCampionati: Array<Champ> = [];
+   currChamp: Champ | null = null;
+   listaFasi: Array<Phase> = [];
+   currFase: Phase | null = null;
+   listaMatch: Array<MatchHeader> = [];
+   currMatchHeader: MatchHeader | null = null;
+   diagMatchHeader: MatchHeader | null = null;
+   listaTeams: Array<Team> = [];
    @ViewChild('eventsTable') pTable: Table | undefined;
+   @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
    //
+   private dataCompInstances: Map<string, DataCompComponent> = new Map();
+   private pointsCompInstances: Map<string, PointsCompComponent> = new Map();
    private timerInterval: any;
    private totalSeconds: number = 600; // 10 minuti * 60 secondi
    public cronoTime: string = '10:00';
@@ -116,17 +159,27 @@ export class MainPageComponent implements OnInit, OnDestroy
    public currPlayer: string = "";
    public currTeam: string = "";
    public currBench: string = "";
+   public debugstr: string = "";
+   public dialogVisible_Societa: boolean = false;
+   public dialogErrorMessage: string = "";
+   public dialogVisible_MatchHeader: boolean = false;
+   private today: Date = new Date();
 
 
    constructor (public router: Router,
                 private seasonServ: SeasonsService,
+                private socService: SocietaService,
                 private eventServ: EventiService,
+                private champService: CampionatiService,
+                private phaseService: PhaseService,
                 private cdr: ChangeDetectorRef,
                 private messageDialogService: MessageDialogService,
+                private matchHeaderServ: MatchheaderService,
                 private zone: NgZone,
                 public fltrDialogService: DialogService,
                 public fltrMessageService: MessageService,
-                private logService: LogService)
+                private logService: LogService,
+                private teamService: TeamService)
    {
       this.currEvent = null;
       //
@@ -143,27 +196,8 @@ export class MainPageComponent implements OnInit, OnDestroy
       {
          await this.GetWindowSize();
          //
-         /*
-         const tmpTipo: CbTipoEvento | null = utils.GetFromLocalStorage<CbTipoEvento> ("BBS_CurrTipoEvento");
-         if (tmpTipo != null)
-         {
-            this.currTipoEvento = this.listaTipoEvento.find (tipo => tipo.id == tmpTipo.id) || null;
-            this.cdr.detectChanges();
-         }
+         await this.LoadCfg();
          //
-         await this.LoadFilters();
-         //
-         await this.LoadSeasons();
-         //
-         const tmpSeason: Season | null = utils.GetFromLocalStorage<Season> ("BBS_CurrSeason");
-         if (tmpSeason != null)
-         {
-            this.currSeason = this.listaStagioni.find (season => season.id === tmpSeason.id) || null;
-         }
-         //
-         //this.isLoadingEv = true;
-         await this.LoadEvents();
-         */
          //
          this.updateCrono();
       }
@@ -189,6 +223,32 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   public RegisterDataComponent (id: string,
+                                 instance: DataCompComponent)
+   {
+      this.dataCompInstances.set (id, instance);
+   }
+
+
+   public UnregisterDataComponent (id: string)
+   {
+      this.dataCompInstances.delete (id);
+   }
+
+
+   public RegisterPointsComponent (id: string,
+                                 instance: PointsCompComponent)
+   {
+      this.pointsCompInstances.set (id, instance);
+   }
+
+
+   public UnregisterPointsComponent (id: string)
+   {
+      this.pointsCompInstances.delete (id);
+   }
+
+
    async SetLoading (value: number)
    {
       console.info(`Loading: ${value}`);
@@ -203,13 +263,77 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async LoadSeasons()
+   async LoadCfg()
+   {
+      await this.LoadSocieta();
+      const tmpSoc: Societa | null = utils.GetFromLocalStorage<Societa> ("BBS_CurrSocieta");
+      if (tmpSoc != null)
+      {
+         this.currSocieta = this.listaSocieta.find (soc => soc.id === tmpSoc.id) || null;
+      }
+      //
+      await this.LoadSeasons((this.currSocieta)?this.currSocieta.id:null);
+      const tmpSeason: Season | null = utils.GetFromLocalStorage<Season> ("BBS_CurrSeason");
+      if (tmpSeason != null)
+      {
+         this.currSeason = this.listaStagioni.find (season => season.id === tmpSeason.id) || null;
+      }
+      //
+      if (this.currSeason)
+         await this.LoadChamp (this.currSeason?.id);
+      else
+      {
+         this.listaCampionati = [];
+         this.currChamp = null;
+      }
+      //
+      if (this.currChamp)
+         await this.LoadPhase (this.currChamp?.id);
+      else
+      {
+         this.listaFasi = [];
+         this.currFase = null;
+      }
+      //
+      if (this.currFase)
+         await this.LoadMatchHeader(this.currFase?.id);
+      else
+      {
+         this.listaMatch = [];
+         this.currMatchHeader = null;
+      }
+   }
+
+
+   async LoadSocieta()
+   {
+      try
+      {
+         await this.SetLoading(1);
+         const dataSoc = await firstValueFrom(this.socService.getAllData());
+         if ((dataSoc) && (dataSoc.ok))
+            this.listaSocieta = dataSoc.elements;
+      }
+      catch (err)
+      {
+
+      }
+      finally
+      {
+         //this.isLoadingSea = false;
+         await this.SetLoading(0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   async LoadSeasons(socId: number | null)
    {
       try
       {
          //this.isLoadingSea = true;
          await this.SetLoading(1);
-         const dataSeas = await firstValueFrom(this.seasonServ.getAllData(null));
+         const dataSeas = await firstValueFrom(this.seasonServ.getAllData(socId));
          if ((dataSeas) && (dataSeas.ok))
             this.listaStagioni = dataSeas.elements;
       }
@@ -224,6 +348,224 @@ export class MainPageComponent implements OnInit, OnDestroy
          this.cdr.detectChanges ();
       }
    }
+
+
+   async LoadChamp(seasonId: number | null)
+   {
+      try
+      {
+         if ((seasonId == null) || (seasonId < 1))
+         {
+            this.listaCampionati = [];
+            this.currChamp = null;
+            utils.removeFromSessionStorage("BBS_CurrChamp");
+         }
+         else
+         {
+            const tmpChamp: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrChamp");
+            await this.SetLoading (1);
+            const data = await firstValueFrom (this.champService.getAllData (seasonId));
+            if ((data) && (data.ok))
+               this.listaCampionati = data.elements;
+            if (tmpChamp != null)
+               this.currChamp = this.listaCampionati.find (cam => cam.id === tmpChamp.id) || null;
+            else
+               this.currChamp = null;
+         }
+      }
+      catch (err)
+      {
+
+      }
+      finally
+      {
+         await this.SetLoading(0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   async LoadPhase(champId: number | null)
+   {
+      try
+      {
+         if ((champId == null) || (champId < 1))
+         {
+            this.listaFasi = [];
+            this.currFase = null;
+            utils.removeFromSessionStorage("BBS_CurrPhase");
+         }
+         else
+         {
+            const tempPhase: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrPhase");
+            await this.SetLoading (1);
+            const data = await firstValueFrom (this.phaseService.getAllData (champId));
+            if ((data) && (data.ok))
+               this.listaFasi = data.elements;
+            if (tempPhase != null)
+               this.currFase = this.listaFasi.find (fas => fas.id === tempPhase.id) || null;
+            else
+               this.currFase = null;
+         }
+      }
+      catch (err)
+      {
+
+      }
+      finally
+      {
+         await this.SetLoading(0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   async LoadTeams(champId: number | null)
+   {
+      try
+      {
+         if ((champId == null) || (champId < 1))
+         {
+            this.listaFasi = [];
+            this.currFase = null;
+            utils.removeFromSessionStorage("BBS_CurrPhase");
+         }
+         else
+         {
+            const tempPhase: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrPhase");
+            await this.SetLoading (1);
+            const data = await firstValueFrom (this.teamService.getAllData (champId));
+            if ((data) && (data.ok))
+               this.listaTeams = data.elements;
+         }
+      }
+      catch (err)
+      {
+
+      }
+      finally
+      {
+         await this.SetLoading(0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   async LoadMatchHeader(phaseId: number | null)
+   {
+      try
+      {
+         if ((phaseId == null) || (phaseId < 1))
+         {
+            this.listaMatch = [];
+            this.currMatchHeader = null;
+            utils.removeFromSessionStorage("BBS_CurrMatchHeader");
+         }
+         else
+         {
+            const tempMatch: MatchHeader | null = utils.GetFromSessionStorage<MatchHeader> ("BBS_CurrMatchHeader");
+            await this.SetLoading (1);
+            const data = await firstValueFrom (this.matchHeaderServ.getAllData (phaseId));
+            if ((data) && (data.ok))
+            {
+               console.log("Dati ricevuti dal servizio:", data.elements);
+               this.listaMatch = data.elements;
+            }
+            if (tempMatch != null)
+               this.currMatchHeader = this.listaMatch.find (mat => mat.id === tempMatch.id) || null;
+            else
+               this.currMatchHeader = null;
+         }
+      }
+      catch (err)
+      {
+         await this.logService.AddToLog (loggedUser, `Exception [LoadEvents]: '${JSON.stringify(err,null,-1)}'`);
+         const dlgData: MessDlgData = {
+            title:      'Exception',
+            subtitle:   'Errore',
+            message:    `${JSON.stringify(err,null,3)}`,
+            messtype:   'error',
+            btncaption: 'Chiudi'
+         };
+         this.messageDialogService.showMessage (dlgData, '600px');
+      }
+      finally
+      {
+         await this.SetLoading(0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   async OnSocietaChange (event: any)
+   {
+      let id: number | null = null;
+      if (this.currSocieta)
+         id = this.currSocieta?.id;
+      await this.LoadSeasons(id);
+   }
+
+
+   async CambiaSocieta()
+   {
+      this.oldSocieta = this.currSocieta;
+      this.oldSeason = this.currSeason;
+      this.dialogVisible_Societa = true;
+   }
+
+
+   async DialogSocietaAnnulla()
+   {
+      this.dialogVisible_Societa = false;
+      this.currSocieta = this.oldSocieta;
+      this.currSeason = this.oldSeason;
+   }
+
+
+   async DialogSocietaSalva()
+   {
+      this.dialogVisible_Societa = false;
+      utils.SaveToLocalStorage ("BBS_CurrSocieta", this.currSocieta);
+      utils.SaveToLocalStorage ("BBS_CurrSeason", this.currSeason);
+      //
+      if (this.currSeason)
+         await this.LoadChamp(this.currSeason?.id);
+      else
+         await this.LoadChamp(null);
+   }
+
+
+   async OnSelectedChamp(evento: any)
+   {
+      if (this.currChamp != null)
+      {
+         utils.SaveToSessionStorage ("BBS_CurrChamp", this.currChamp);
+         await this.LoadPhase (this.currChamp.id);
+         await this.LoadTeams (this.currChamp.id);
+      }
+      else
+      {
+         this.listaFasi = [];
+         this.currFase = null;
+         this.listaTeams = [];
+      }
+   }
+
+
+   async OnSelectedPhase(evento: any)
+   {
+      if (this.currFase != null)
+      {
+         utils.SaveToSessionStorage ("BBS_CurrPhase", this.currFase);
+         await this.LoadMatchHeader (this.currFase.id);
+      }
+      else
+      {
+         this.listaMatch = [];
+         this.currMatchHeader = null;
+      }
+   }
+
 
    async LoadEvents()
    {
@@ -914,4 +1256,181 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   BenchDoubleClicked(id: string)
+   {
+      this.currBench = id;
+      const dlgData: MessDlgData = {
+         title:      'DBLCLICK',
+         subtitle:   "",
+         message:    `Doppio click ${this.currBench}`,
+         messtype:   'info',
+         btncaption: 'Chiudi'
+      };
+      this.messageDialogService.showMessage (dlgData, '600px');
+   }
+
+
+   async DataBtn1Clicked (id: string)
+   {
+      const theComponent = this.dataCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} btn-1`;
+         theComponent.Flash();
+      }
+   }
+
+
+   DataBtn2Clicked (id: string)
+   {
+      const theComponent = this.dataCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} btn-2`;
+         theComponent.Flash();
+      }
+   }
+
+
+   async PointsWrong1 (id: string)
+   {
+      const theComponent = this.pointsCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} wrong`;
+         theComponent.Flash();
+      }
+   }
+
+
+   async PointsOk1 (id: string)
+   {
+      const theComponent = this.pointsCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} ok`;
+         theComponent.Flash();
+      }
+   }
+
+
+   async PointsWrong2 (id: string)
+   {
+      const theComponent = this.pointsCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} tap-out`;
+         theComponent.Flash();
+      }
+   }
+
+
+   async PointsOk2 (id: string)
+   {
+      const theComponent = this.pointsCompInstances.get (id);
+      if (theComponent)
+      {
+         this.debugstr = `${id} tap-in`;
+         theComponent.Flash();
+      }
+   }
+
+
+   public GetSocieta(): string
+   {
+      if (this.currSocieta)
+         return `${this.currSocieta.nome}`;
+      else
+         return "-";
+   }
+
+
+   public GetSeason(): string
+   {
+      if (this.currSeason)
+         return this.currSeason.nome;
+      else
+         return "-";
+   }
+
+
+   async EditMatchHeader(match: MatchHeader)
+   {
+      this.currMatchHeader = match;
+      this.diagMatchHeader = CreateEmptyMatchHeader();
+      this.diagMatchHeader = JSON.parse(JSON.stringify(match, null, -1));
+      if ((this.currFase) && (this.diagMatchHeader))
+      {
+         this.diagMatchHeader.phaseId_link = this.currFase?.id;
+         this.diagMatchHeader.phaseNome_lk = this.currFase?.nome;
+         this.diagMatchHeader.phaseAbbrev_lk = this.currFase?.abbrev;
+      }
+      this.dialogVisible_MatchHeader = true;
+   }
+
+
+   async DeleteMatchHeader(match: MatchHeader)
+   {
+      console.log ("Delete match");
+   }
+
+
+   async OpenMatch (match: MatchHeader)
+   {
+      console.log ("Open match");
+   }
+
+
+   async MatchStatus(match: MatchHeader)
+   {
+      console.log ("Match status");
+   }
+
+
+   async onMatchHeaderDblClick (item: MatchHeader)
+   {
+      await this.OpenMatch(item);
+   }
+
+
+   MatchStatusToString (item: MatchHeader): string
+   {
+      switch (item.matchStatus)
+      {
+         case jobStatusType.terminated: return 'TER';
+         case jobStatusType.playing: return "PL";
+         default: return "NP";
+      }
+   }
+
+
+   SalvaMatchHeader(datiMH: { mh: MatchHeader})
+   {
+      this.dialogVisible_MatchHeader = false;
+      this.currMatchHeader = JSON.parse(JSON.stringify(this.diagMatchHeader, null, -1));
+   }
+
+
+   AnnullaMatchHeader()
+   {
+      this.dialogVisible_MatchHeader = false;
+   }
+
+
+   MatchDate(): Date
+   {
+      if (this.currMatchHeader)
+         return this.currMatchHeader.matchDate;
+      else
+         return this.today;
+   }
+
+
+   onMatchHeaderDialogShow()
+   {
+      if (this.matchHeaderComp)
+         this.matchHeaderComp.onDialogShown();
+   }
+
+   protected readonly CreateEmptyMatchHeader = CreateEmptyMatchHeader;
 }

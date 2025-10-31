@@ -1,6 +1,13 @@
 
-import {Component, OnInit, OnDestroy, Input, Output, EventEmitter} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {
+   Component,
+   OnInit,
+   OnDestroy,
+   Input,
+   Output,
+   EventEmitter,
+   ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
 import {CardModule} from 'primeng/card';
@@ -10,6 +17,7 @@ import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import Color from 'Color';
 import { globs} from "../utils";
+import {MainPageComponent} from "../../pages/main-page/main-page.component";
 
 
 
@@ -39,28 +47,51 @@ export class PointsCompComponent implements OnInit, OnDestroy
    @Input() btn2Label: string = "";
    @Input() isSelected: boolean = false;
 
-   @Output() componentClicked = new EventEmitter<string>();
+   @Output() compBtnMinus1Clicked = new EventEmitter<string>();
+   @Output() compBtnPlus1Clicked = new EventEmitter<string>();
+   @Output() compBtnMinus2Clicked = new EventEmitter<string>();
+   @Output() compBtnPlus2Clicked = new EventEmitter<string>();
 
 
-   constructor ()
+   constructor (private cdr: ChangeDetectorRef,
+                private parent: MainPageComponent)
    {
    }
 
 
    ngOnInit ()
    {
+      this.parent.RegisterPointsComponent (this.componentId, this);
    }
 
 
    ngOnDestroy ()
    {
-
+      this.parent.UnregisterPointsComponent (this.componentId);
    }
 
 
-   onClick()
+   onMinus1Click()
    {
-      this.componentClicked.emit(this.componentId);
+      this.compBtnMinus1Clicked.emit(this.componentId);
+   }
+
+
+   onPlus1Click()
+   {
+      this.compBtnPlus1Clicked.emit(this.componentId);
+   }
+
+
+   onMinus2Click()
+   {
+      this.compBtnMinus2Clicked.emit(this.componentId);
+   }
+
+
+   onPlus2Click()
+   {
+      this.compBtnPlus2Clicked.emit(this.componentId);
    }
 
 
@@ -93,6 +124,27 @@ export class PointsCompComponent implements OnInit, OnDestroy
       {
          return this.colorNormal2;
       }
+   }
+
+
+   private LightOn()
+   {
+      this.isSelected = true;
+      this.cdr.detectChanges();
+   }
+
+
+   private LightOff()
+   {
+      this.isSelected = false;
+      this.cdr.detectChanges();
+   }
+
+
+   public Flash()
+   {
+      setTimeout (() => { this.LightOn(); }, 11);
+      setTimeout (() => { this.LightOff(); }, 300);
    }
 
 

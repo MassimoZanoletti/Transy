@@ -1,0 +1,53 @@
+
+
+.form-container
+{
+   display: flex;
+   /*justify-content: center;*/
+   align-items: start;        /* allineamento verticale in alto */
+   height: 680px;
+   width: 600px !important;
+   margin-top: 15px !important;
+
+   mat-card {
+      width: 400px;
+      color: white;
+   }
+
+   mat-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+      margin-top: 8px;
+   }
+
+}
+
+.form-group {
+   display: flex;
+   align-items: center;
+   margin-bottom: 0.25rem;
+}
+
+.form-group label {
+   width: 160px; /* larghezza fissa per allineamento */
+   margin-right: 1rem;
+   font-weight: bold;
+}
+
+.form-group input,
+.form-group p-calendar,
+.form-group p-inputgroup {
+   flex: 1;
+}
+
+.dialog-footer-buttons {
+   display: flex;
+   justify-content: flex-end;
+   gap: 0.2rem;
+}
+
+
+:host ::ng-deep .p-card .p-card-title {
+   color: yellow; /* O un codice esadecimale come #FFFF00 */
+   margin-bottom: 15px;
+}

@@ -25,7 +25,7 @@ export class PlayerService
       const operation: string = "all";
       let qryTenant: string = "";
       if (champ != null)
-         qryTenant = `&champ=${champ}`;
+         qryTenant = `&team=${champ}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
       return this.http.get<any>(url);
    }

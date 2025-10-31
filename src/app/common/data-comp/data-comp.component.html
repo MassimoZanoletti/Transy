@@ -1,8 +1,7 @@
 
 <div id="div-dat-main"
      class="div-dat-main"
-     [style]="{'background-image': GetGradientBackground()}"
-     (click)="onClick()">
+     [style]="{'background-image': GetGradientBackground()}">
    <div it="div-dat-title"
         class="div-dat-title">
       {{title}}
@@ -23,7 +22,8 @@
               class="btn-dat"
               icon="pi pi-plus"
               severity="secondary"
-              [style]="{'background-color': colorDato1}">
+              [style]="{'background-color': colorDato1}"
+              (click)="Btn1Click()">
       </button>
    </div>
    <div id="div-dat-riga2"
@@ -50,7 +50,8 @@
               severity="secondary"
               *ngIf="titolo2!=''"
               [innerHTML]="btn2Label"
-              [style]="{'background-color': colorDato2}">
+              [style]="{'background-color': colorDato2}"
+              (click)="Btn2Click()">
       </button>
    </div>
 </div>

@@ -36,7 +36,8 @@ export class BenchCompComponent implements OnInit, OnDestroy
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
 
-   @Output() componentClicked = new EventEmitter<string>();
+   @Output() componentClicked: EventEmitter<string> = new EventEmitter<string>();
+   @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
 
 
    constructor ()
@@ -58,6 +59,12 @@ export class BenchCompComponent implements OnInit, OnDestroy
    onClick()
    {
       this.componentClicked.emit(this.componentId);
+   }
+
+
+   onDoubleClick()
+   {
+      this.componentDoubleClicked.emit(this.componentId);
    }
 
 

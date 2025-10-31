@@ -1,6 +1,13 @@
 
-import {Component, OnInit, OnDestroy, Input, Output, EventEmitter} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {
+   Component,
+   OnInit,
+   OnDestroy,
+   Input,
+   Output,
+   EventEmitter,
+   ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
 import {CardModule} from 'primeng/card';
@@ -10,6 +17,7 @@ import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import Color from 'Color';
 import { globs} from "../utils";
+import {MainPageComponent} from "../../pages/main-page/main-page.component";
 
 
 
@@ -46,28 +54,37 @@ export class DataCompComponent implements OnInit, OnDestroy
    @Input() dato: string = "";
    @Input() isSelected: boolean = false;
 
-   @Output() componentClicked = new EventEmitter<string>();
+   @Output() compBtn1Clicked = new EventEmitter<string>();
+   @Output() compBtn2Clicked = new EventEmitter<string>();
 
 
-   constructor ()
+   constructor (private parent: MainPageComponent,
+                private cdr: ChangeDetectorRef)
    {
    }
 
 
    ngOnInit ()
    {
+      this.parent.RegisterDataComponent (this.componentId, this);
    }
 
 
    ngOnDestroy ()
    {
-
+      this.parent.UnregisterDataComponent (this.componentId);
    }
 
 
-   onClick()
+   Btn1Click()
    {
-      this.componentClicked.emit(this.componentId);
+      this.compBtn1Clicked.emit(this.componentId);
+   }
+
+
+   Btn2Click()
+   {
+      this.compBtn2Clicked.emit(this.componentId);
    }
 
 
@@ -100,6 +117,27 @@ export class DataCompComponent implements OnInit, OnDestroy
       {
          return this.colorNormal2;
       }
+   }
+
+
+   private LightOn()
+   {
+      this.isSelected = true;
+      this.cdr.detectChanges();
+   }
+
+
+   private LightOff()
+   {
+      this.isSelected = false;
+      this.cdr.detectChanges();
+   }
+
+
+   public Flash()
+   {
+      setTimeout (() => { this.LightOn(); }, 11);
+      setTimeout (() => { this.LightOff(); }, 300);
    }
 
 

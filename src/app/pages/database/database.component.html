@@ -79,6 +79,7 @@
                #tabellaDeiDati
                class="no-header-table"
                [scrollable]="true"
+               [scrollHeight]="currTblHeight"
                [value]="tabellaDati"
                selectionMode="single"
                dataKey="id"
@@ -93,8 +94,8 @@
                </ng-template>
                <ng-template pTemplate="body" let-rowData>
                   <tr  [pSelectableRow]="rowData">
-                     <td *ngFor="let col of colonneDati">
-                        {{ rowData[col.field] }}
+                     <td *ngFor="let col of colonneDati"
+                        [attr.style]="col.style">{{ rowData[col.field] }}
                      </td>
                   </tr>
                </ng-template>

@@ -39,6 +39,7 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    @Input() isSelected: boolean = false;
 
    @Output() componentClicked = new EventEmitter<string>();
+   @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
 
 
 
@@ -63,6 +64,12 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    onClick()
    {
       this.componentClicked.emit(this.componentId);
+   }
+
+
+   onDoubleClick()
+   {
+      this.componentDoubleClicked.emit(this.componentId);
    }
 
 

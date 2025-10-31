@@ -1,3 +1,30 @@
+
+<div id="main_container">
+
+   <div class="p-toolbar-group-left tenant-season-container"
+        id="tenant-season-container">
+      <h2 style="margin-left: 15px; margin-right: 30px; margin-bottom: 0px; margin-top: 0px; padding-bottom: 0px; padding-top: 0px;">Dashboard</h2>
+      <p-divider layout="vertical"></p-divider>
+      <div style="padding-right: 20px;"
+            id="tenant-season-text-container">
+         <p>Società: <span style="color: darkorange; font-size: 1.2em"><b>{{GetSocieta()}}</b></span></p>
+         <p>Stagione: <span style="color: darkorange; font-size: 1.2em"><b>{{GetSeason()}}</b></span></p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0px;"
+           id="tenant-season-btn-container">
+         <p-button label="Cambia"
+                   severity="primary"
+                   icon="pi pi-pencil"
+                   class="btn-fisso"
+                   (click)="CambiaSocieta()"
+                   ></p-button>
+      </div>
+      <p-divider layout="vertical"></p-divider>
+   </div>
+
+
+<!--
+<div>{{debugstr}}</div>
 <app-team-comp
    componentId="t1"
    teamName="Sarezzo"
@@ -6,6 +33,14 @@
    [isSelected]="'t1' == currTeam"
 >
 </app-team-comp>
+<div>
+   <app-timer-comp
+      instanceId="cronometro"
+      (timeUpdated)="onTimeUpdate($event)"
+      (started)="onTimerEvent($event)"
+      (stopped)="onTimerEvent($event)">
+   </app-timer-comp>
+</div>
 <app-player-comp
    componentId="pl1"
    playerNumber="24"
@@ -67,6 +102,7 @@
    playerName="Briant K."
    playerNum="24"
    (componentClicked)="BenchClicked($event)"
+   (componentDoubleClicked)="BenchDoubleClicked($event)"
    [isSelected]="'b1' == currBench"
 >
 </app-bench-comp>
@@ -75,6 +111,7 @@
    playerName="Chamberlein W."
    playerNum="8"
    (componentClicked)="BenchClicked($event)"
+   (componentDoubleClicked)="BenchDoubleClicked($event)"
    [isSelected]="'b2' == currBench"
 >
 </app-bench-comp>
@@ -89,7 +126,8 @@
          colorNormal2="#888800"
          colorSelected1="#dddddd"
          colorSelected2="#dddddd"
-         (componentClicked)="BenchClicked($event)"
+         (compBtnMinus1Clicked)="PointsWrong1($event)"
+         (compBtnPlus1Clicked)="PointsOk1($event)"
          [isSelected]="'tl' == currBench">
       </app-points-comp>
       <app-points-comp
@@ -101,7 +139,10 @@
          colorSelected2="#dddddd"
          btn1Label="Tap<br>OUT"
          btn2Label="Tap<br>IN"
-         (componentClicked)="BenchClicked($event)"
+         (compBtnMinus1Clicked)="PointsWrong1($event)"
+         (compBtnPlus1Clicked)="PointsOk1($event)"
+         (compBtnMinus2Clicked)="PointsWrong2($event)"
+         (compBtnPlus2Clicked)="PointsOk2($event)"
          [isSelected]="'t2' == currBench">
       </app-points-comp>
       <app-points-comp
@@ -111,13 +152,14 @@
          colorNormal2="#888800"
          colorSelected1="#dddddd"
          colorSelected2="#dddddd"
-         (componentClicked)="BenchClicked($event)"
+         (compBtnMinus1Clicked)="PointsWrong1($event)"
+         (compBtnPlus1Clicked)="PointsOk1($event)"
          [isSelected]="'t3' == currBench">
       </app-points-comp>
    </div>
    <div style="display: flex; flex-direction: column; gap: 5px;">
       <app-data-comp
-         componentId="d1"
+         componentId="data-rimb"
          title="Rimb."
          colorNormal1="#004444"
          colorNormal2="#008888"
@@ -128,11 +170,12 @@
          titolo2="Attacco"
          dato2="10"
          dato="Totali 22"
-         (componentClicked)="BenchClicked($event)"
+         (compBtn1Clicked)="DataBtn1Clicked($event)"
+         (compBtn2Clicked)="DataBtn2Clicked($event)"
          [isSelected]="'d1' == currBench">
       </app-data-comp>
       <app-data-comp
-         componentId="d2"
+         componentId="data-palle"
          title="Palle"
          colorNormal1="#004444"
          colorNormal2="#008888"
@@ -145,11 +188,12 @@
          dato2="10"
          colorDato2="#77ff77"
          dato=""
-         (componentClicked)="BenchClicked($event)"
+         (compBtn1Clicked)="DataBtn1Clicked($event)"
+         (compBtn2Clicked)="DataBtn2Clicked($event)"
          [isSelected]="'d2' == currBench">
       </app-data-comp>
       <app-data-comp
-         componentId="d3"
+         componentId="data-stopp"
          title="Stop."
          colorNormal1="#004444"
          colorNormal2="#008888"
@@ -162,13 +206,14 @@
          dato2="10"
          colorDato2="#77ff77"
          dato=""
-         (componentClicked)="BenchClicked($event)"
+         (compBtn1Clicked)="DataBtn1Clicked($event)"
+         (compBtn2Clicked)="DataBtn2Clicked($event)"
          [isSelected]="'d3' == currBench">
       </app-data-comp>
    </div>
    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 5px;">
       <app-data-comp
-         componentId="d2"
+         componentId="data-assist"
          title="Ass."
          colorNormal1="#004444"
          colorNormal2="#008888"
@@ -176,11 +221,11 @@
          colorSelected2="#dddddd"
          titolo1="Assist"
          dato1="12"
-         (componentClicked)="BenchClicked($event)"
+         (compBtn1Clicked)="DataBtn1Clicked($event)"
          [isSelected]="'d2' == currBench">
       </app-data-comp>
       <app-data-comp
-         componentId="d3"
+         componentId="data-falli"
          title="Falli"
          colorNormal1="#4d3434"
          colorNormal2="#a42e2e"
@@ -193,154 +238,206 @@
          dato2="10"
          colorDato2="#77ff77"
          dato=""
-         (componentClicked)="BenchClicked($event)"
+         (compBtn1Clicked)="DataBtn1Clicked($event)"
+         (compBtn2Clicked)="DataBtn2Clicked($event)"
          [isSelected]="'d3' == currBench">
       </app-data-comp>
    </div>
 </div>
-<div id="main_container">
-   <div class="card flex justify-content-start"
-        id="div-page-header">
-      <p-card [style]="{ width: '100%' }"
-              contentStyleClass="card-contenuto-ridotto">
-         <div style="display: flex; align-items: center;">
-            <h2 style="margin-left: 15px; margin-right: 30px; margin-bottom: 0px; margin-top: 0px; padding-bottom: 0px; padding-top: 0px;">Dashboard</h2>
-
-            <p-button
-               class="p-button-table"
-               icon="pi pi-refresh"
-               severity="secondary"
-               pTooltip="Refresh"
-               tooltipPosition="top"
-               (click)="RefreshData()"
-            ></p-button>
-
-            <p-divider layout="vertical" />
-
-            <div class="form-group">
-               <label for="cbstagione" style="margin-right: 5px;">Società:</label>
-               <label for="cbstagione" style="margin-right: 10px; font-size: 1.5em"><b>dev</b></label>
-            </div>
-
-            <p-divider layout="vertical" />
-
-            <div class="form-group">
-               <label for="cbstagione" style="margin-right: 10px;">Stagione:</label>
-               <p-dropdown
-                  id="cbstagione"
-                  [style]="{'min-width': '255px'}"
-                  [options]="listaStagioni"
-                  optionLabel="nome"
-                  [(ngModel)]="currSeason"
-                  [checkmark]="true"
-                  [showClear]="false"
-                  [scrollHeight]="'300px'"
-                  (onChange)="OnSeasonChange($event)"/>
-            </div>
-
-         </div>
-      </p-card>
-   </div>
+-->
 
    <p-blockUI [blocked]="CheckLoading()">
       <p-progressSpinner></p-progressSpinner>
    </p-blockUI>
 
+   <p-divider
+      layout="horizontal"
+      styleClass="my-1"></p-divider>
+
    <div id="div-tabella-bottoni">
       <div class="card flex justify-content-start"
            id="div-camp-fasi">
-         <p-card [style]="{ 'width': '100%', 'padding': '2px' }"
+         <p-card [style]="{ 'width': '350px', 'padding': '2px' }"
                  header="Campionati"
                  contentStyleClass="card-contenuto-ridotto">
+            <p-divider></p-divider>
             <ng-template pTemplate="content">
-               <div>
-                  <app-timer-comp
-                     instanceId="cronometro"
-                     (timeUpdated)="onTimeUpdate($event)"
-                     (started)="onTimerEvent($event)"
-                     (stopped)="onTimerEvent($event)">
-                  </app-timer-comp>
-               </div>
+               <p-table
+                  id="tabellaCampionati"
+                  #tabellaCampionati
+                  class="no-header-table"
+                  [scrollable]="true"
+                  [value]="listaCampionati"
+                  selectionMode="single"
+                  dataKey="id"
+                  [(selection)]="currChamp"
+                  (onRowSelect)="OnSelectedChamp($event)"
+               >
+                  <ng-template pTemplate="body" let-tabella let-rowIndex="rowIndex">
+                     <tr [pSelectableRow]="tabella">
+                        <td style="width: 150px; font-size: 2.0em;">{{ tabella.nome }}</td>
+                     </tr>
+                  </ng-template>
+               </p-table>
             </ng-template>
          </p-card>
-         <p-card [style]="{ 'width': '100%', 'padding': '2px', 'margin-left': '30px' }"
+         <p-card [style]="{ 'width': '350px', 'padding': '2px', 'margin-left': '30px' }"
                  header="Fase"
                  contentStyleClass="card-contenuto-ridotto">
             <p-divider></p-divider>
+            <ng-template pTemplate="content">
+               <p-table
+                  id="tabellaFasi"
+                  #tabellaFasi
+                  class="no-header-table"
+                  [scrollable]="true"
+                  [value]="listaFasi"
+                  selectionMode="single"
+                  dataKey="id"
+                  [(selection)]="currFase"
+                  (onRowSelect)="OnSelectedPhase($event)">
+                  <ng-template pTemplate="body" let-tabella let-rowIndex="rowIndex">
+                     <tr [pSelectableRow]="tabella">
+                        <td style="width: 150px; font-size: 2.0em;">{{ tabella.nome }}</td>
+                     </tr>
+                  </ng-template>
+               </p-table>
+            </ng-template>
          </p-card>
-         <!--
-         <p-table
-            id="eventsTable"
-            #eventsTable
-            class="custom-header-table"
-            styleClass="p-datatable-gridlines"
-            [scrollHeight]="scrollHeight"
-            [scrollable]="true"
-            [value]="listaEventi"
-            selectionMode="single"
-            [(selection)]="currEvent"
-            (onRowSelect)="OnRowSelected($event)"
-            (onRowUnselect)="OnRowUnselected($event)"
-            dataKey="id"
-            [tableStyle]="{ 'min-width': '50rem' }">
-            <ng-template pTemplate="header">
-               <tr>
-                  <th style="width: 65px;">Id</th>
-                  <th style="width: 130px;">Data</th>
-                  <th style="width: 55px;">Ora</th>
-                  <th style="width: 55px;">Fine</th>
-                  <th style="width: 65px;">Pal.
-                     <button pButton
-                             type="button"
-                             icon="pi pi-filter"
-                             class="p-button-icon-only my-tiny-button"
-                             [ngClass]="{ 'p-button-success': fltrRisorsa, 'p-button-secondary': !fltrRisorsa }"
-                             (click)="OnFilterRisorsa()"></button>
-                  </th>
-                  <th style="width: 100px;">Gruppo
-                     <button pButton
-                             type="button"
-                             icon="pi pi-filter"
-                             class="p-button-icon-only my-tiny-button"
-                             [ngClass]="{ 'p-button-success': fltrGruppo, 'p-button-secondary': !fltrGruppo }"
-                             (click)="OnFilterGruppo()"></button>
-                  </th>
-                  <th>Casa</th>
-                  <th>Ospite</th>
-                  <th>Luogo</th>
-                  <th>Commento</th>
-                  <th>Arb.</th>
-               </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-evento let-rowIndex="rowIndex">
-               <tr [pSelectableRow]="evento"
-                   [ngClass]="GetRowColorClass(evento)">
-                  <td><span style="font-size: 0.6em;">{{ evento.id }}</span></td>
-                  <td>{{ GetFormattedDate(evento, rowIndex) }}</td>
-                  <td><b>{{ FormattaOrario (evento.orainizio) }}</b></td>
-                  <td><span style="font-size: 0.7em;">{{ FormattaOrario (evento.orafine) }}</span></td>
-                  <td [ngStyle]="ColoreRisorsa(evento)">{{ evento.risorsa }}</td>
-                  <td [ngStyle]="ColoreGruppo(evento)">{{ evento.gruppo }}</td>
-                  <td [ngStyle]="ColoreTipoEvento(evento)">{{ evento.casa }}</td>
-                  <td [ngStyle]="ColoreTipoEvento(evento)">{{ evento.ospite }}</td>
-                  <td [ngStyle]="ColoreTipoEvento(evento)">{{ evento.luogo }}</td>
-                  <td>{{ evento.commento }}</td>
-                  <td>
-                     <p-checkbox
-                        [binary]="true"
-                        [ngModel]="evento.arbitraggio" [disabled]="true">
-                     </p-checkbox>
-                  </td>
-               </tr>
-            </ng-template>
-         </p-table>
-         -->
       </div>
+
+      <p-divider
+         layout="horizontal"
+         styleClass="my-1"></p-divider>
 
       <div id="div-partite">
          <p-card [style]="{ width: '100%' }"
                  header="Partite"
                  contentStyleClass="card-contenuto-ridotto">
+            <ng-template pTemplate="content">
+               <p-dataView [value]="listaMatch"
+                           [paginator]="true"
+                           [rows]="8"
+                           layout="grid">
+
+                  <ng-template let-matches pTemplate="grid">
+                     <div class="griglia-flex">
+                     <div class="col-12 md:col-6 lg:col-3" *ngFor="let item of matches; ">
+                        <div class="card-matchHeader p-4 border-1 surface-border border-round contenitore-scheda-match"
+                             (dblclick)="onMatchHeaderDblClick(item)">
+
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Match:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.title }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Casa/Trasf.:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.atHome==1 ? 'Casa' : 'Trasferta' }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Giornata:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.giornata }}</div>
+                              <div class="text-xl font-bold mb-2 matchCard-col3">{{ MatchStatusToString(item) }}
+                              </div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">MyTeam:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.myTeamNome_lk }}</div>
+                              <div class="text-xl font-bold mb-2 matchCard-col3"
+                                   [ngStyle]="{ 'color': item.myTeamPoints > item.oppoTeamPoints ? 'lime' : (item.myTeamPoints < item.oppoTeamPoints ? 'red' : 'white') }">
+                                 {{ item.myTeamPoints }}
+                              </div>
+                              <div [ngStyle]="{'background-color': item.myTeamColor}"
+                                   style="width: 20px; height: 20px; border-radius: 2px; margin-right: 5px; border: 1px solid #ccc;">
+                              </div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">OppoTeam:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.oppoTeamNome_lk }}</div>
+                              <div class="text-xl font-bold mb-2 matchCard-col3"
+                                   [ngStyle]="{ 'color': item.myTeamPoints > item.oppoTeamPoints ? 'lime' : (item.myTeamPoints < item.oppoTeamPoints ? 'red' : 'white') }">
+                                 {{ item.oppoTeamPoints }}
+                              </div>
+                              <div [ngStyle]="{'background-color': item.oppoTeamColor}"
+                                   style="width: 20px; height: 20px; border-radius: 2px; margin-right: 5px; border: 1px solid #ccc;">
+                              </div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Data:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.matchDateStr }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Num.:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.matchNumber }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Luogo:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.location }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Arbitro 1:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.arbitro1 }}</div>
+                           </div>
+                           <div class="matchCard-riga-dati">
+                              <div class="text-xl font-bold mb-2 matchCard-label"><span style="font-size: 0.7em; font-weight: normal;">Arbitro 2:</span></div>
+                              <div class="text-xl font-bold mb-2 matchCard-valore">{{ item.arbitro2 }}</div>
+                           </div>
+
+                           <div class="flex justify-content-between align-items-center mt-3">
+                              <div class="flex gap-2">
+
+                                 <p-button
+                                    icon="pi pi-folder-open"
+                                    styleClass="p-button-success"
+                                    [style]="{ 'padding': '2px;', 'margin': '2px;' }"
+                                    size="small"
+                                    pTooltip="Apri"
+                                    tooltipPosition="top"
+                                    (click)="OpenMatch(item)">
+                                 </p-button>
+
+                                 <p-button
+                                    icon="pi pi-pencil"
+                                    styleClass="p-button-help"
+                                    [style]="{ 'padding': '2px;', 'margin': '2px;' }"
+                                    size="small"
+                                    pTooltip="Modifica"
+                                    tooltipPosition="top"
+                                    (click)="EditMatchHeader(item)">
+                                 </p-button>
+
+                                 <p-button
+                                    icon="pi pi-flag"
+                                    styleClass="p-button-help"
+                                    [style]="{ 'padding': '2px;', 'margin': '2px;' }"
+                                    size="small"
+                                    pTooltip="Stato"
+                                    tooltipPosition="top"
+                                    (click)="MatchStatus(item)">
+                                 </p-button>
+
+                                 <p-button
+                                    icon="pi pi-trash"
+                                    styleClass="p-button-danger"
+                                    size="small"
+                                    pTooltip="Elimina match"
+                                    tooltipPosition="top"
+                                    (click)="DeleteMatchHeader(item)">
+                                 </p-button>
+                              </div>
+
+                           </div>
+                        </div>
+                     </div>
+                     </div>
+                  </ng-template>
+
+                  <ng-template pTemplate="empty">
+                     <div class="col-12 text-center p-4">Nessun Match Trovato.</div>
+                  </ng-template>
+
+               </p-dataView>
+            </ng-template>
          </p-card>
       </div>
 
@@ -349,26 +446,109 @@
          <p-card [style]="{ width: '100vw' }"
                  contentStyleClass="card-contenuto-ridotto">
             <div class="bottoni-container">
-               <p-button label="Apri match"
-                         *ngIf="EditEnabled()"
-                         severity="primary"
-                         icon="pi pi-pencil"
-                         class="btn-fisso"
-                         (click)="OnEdit()"></p-button>
                <p-button label="Nuovo match"
                          *ngIf="AddEnabled()"
                          severity="primary"
                          icon="pi pi-plus"
                          class="btn-fisso"
                          (click)="OnAdd()"></p-button>
-               <p-button label="Elimina match"
-                         *ngIf="DeleteEnabled()"
-                         severity="warning"
-                         icon="pi pi-trash"
-                         class="btn-fisso"
-                         (click)="OnDelete()"></p-button>
             </div>
          </p-card>
       </div>
    </div>
 </div>
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG SOCIETA' E STAGIONE
+------------------------------------------------------------------>
+<p-dialog id="dialog-societa-stagione"
+          header="Seleziona la Società e poi la Stagione"
+          [modal]="true"
+          [(visible)]="dialogVisible_Societa"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Società:</label>
+               <p-dropdown
+                  id="cbsocieta"
+                  [style]="{'min-width': '255px'}"
+                  [options]="listaSocieta"
+                  optionLabel="nome"
+                  [(ngModel)]="currSocieta"
+                  [checkmark]="true"
+                  [showClear]="false"
+                  [scrollHeight]="'400px'"
+                  (onChange)="OnSocietaChange($event)"/>
+            </div>
+            <div class="form-group">
+               <label for="nome">Stagione:</label>
+               <p-dropdown
+                  id="cbstagione"
+                  [style]="{'min-width': '255px'}"
+                  [options]="listaStagioni"
+                  optionLabel="nome"
+                  [(ngModel)]="currSeason"
+                  [checkmark]="true"
+                  [showClear]="false"
+                  [scrollHeight]="'400px'"/>
+            </div>
+
+            <!--
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+            -->
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogSocietaAnnulla()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSocietaSalva()"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG SOCIETA' E STAGIONE   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG MATCHHEADER
+------------------------------------------------------------------>
+<p-dialog id="dialog-matchheader"
+          [modal]="true"
+          [(visible)]="dialogVisible_MatchHeader"
+          (onShow)="onMatchHeaderDialogShow()"
+          [closable]="false"
+          [style]="{ width: '45rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-matchheader-comp
+         [mhIsNew]="false"
+         [mhStagione]="(this.currSeason)?this.currSeason.nome:''"
+         [mhMatchHeader]="(this.diagMatchHeader)?this.diagMatchHeader:CreateEmptyMatchHeader()"
+         [mhMatchDate]="MatchDate()"
+         [listaTeams]="listaTeams"
+         (salvaMatchHeader)="SalvaMatchHeader($event)"
+         (annullaMatchHeader)="AnnullaMatchHeader()"
+      ></app-matchheader-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG MATCHHEADER   --->
+
