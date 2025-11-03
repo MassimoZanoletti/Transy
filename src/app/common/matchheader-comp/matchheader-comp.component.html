@@ -29,12 +29,25 @@
          </div>
 
          <div class="form-group">
-            <label for="athome">Casa/Treas.:</label>
-            <input type="text"
-                   id="athome"
-                   [(ngModel)]="mhMatchHeader.atHome"
-                   pInputText
-                   required/>
+            <label for="matchdate">Data:</label>
+            <p-calendar
+               [(ngModel)]="mhMatchDate"
+               name="matchDateInput"
+               [showIcon]="true"
+               [showOnFocus]="false"
+               inputId="data"
+               dateFormat="dd/mm/yy"
+            ></p-calendar>
+         </div>
+
+         <div class="form-group">
+            <label for="athome">Casa/Treasf.:</label>
+            <p-selectButton
+               [options]="atHomeOptions"
+               [(ngModel)]="mhMatchHeader.atHome"
+               optionLabel="label"
+               optionValue="value"
+               [allowEmpty]="true"/>
          </div>
 
          <div class="form-group">
@@ -80,18 +93,6 @@
          </div>
 
          <div class="form-group">
-            <label for="matchdate">Data:</label>
-            <p-calendar
-               [(ngModel)]="mhMatchDate"
-               name="matchDateInput"
-               [showIcon]="true"
-               [showOnFocus]="false"
-               inputId="data"
-               dateFormat="dd/mm/yy"
-            ></p-calendar>
-         </div>
-
-         <div class="form-group">
             <label for="location">Luogo:</label>
             <input type="text"
                    id="location"
@@ -132,7 +133,8 @@
                       required/>
                <button type="button"
                        pButton
-                       icon="pi pi-search">
+                       icon="pi pi-arrow-left"
+               (click)="CalcolaTitoloMatch()">
                </button>
             </p-inputGroup>
          </div>

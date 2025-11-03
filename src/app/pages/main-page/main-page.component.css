@@ -177,6 +177,13 @@
 }
 
 
+:host ::ng-deep .p-card .p-card-title {
+   color: yellow; /* O un codice esadecimale come #FFFF00 */
+   margin-bottom: 15px;
+}
+
+
+
 
 /*------------------------   P-DATAVIEW -----------------------*/
 /* 1. Forza il p-dataview-content a comportarsi come contenitore Flex */

@@ -53,7 +53,7 @@ import {MatchheaderService} from "../../services/matchheader.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {TeamService} from "../../services/team.service";
 import { utils,
-         jobStatusType,
+         matchStatusType,
          timeouts } from "../../common/utils";
 import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
@@ -146,7 +146,11 @@ export class MainPageComponent implements OnInit, OnDestroy
    listaMatch: Array<MatchHeader> = [];
    currMatchHeader: MatchHeader | null = null;
    diagMatchHeader: MatchHeader | null = null;
+   diagMatchHeader_IsNew: boolean = false;
    listaTeams: Array<Team> = [];
+   diagMatchStatus_Status: matchStatusType.Status = { code: "NotPl",  desc: "Non Giocato",  abbrev: "NP" };
+   diagMatchStatus_Items: Array<matchStatusType.Status> = [];
+
    @ViewChild('eventsTable') pTable: Table | undefined;
    @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
    //
@@ -164,6 +168,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogErrorMessage: string = "";
    public dialogVisible_MatchHeader: boolean = false;
    private today: Date = new Date();
+   public dialogVisible_MatchStatus: boolean = false;
 
 
    constructor (public router: Router,
@@ -687,66 +692,6 @@ export class MainPageComponent implements OnInit, OnDestroy
             return "row-dom";
          default:
             return "row-lun";
-      }
-   }
-
-
-   async OnAdd ()
-   {
-      let yyyy: number;
-      let mmmm: number;
-      let dddd: number;
-
-      if (this.currEvent == null)
-      {
-         const dlgData: MessDlgData = {
-            title:      'ATTENZIONE',
-            subtitle:   'Nuovo evento',
-            message:    `Non è stato selezionato alcun giorno`,
-            messtype:   'warning',
-            btncaption: 'Chiudi'
-         };
-         this.messageDialogService.showMessage (dlgData, '600px');
-      }
-      else
-      {
-         yyyy = this.currEvent.data.getFullYear();
-         mmmm = this.currEvent.data.getMonth() + 1;
-         dddd = this.currEvent.data.getDate();
-         let listaGiorno: Array<EventoElement> = [];
-         listaGiorno = this.EventiDelGiorno (this.currEvent.data);
-         // controllo se nell'elenco degli eventi del giorno esiste almeno un evento con tipo 1
-         //  se esiste, allora devo fare un vero add
-         //  altrimenti devo cercare quello con tipo zero e fare update in quello
-         let isAdd: boolean = false;
-         let _id: number = 0;
-         let rqst: string = "add";
-         let si: number = 0;
-         if (this.currSeason)
-            si = this.currSeason.id;
-         for (let i=0;   i<listaGiorno.length;   i++)
-         {
-            if (listaGiorno[i].tipoevento == 1)
-               isAdd = true;
-         }
-         // cerco l'evento vuoto del giorno e prendo il suo id
-         if (isAdd == false)
-         {
-            for (let i=0;   i<listaGiorno.length;   i++)
-            {
-               if (listaGiorno[i].tipoevento == 0)
-                  _id = listaGiorno[i].id;
-            }
-         }
-         console.log ('Nuovo evento:');
-         this.router.navigate ([`/eventoedit`], {state: {
-               id: _id,
-               request: rqst,
-               isadd: isAdd,
-               year: yyyy,
-               month: mmmm,
-               day: dddd,
-               season_id: si}});
       }
    }
 
@@ -1358,20 +1303,91 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       this.currMatchHeader = match;
       this.diagMatchHeader = CreateEmptyMatchHeader();
-      this.diagMatchHeader = JSON.parse(JSON.stringify(match, null, -1));
+      this.diagMatchHeader = JSON.parse(JSON.stringify(match, null, 3));
       if ((this.currFase) && (this.diagMatchHeader))
       {
          this.diagMatchHeader.phaseId_link = this.currFase?.id;
          this.diagMatchHeader.phaseNome_lk = this.currFase?.nome;
          this.diagMatchHeader.phaseAbbrev_lk = this.currFase?.abbrev;
       }
+      this.diagMatchHeader_IsNew = false;
+      this.dialogVisible_MatchHeader = true;
+   }
+
+
+   async OnAddMatch ()
+   {
+      this.diagMatchHeader = CreateEmptyMatchHeader();
+      if ((this.currFase) && (this.diagMatchHeader) && (this.currChamp))
+      {
+         this.diagMatchHeader.phaseId_link = this.currFase?.id;
+         this.diagMatchHeader.phaseNome_lk = this.currFase?.nome;
+         this.diagMatchHeader.phaseAbbrev_lk = this.currFase?.abbrev;
+         //
+         this.diagMatchHeader.champId_lk = this.currChamp?.id;
+         this.diagMatchHeader.champNome_lk = this.currChamp?.nome;
+      }
+      this.diagMatchHeader_IsNew = true;
       this.dialogVisible_MatchHeader = true;
    }
 
 
    async DeleteMatchHeader(match: MatchHeader)
    {
-      console.log ("Delete match");
+      const dlgData: MessDlgData = {
+         title:               'Cancellazione Match',
+         subtitle:            '',
+         message:             `Sei veramente sicuro di voloer cancellare il match '<b>${match.myTeamNome_lk} - ${match.oppoTeamNome_lk}</b>' dal database?`,
+         messtype:            'warning',
+         btncaption:          'Annulla',
+         showCancelButton:    true,
+         cancelButtonCaption: 'Sì, procedi'
+      };
+
+      this.messageDialogService.showMessage (dlgData, '', true).subscribe (result =>
+                     {
+                        if (result === 'secondary')
+                        {
+                           this.matchHeaderServ.DeleteData(match.id).subscribe (async data =>
+                                                                               {
+                                                                                  if (data)
+                                                                                  {
+                                                                                     if (data.ok)
+                                                                                     {
+                                                                                        if ((this.currSeason) && (this.currChamp) && (this.currFase))
+                                                                                        {
+                                                                                           await this.LoadChamp (this.currSeason.id);
+                                                                                           await this.LoadPhase (this.currChamp.id);
+                                                                                           await this.LoadMatchHeader (this.currFase.id);
+                                                                                           this.cdr.detectChanges ();
+                                                                                        }
+                                                                                     }
+                                                                                     else
+                                                                                     {
+                                                                                        const dlgData: MessDlgData = {
+                                                                                           title:      'ERRORE',
+                                                                                           subtitle:   'Errore durante la cancellazione del dato',
+                                                                                           message:    `${data.message}`,
+                                                                                           messtype:   'error',
+                                                                                           btncaption: 'Chiudi'
+                                                                                        };
+                                                                                        this.messageDialogService.showMessage (dlgData, '600px');
+                                                                                     }
+                                                                                  }
+                                                                                  else
+                                                                                  {
+                                                                                     const dlgData: MessDlgData = {
+                                                                                        title:      'ERRORE',
+                                                                                        subtitle:   'Errore durante la cancellazione del dato',
+                                                                                        message:    `Nessun dato ritornato`,
+                                                                                        messtype:   'error',
+                                                                                        btncaption: 'Chiudi'
+                                                                                     };
+                                                                                     this.messageDialogService.showMessage (dlgData, '600px');
+                                                                                  }
+                                                                               })
+                        }
+                     });
    }
 
 
@@ -1383,7 +1399,21 @@ export class MainPageComponent implements OnInit, OnDestroy
 
    async MatchStatus(match: MatchHeader)
    {
-      console.log ("Match status");
+      this.currMatchHeader = match;
+      if (this.currMatchHeader)
+      {
+         this.diagMatchStatus_Items = [];
+         this.diagMatchStatus_Items.push (matchStatusType.notPlayed);
+         this.diagMatchStatus_Items.push (matchStatusType.playing);
+         this.diagMatchStatus_Items.push (matchStatusType.terminated);
+         if (this.currMatchHeader.matchStatus == matchStatusType.playing.code)
+            this.diagMatchStatus_Status = matchStatusType.playing;
+         else if (this.currMatchHeader.matchStatus == matchStatusType.terminated.code)
+            this.diagMatchStatus_Status = matchStatusType.terminated;
+         else
+            this.diagMatchStatus_Status = matchStatusType.notPlayed;
+         this.dialogVisible_MatchStatus = true;
+      }
    }
 
 
@@ -1397,17 +1427,48 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       switch (item.matchStatus)
       {
-         case jobStatusType.terminated: return 'TER';
-         case jobStatusType.playing: return "PL";
-         default: return "NP";
+         case matchStatusType.terminated.code: return matchStatusType.terminated.abbrev;
+         case matchStatusType.playing.code:    return matchStatusType.playing.abbrev;
+         default:                            return matchStatusType.notPlayed.abbrev;
       }
    }
 
 
-   SalvaMatchHeader(datiMH: { mh: MatchHeader})
+   async SalvaMatchHeader(datiMH: { mh: MatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
-      this.currMatchHeader = JSON.parse(JSON.stringify(this.diagMatchHeader, null, -1));
+      if (this.diagMatchHeader_IsNew)
+      {
+         this.currMatchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
+         if (this.currMatchHeader)
+         {
+            const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
+            let rrr = await firstValueFrom (this.matchHeaderServ.addNewData(dataForDb));
+            if ((this.currSeason) && (this.currChamp) && (this.currFase))
+            {
+               await this.LoadChamp (this.currSeason.id);
+               await this.LoadPhase (this.currChamp.id);
+               await this.LoadMatchHeader (this.currFase.id);
+               this.cdr.detectChanges ();
+            }
+         }
+      }
+      else
+      {
+         this.currMatchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
+         if (this.currMatchHeader)
+         {
+            const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
+            let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.currMatchHeader.id, dataForDb));
+            if ((this.currSeason) && (this.currChamp) && (this.currFase))
+            {
+               await this.LoadChamp (this.currSeason.id);
+               await this.LoadPhase (this.currChamp.id);
+               await this.LoadMatchHeader (this.currFase.id);
+               this.cdr.detectChanges ();
+            }
+         }
+      }
    }
 
 
@@ -1430,6 +1491,31 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       if (this.matchHeaderComp)
          this.matchHeaderComp.onDialogShown();
+   }
+
+
+   DialogMatchStatusAnnulla()
+   {
+      this.dialogVisible_MatchStatus = false;
+   }
+
+
+   async DialogMatchStatusSalva()
+   {
+      this.dialogVisible_MatchStatus = false;
+      if ((this.currMatchHeader) && (this.currMatchHeader.matchStatus != this.diagMatchStatus_Status.code))
+      {
+         this.currMatchHeader.matchStatus = this.diagMatchStatus_Status.code;
+         const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
+         let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.currMatchHeader.id, dataForDb));
+         if ((this.currSeason) && (this.currChamp) && (this.currFase))
+         {
+            await this.LoadChamp (this.currSeason.id);
+            await this.LoadPhase (this.currChamp.id);
+            await this.LoadMatchHeader (this.currFase.id);
+            this.cdr.detectChanges ();
+         }
+      }
    }
 
    protected readonly CreateEmptyMatchHeader = CreateEmptyMatchHeader;

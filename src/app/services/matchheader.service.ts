@@ -8,7 +8,7 @@ import {
 import { map,
    tap } from "rxjs/operators";
 import { utils,
-      jobStatusType,
+      matchStatusType,
       timeouts } from "../common/utils";
 
 
@@ -61,24 +61,20 @@ export class MatchheaderService
 
 
    updateData (aId: number,
-               aName: string,
-               aAbbrev: string,
-               aExportFolder: string,
-               aChampId: number): Observable<any>
+               aJsonStr: string): Observable<any>
    {
       const operation: string = "edit";
-      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}&abbrev=${aAbbrev}&champid_link=${aChampId}&exportfolder=${aExportFolder}`;
+      const encodedJsonData = encodeURIComponent(aJsonStr);
+      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&data=${encodedJsonData}`;
       return this.http.get<any> (url);
    }
 
 
-   addNewData (aName: string,
-               aAbbrev: string,
-               aExportFolder: string,
-               aChampId: number): Observable<any>
+   addNewData (aJsonStr: string): Observable<any>
    {
       const operation: string = "add";
-      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}&abbrev=${aAbbrev}&champid_link=${aChampId}&exportfolder=${aExportFolder}`;
+      const encodedJsonData = encodeURIComponent(aJsonStr);
+      const url: string = `${this.apiUrl}?operation=${operation}&data=${encodedJsonData}`;
       return this.http.get<any> (url);
    }
 
@@ -101,20 +97,25 @@ export class MatchheaderService
       const dt: Date = new Date (dnElem.matchdate);
       let st: string = dnElem.matchstatus;
       if (st === "")
-         st = jobStatusType.notPlayed;
+         st = matchStatusType.notPlayed.code;
       let mt: string = dnElem.myteamtimeout;
       if (mt.length < 9)
          mt = timeouts.timeoutAll;
       let ot: string = dnElem.myteamtimeout;
       if (ot.length < 9)
          ot = timeouts.timeoutAll;
+      let at: boolean = false;
+      if (Number(dnElem.athome) != 0)
+         at = true;
+      else
+         at = false;
       const result: MatchHeader = {
-         id: dnElem.id,
+         id: Number(dnElem.id),
          title: dnElem.title,
-         matchNumber: dnElem.matchnumber,
+         matchNumber: Number(dnElem.matchnumber),
          matchDate: dt,
          matchDateStr: dt.toLocaleDateString("default", dateOptions),
-         atHome: dnElem.athome,
+         atHome: at,
          giornata: dnElem.giornata,
          location: dnElem.location,
          arbitro1: dnElem.arbitro1,
@@ -123,31 +124,83 @@ export class MatchheaderService
          matchEventsFile: dnElem.matcheventsfile,
          matchDataFile: dnElem.matchdatafile,
          exportedFile: dnElem.exportedfile,
-         phaseId_link: dnElem.phaseid_link,
+         phaseId_link: Number(dnElem.phaseid_link),
          phaseNome_lk: dnElem.phasenome_lk,
          phaseAbbrev_lk: dnElem.phaseabbrev_lk,
          champId_lk: dnElem.champid_lk,
          champNome_lk: dnElem.champnome_lk,
-         myTeamId_link : dnElem.myteamid_link,
+         myTeamId_link : Number(dnElem.myteamid_link),
          myTeamNome_lk : dnElem.myteamnome_lk,
          myTeamAbbrev_lk: dnElem.myteamabbrev_lk,
-         myTeamDelta: dnElem.myteamdelta,
+         myTeamDelta: Number(dnElem.myteamdelta),
          myTeamColor : dnElem.myteamcolor,
          myTeamTimeout: mt,
          myTeamInCampo: dnElem.myteamincampo,
-         myTeamPoints: dnElem.myteampoints,
-         myCoach1Iid_link : dnElem.mycoach1id_link,
-         myCoach2Id_link : dnElem.mycoach2id_link,
-         oppoTeamId_link : dnElem.oppoteamid_link,
+         myTeamPoints: Number(dnElem.myteampoints),
+         myCoach1Iid_link : Number(dnElem.mycoach1id_link),
+         myCoach2Id_link : Number(dnElem.mycoach2id_link),
+         oppoTeamId_link : Number(dnElem.oppoteamid_link),
          oppoTeamNome_lk : dnElem.oppoteamnome_lk,
          oppoTeamAbbrev_lk: dnElem.oppoteamabbrev_lk,
-         oppoTeamDelta: dnElem.oppoteamdelta,
+         oppoTeamDelta: Number(dnElem.oppoteamdelta),
          oppoTeamColor : dnElem.oppoteamcolor,
          oppoTeamTimeout: ot,
          oppoTeamInCampo: dnElem.oppoteamincampo,
-         oppoTeamPoints: dnElem.oppoteampoints,
-         oppoCoach1Id_link: dnElem.oppocoach1id_link,
-         oppoCoach2Id_link: dnElem.oppocoach2id_link
+         oppoTeamPoints: Number(dnElem.oppoteampoints),
+         oppoCoach1Id_link: Number(dnElem.oppocoach1id_link),
+         oppoCoach2Id_link: Number(dnElem.oppocoach2id_link)
+      };
+      return result;
+   }
+
+
+   MatchHeaderToDb (mh: MatchHeader): MatchHeaderDb
+   {
+      const parts = mh.matchDateStr.split('/');
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      mh.matchDate = new Date(year, month - 1, day);
+      const dbDateStr: string = `${mh.matchDate.getFullYear()}-${String(mh.matchDate.getMonth()+1).padStart(2, '0')}-${String(mh.matchDate.getDate()).padStart(2, '0')}`;
+      const result: MatchHeaderDb = {
+         id: Number(mh.id),
+         phaseid_link: Number(mh.phaseId_link),
+         myteamid_link: Number(mh.myTeamId_link),
+         oppoteamid_link: Number(mh.oppoTeamId_link),
+         title: mh.title,
+         matchnumber: Number(mh.matchNumber),
+         matchdate: dbDateStr,
+         athome: Boolean(mh.atHome),
+         arbitro1: mh.arbitro1,
+         arbitro2: mh.arbitro2,
+         mycoach1id_link: Number(mh.myCoach2Id_link),
+         mycoach2id_link: Number(mh.myCoach2Id_link),
+         oppocoach1id_link: Number(mh.oppoCoach1Id_link),
+         oppocoach2id_link: Number(mh.oppoCoach2Id_link),
+         myteamdelta: Number(mh.myTeamDelta),
+         oppoteamdelta: Number(mh.oppoTeamDelta),
+         myteamcolor: mh.myTeamColor,
+         oppoteamcolor: mh.oppoTeamColor,
+         location: mh.location,
+         giornata: mh.giornata,
+         myteamtimeout: mh.myTeamTimeout,
+         oppoteamtimeout: mh.oppoTeamTimeout,
+         matchstatus: mh.matchStatus,
+         matcheventsfile: mh.matchEventsFile,
+         matchdatafile: mh.matchDataFile,
+         myteamincampo: mh.myTeamInCampo,
+         oppoteamincampo: mh.oppoTeamInCampo,
+         myteampoints: Number(mh.myTeamPoints),
+         oppoteampoints: Number(mh.oppoTeamPoints),
+         exportedfile: mh.exportedFile,
+         champnome_lk: mh.champNome_lk,
+         myteamnome_lk: mh.myTeamNome_lk,
+         oppoteamnome_lk: mh.oppoTeamNome_lk,
+         phasenome_lk: mh.phaseNome_lk,
+         champid_lk: mh.champId_lk,
+         myteamabbrev_lk: mh.myTeamAbbrev_lk,
+         oppoteamabbrev_lk: mh.oppoTeamAbbrev_lk,
+         phaseabbrev_lk: mh.phaseAbbrev_lk
       };
       return result;
    }

@@ -260,7 +260,6 @@
          <p-card [style]="{ 'width': '350px', 'padding': '2px' }"
                  header="Campionati"
                  contentStyleClass="card-contenuto-ridotto">
-            <p-divider></p-divider>
             <ng-template pTemplate="content">
                <p-table
                   id="tabellaCampionati"
@@ -284,7 +283,6 @@
          <p-card [style]="{ 'width': '350px', 'padding': '2px', 'margin-left': '30px' }"
                  header="Fase"
                  contentStyleClass="card-contenuto-ridotto">
-            <p-divider></p-divider>
             <ng-template pTemplate="content">
                <p-table
                   id="tabellaFasi"
@@ -451,7 +449,7 @@
                          severity="primary"
                          icon="pi pi-plus"
                          class="btn-fisso"
-                         (click)="OnAdd()"></p-button>
+                         (click)="OnAddMatch()"></p-button>
             </div>
          </p-card>
       </div>
@@ -540,14 +538,70 @@
           [style]="{ width: '45rem', padding: '10px', 'background-color': '#1f2937' }">
    <div>
       <app-matchheader-comp
-         [mhIsNew]="false"
+         [mhIsNew]="diagMatchHeader_IsNew"
          [mhStagione]="(this.currSeason)?this.currSeason.nome:''"
          [mhMatchHeader]="(this.diagMatchHeader)?this.diagMatchHeader:CreateEmptyMatchHeader()"
          [mhMatchDate]="MatchDate()"
+         [mhChampAbbrev]="(this.currChamp)?this.currChamp.abbrev:''"
          [listaTeams]="listaTeams"
          (salvaMatchHeader)="SalvaMatchHeader($event)"
          (annullaMatchHeader)="AnnullaMatchHeader()"
       ></app-matchheader-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG MATCHHEADER   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG MATCHSTATUS
+------------------------------------------------------------------>
+<p-dialog id="dialog-matchstatus"
+          [modal]="true"
+          [(visible)]="dialogVisible_MatchStatus"
+          [closable]="false"
+          [style]="{ width: '35rem', height: '15rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="match-status-dialog-container">
+      <p-card header="">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Stato match:</label>
+               <p-dropdown
+                  id="cbmatchstatus"
+                  [style]="{'min-width': '255px'}"
+                  [options]="diagMatchStatus_Items"
+                  optionLabel="desc"
+                  [(ngModel)]="diagMatchStatus_Status"
+                  [checkmark]="true"
+                  [showClear]="false"
+                  [scrollHeight]="'400px'"/>
+            </div>
+
+            <!--
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+            -->
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons"
+                  style="margin-top: 35px;">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogMatchStatusAnnulla()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogMatchStatusSalva()"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
    </div>
 </p-dialog>
 <!--   FINE DIALOG MATCHHEADER   --->

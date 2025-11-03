@@ -32,11 +32,17 @@ export namespace globs
 
 
 
-export namespace jobStatusType
+export namespace matchStatusType
 {
-   export const notPlayed: string   = "NotPl";
-   export const playing: string     = "InPlay";
-   export const terminated: string  = "Termin";
+   export type Status =
+      {
+         code: string,
+         desc: string,
+         abbrev: string
+      };
+   export const notPlayed: Status   = { code: "NotPl",  desc: "Non Giocato",  abbrev: "NP" };
+   export const playing: Status     = { code: "InPlay", desc: "In Gioco",     abbrev: "PL" };
+   export const terminated: Status  = { code: "Termin", desc: "Terminato",    abbrev: "TER" };
 }
 
 
