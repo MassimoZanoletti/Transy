@@ -67,6 +67,7 @@ import {MenuModule} from "primeng/menu";
 import {InputTextModule} from "primeng/inputtext";
 import {DataView} from "primeng/dataview";
 import { MatchheaderCompComponent } from "../../common/matchheader-comp/matchheader-comp.component";
+import { PlayersCompComponent } from "../../common/players-comp/players-comp.component";
 
 
 
@@ -107,7 +108,8 @@ export interface CbTipoEvento
                   MenuModule,
                   RouterLink,
                   InputTextModule,
-                  CalendarModule
+                  CalendarModule,
+                  PlayersCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -153,6 +155,7 @@ export class MainPageComponent implements OnInit, OnDestroy
 
    @ViewChild('eventsTable') pTable: Table | undefined;
    @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
+   @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
    //
    private dataCompInstances: Map<string, DataCompComponent> = new Map();
    private pointsCompInstances: Map<string, PointsCompComponent> = new Map();
@@ -169,7 +172,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogVisible_MatchHeader: boolean = false;
    private today: Date = new Date();
    public dialogVisible_MatchStatus: boolean = false;
-
+   public dialogVisible_Players: boolean = false;
 
    constructor (public router: Router,
                 private seasonServ: SeasonsService,
@@ -1393,7 +1396,7 @@ export class MainPageComponent implements OnInit, OnDestroy
 
    async OpenMatch (match: MatchHeader)
    {
-      console.log ("Open match");
+      this.dialogVisible_Players = true;
    }
 
 
@@ -1494,6 +1497,13 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   async onPlayersComponentShow()
+   {
+      if (this.playersComp)
+         await this.playersComp.onComponentShow(1);
+   }
+
+
    DialogMatchStatusAnnulla()
    {
       this.dialogVisible_MatchStatus = false;
@@ -1517,6 +1527,19 @@ export class MainPageComponent implements OnInit, OnDestroy
          }
       }
    }
+
+
+   SalvaPlayersDiag()
+   {
+      this.dialogVisible_Players = false;
+   }
+
+
+   AnnullaPlayersDiag()
+   {
+      this.dialogVisible_Players = false;
+   }
+
 
    protected readonly CreateEmptyMatchHeader = CreateEmptyMatchHeader;
 }

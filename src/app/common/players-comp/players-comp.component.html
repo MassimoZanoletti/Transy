@@ -1,0 +1,66 @@
+
+<div id="match-header-form"
+     class="form-container">
+   <p-card header="{{titoloDiag}}">
+      <ng-template pTemplate="content">
+         <p-table
+            [value]="listaPlayers"
+            selectionMode="multiple"
+            [(selection)]="selectedPlayers"
+            dataKey="id"
+            [metaKeySelection]="false"       >
+            <ng-template pTemplate="header">
+               <tr>
+                  <th>Nome Giocatore</th>
+                  <th>Numero</th>
+                  <th>Anno</th>
+               </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-player>
+               <tr
+                  [pSelectableRow]="player"
+               >
+                  <td>{{ player.nomedisp }}</td>
+                  <td>{{ player.numero }}</td>
+                  <td>{{ player.anno }}</td>
+               </tr>
+            </ng-template>
+         </p-table>
+      </ng-template>
+
+      <p-divider
+         styleClass="my-1"></p-divider>
+
+      <ng-template pTemplate="footer">
+         <div class="flex justify-content-between align-items-center w-full">
+            <div class="flex" >
+               <button
+                  pButton
+                  type="button"
+                  label="Nuovo"
+                  class="p-primary"
+                  icon="pi pi-plus"
+                  (click)="Annulla()"
+               ></button>
+            </div>
+            <div class="flex dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="Annulla()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="Salva()"
+               ></button>
+            </div>
+         </div>
+      </ng-template>
+   </p-card>
+</div>

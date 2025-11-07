@@ -57,7 +57,7 @@ export interface Team
 }
 
 
-export interface Player
+export interface IPlayer
 {
    id: number;
    nomedisp: string;

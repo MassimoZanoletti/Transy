@@ -25,7 +25,7 @@ import {
    Champ,
    Phase,
    Team,
-   Player
+   IPlayer
 } from "../../models/datamod";
 import { FormsModule } from '@angular/forms';
 import {Router} from "@angular/router";
@@ -117,7 +117,7 @@ export class DatabaseComponent implements OnInit
    selChamp: Champ | null = null;
    selPhase: Phase | null = null;
    selTeam: Team | null = null;
-   selPlayer: Player | null = null;
+   selPlayer: IPlayer | null = null;
    selId: number = 0;
    //
    vertDataPositions: string[] = ['0px', '52px', '104px', '156px', '208px', '260px', '312px'];
@@ -744,7 +744,7 @@ export class DatabaseComponent implements OnInit
          }
          else if (this.currTabella.nome == "Giocatori")
          {
-            this.selPlayer = (this.currDati as Player);
+            this.selPlayer = (this.currDati as IPlayer);
             this.currTabella.selName = this.selPlayer.nomedisp;
             this.selId = this.selPlayer.id;
          }
@@ -950,7 +950,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica giocatore";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selPlayer = (this.currDati as Player);
+         this.selPlayer = (this.currDati as IPlayer);
          this.selId = this.selPlayer.id;
          this.dialogValue_Nome = this.selPlayer.nomedisp;
          this.dialogValue_Anno = this.selPlayer.anno;
@@ -1016,7 +1016,7 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Giocatori")
       {
-         this.selPlayer = (this.currDati as Player);
+         this.selPlayer = (this.currDati as IPlayer);
          currId = this.selPlayer.id;
          currName = this.selPlayer.nomedisp;
          nomeTabella = "il Giocatore";
