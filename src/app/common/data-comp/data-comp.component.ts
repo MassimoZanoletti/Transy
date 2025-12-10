@@ -8,6 +8,7 @@ import {
    EventEmitter,
    ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {MatchComponent} from "../../pages/match/match.component";
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
 import {CardModule} from 'primeng/card';
@@ -17,7 +18,6 @@ import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import Color from 'Color';
 import { globs} from "../utils";
-import {MainPageComponent} from "../../pages/main-page/main-page.component";
 
 
 
@@ -58,7 +58,7 @@ export class DataCompComponent implements OnInit, OnDestroy
    @Output() compBtn2Clicked = new EventEmitter<string>();
 
 
-   constructor (private parent: MainPageComponent,
+   constructor (/*private parent: MatchComponent,*/
                 private cdr: ChangeDetectorRef)
    {
    }
@@ -66,13 +66,13 @@ export class DataCompComponent implements OnInit, OnDestroy
 
    ngOnInit ()
    {
-      this.parent.RegisterDataComponent (this.componentId, this);
+      //this.parent.RegisterDataComponent (this.componentId, this);
    }
 
 
    ngOnDestroy ()
    {
-      this.parent.UnregisterDataComponent (this.componentId);
+      //this.parent.UnregisterDataComponent (this.componentId);
    }
 
 

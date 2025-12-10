@@ -69,6 +69,31 @@ export interface IPlayer
 }
 
 
+export type TPlayer =
+{
+   id: number;
+   nomedisp: string;
+   anno: number;
+   ruolo: string;
+   numero: string;
+   altezza: number;
+   teamid_link: number;
+}
+
+export function CreateEmptyPlayer(): TPlayer
+{
+   return {
+      id: 0,
+      nomedisp: "",
+      anno: 0,
+      ruolo: "",
+      numero: "",
+      altezza: 0,
+      teamid_link: 0
+   };
+}
+
+
 export interface MatchHeadersData {
    ok: boolean;
    message: string;
@@ -146,7 +171,7 @@ export interface MatchHeader
    myTeamTimeout: string;
    myTeamInCampo: string;
    myTeamPoints: number;
-   myCoach1Iid_link : number;
+   myCoach1Id_link : number;
    myCoach2Id_link : number;
    oppoTeamId_link : number;
    oppoTeamNome_lk : string;
@@ -169,26 +194,26 @@ export function CreateEmptyMatchHeader(): MatchHeader
       location: "",
       matchStatus: "",
       matchDateStr: "",
-      arbitro1: "",
-      arbitro2: "",
-      atHome: true,
-      champId_lk: 0,
-      champNome_lk: "",
-      exportedFile: "",
-      matchDataFile: "",
-      matchDate: new Date(),
-      matchEventsFile: "",
-      matchNumber: 0,
-      myCoach1Iid_link: 0,
-      myCoach2Id_link: 0,
-      myTeamAbbrev_lk: "",
-      myTeamColor: "",
-      myTeamDelta: 0,
-      myTeamId_link: 0,
-      myTeamInCampo: "",
-      myTeamNome_lk: "",
-      myTeamPoints: 0,
-      myTeamTimeout: "",
+      arbitro1:          "",
+      arbitro2:          "",
+      atHome:            true,
+      champId_lk:        0,
+      champNome_lk:      "",
+      exportedFile:      "",
+      matchDataFile:     "",
+      matchDate:         new Date(),
+      matchEventsFile:   "",
+      matchNumber:       0,
+      myCoach1Id_link:   0,
+      myCoach2Id_link:   0,
+      myTeamAbbrev_lk:   "",
+      myTeamColor:       "",
+      myTeamDelta:       0,
+      myTeamId_link:     0,
+      myTeamInCampo:     "",
+      myTeamNome_lk:     "",
+      myTeamPoints:      0,
+      myTeamTimeout:     "",
       oppoCoach1Id_link: 0,
       oppoCoach2Id_link: 0,
       oppoTeamAbbrev_lk: "",
@@ -207,33 +232,85 @@ export function CreateEmptyMatchHeader(): MatchHeader
 }
 
 
-export interface MatchRoster
+export type MatchRosterData =
 {
-   /*
-    ID              INTEGER,
-    LinkMatchHeader INTEGER,
-    LinkPlayer      INTEGER,
-    PlayNumber      VARCHAR(255),
-    Captain         BOOLEAN default 0,
-    IsMyTeam        BOOLEAN default 0,
-    Quintetto       BOOLEAN default 0,
-    DbgMatch        VARCHAR(50),
-    DbgPlayer       VARCHAR(50)
-   */
-   /*
-      TblMatchRosterID: TFDAutoIncField;
-      TblMatchRosterCaptain: TBooleanField;
-      TblMatchRosterDbgMatch: TWideStringField;
-      TblMatchRosterDbgPlayer: TWideStringField;
-      TblMatchRosterIsMyTeam: TBooleanField;
-      TblMatchRosterLinkMatchHeader: TIntegerField;
-      TblMatchRosterLinkPlayer: TIntegerField;
-      TblMatchRosterPlayerNameLook: TStringField;
-      TblMatchRosterPlayNumber: TWideStringField;
-      TblMatchRosterQuintetto: TBooleanField;
-      TblMatchRosterRosterIndexCalc: TStringField;
-   */
+   ok: boolean;
+   message: string;
+   elements: Array<MatchRosterDb>;
 }
+
+
+
+export type MatchRosterDb =
+{
+   id: number;
+   matchheaderid_link: number;
+   playerid_link: number;
+   playnumber: string;
+   capitano: boolean;
+   ismyteam: boolean;
+   quintetto: boolean;
+   dbgmatch: string;
+   dbgplayer: string;
+   type: string;
+   playername_lk: string;
+}
+
+
+export type MatchRoster =
+{
+   id: number;
+   matchHeaderId_link: number;
+   playerId_link: number;
+   playNumber: string;
+   capitano: boolean;
+   isMyTeam: boolean;
+   quintetto: boolean;
+   dbgMatch: string;
+   dbgPlayer: string;
+   type: string;
+   playerName_lk: string;
+   matchRosterIndex: string;
+}
+
+
+export function CreateEmptyMatchRoster(): MatchRoster
+{
+   return {
+      id: 0,
+      matchHeaderId_link: 0,
+      playerId_link: 0,
+      playNumber: "",
+      capitano: false,
+      isMyTeam: false,
+      quintetto: false,
+      dbgMatch: "",
+      dbgPlayer: "",
+      type: "",
+      playerName_lk: "",
+      matchRosterIndex: ""
+   };
+}
+
+
+export type Coach =
+{
+   id: number;
+   nome: string;
+   teamid_link: number;
+}
+
+
+export function CreateEmptyCoach(): Coach
+{
+   return {
+      id: 0,
+      nome: "",
+      teamid_link: 0
+   };
+}
+
+
 
 
 export interface MatchEvents

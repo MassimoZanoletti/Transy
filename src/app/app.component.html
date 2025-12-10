@@ -12,19 +12,6 @@
                  [raised]="true">
          </button>
 
-         <p-menu #partitaMenu
-                 [style]="{'min-width': '300px'}"
-                 [model]="mnuPartita"
-                 [popup]="true">
-         </p-menu>
-         <button pButton
-                 type="button"
-                 label="Partita"
-                 class="p-button-text ml-3 mnu-button"
-                 (click)="partitaMenu.toggle($event)"
-                 [raised]="true">
-         </button>
-
          <div class="card flex justify-content-center">
             <p-menu #strumentiMenu
                     [model]="mnuStrumenti"
@@ -35,6 +22,33 @@
                     label="Strumenti"
                     class="p-button-text ml-3 mnu-button"
                     (click)="strumentiMenu.toggle($event)"
+                    [raised]="true">
+            </button>
+         </div>
+
+         <div class="card flex justify-content-center"
+              style="margin-left: 20px !important; "
+              *ngIf="MatchAperto()">
+            <button pButton
+                    type="button"
+                    label="MATCH"
+                    class="p-button-text ml-3 mnu-button"
+                    routerLink="match"
+                    icon="pi pi-globe"
+                    style="color: #FFFF00 !important;"
+                    [raised]="true">
+            </button>
+
+            <p-menu #partitaMenu
+                    [style]="{'min-width': '300px'}"
+                    [model]="mnuPartita"
+                    [popup]="true">
+            </p-menu>
+            <button pButton
+                    type="button"
+                    label="Partita"
+                    class="p-button-text ml-3 mnu-button"
+                    (click)="partitaMenu.toggle($event)"
                     [raised]="true">
             </button>
          </div>

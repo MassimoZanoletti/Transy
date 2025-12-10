@@ -1,0 +1,384 @@
+
+<div id="match-roster-form"
+     class="form-container">
+   <p-card>
+
+      <ng-template pTemplate="header">
+         <p class="match-roster-card-header">Match Rosters</p>
+      </ng-template>
+
+      <ng-template pTemplate="title">
+         <p class="match-roster-card-title">{{titoloDiag}}</p>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+         <div id="match-roster-div-main"
+               class="flex match-roster-div-main">
+            <div id="match-roster-div-myteam"
+                  class="match-roster-div-team">
+               <div id="match-roster-div-mytable"
+                    style=""
+                    class="w-full">
+                  <p class="team-name"><span style="font-size: 0.7em;">My team: </span><span style="color: #ff93cd;">{{matchHeader.myTeamNome_lk}}</span></p>
+               </div>
+
+               <p-table
+                  id="match-roster-table-myteam"
+                  class="custom-header-table"
+                  styleClass="p-datatable-gridlines"
+                  [scrollable]="true"
+                  scrollHeight="680px"
+                  [value]="listaMyRoster"
+                  selectionMode="single"
+                  [(selection)]="selectedMy"
+                  dataKey="id"
+                  [metaKeySelection]="false"       >
+                  <ng-template pTemplate="header">
+                     <tr>
+                        <th style="width: 50px;">Cap.</th>
+                        <th style="width: 50px;">Num</th>
+                        <th style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; ">-</th>
+                        <th style="min-width: 250px;">Nome</th>
+                     </tr>
+                  </ng-template>
+
+                  <ng-template pTemplate="body" let-myroster>
+                     <tr [pSelectableRow]="myroster"
+                         [pEditableRow]="myroster">
+                        <td style="width: 60px">
+                           <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; ">
+                              <p-checkbox
+                                 [(ngModel)]="myroster.capitano"
+                                 [binary]="true"
+                                 [disabled]="false"
+                              ></p-checkbox>
+                           </div>
+                        </td>
+                        <td>{{ myroster.playNumber }}</td>
+                        <td  style="padding: 1px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
+                           <p-button
+                              class="p-button-table"
+                              styleClass="p-icon-20px-local"
+                              icon="pi pi-pencil"
+                              severity="primary"
+                              pTooltip="Modifica numero"
+                              tooltipPosition="top"
+                              (click)="BtnMyPlayerEditNumberClick(myroster)"
+                           ></p-button>
+                        </td>
+                        <td>{{ myroster.playerName_lk }}</td>
+                     </tr>
+                  </ng-template>
+               </p-table>
+
+               <p>Giocatori: {{listaMyRoster.length}}</p>
+
+               <div id="match-roster-div-mybuttons"
+                    style="padding: 2px;"
+                    class="flex">
+
+                  <button
+                     pButton
+                     type="button"
+                     label="Aggiungi"
+                     class="p-button-primary"
+                     icon="pi pi-plus"
+                     (click)="BtnMyRosterAddClick()"
+                  ></button>
+
+                  <button
+                     pButton
+                     type="button"
+                     label="Crea"
+                     class="p-button-info"
+                     icon="pi pi-plus-circle"
+                     (click)="BtnCreateNewPlayerMyTeam()"
+                  ></button>
+
+                  <div class="push-right-container">
+                     <button
+                        pButton
+                        type="button"
+                        label="Togli"
+                        class="p-button-warning"
+                        icon="pi pi-minus"
+                        (click)="BtnMyRosterTogliClick()"
+                     ></button>
+                  </div>
+
+               </div>
+
+               <p-divider styleClass="my-1"></p-divider>
+
+               <div id="match-roster-div-mycoach"
+                  style="padding-left: 5px;">
+                  <div class="form-group">
+                     <label for="myheadcoach">Head Coach:</label>
+                     <p-dropdown
+                        [style]="{'min-width': '255px'}"
+                        [options]="listaMyCoach"
+                        optionLabel="nome"
+                        [checkmark]="true"
+                        [editable]="true"
+                        [(ngModel)]="myHeadCoachValue"
+                        [scrollHeight]="'300px'"/>
+                  </div>
+                  <div class="form-group">
+                     <label for="mycoach2">Vice:</label>
+                     <p-dropdown
+                        [style]="{'min-width': '255px'}"
+                        [options]="listaMyCoach"
+                        optionLabel="nome"
+                        [checkmark]="true"
+                        [editable]="true"
+                        [(ngModel)]="myViceValue"
+                        [scrollHeight]="'300px'"/>
+                  </div>
+
+               </div>
+            </div>
+
+            <p-divider layout="vertical" styleClass="mx-1"></p-divider>
+
+            <div id="match-roster-div-oppoteam"
+                 class="match-roster-div-team">
+               <div id="match-roster-div-oppotable"
+                    style=""
+                    class="w-full">
+                  <p class="team-name"><span style="font-size: 0.7em;">Opponent team: </span><span style="color: #ff93cd;">{{matchHeader.oppoTeamNome_lk}}</span></p>
+               </div>
+               <p-table
+                  id="match-roster-table-oppoteam"
+                  class="custom-header-table"
+                  styleClass="p-datatable-gridlines"
+                  [scrollable]="true"
+                  scrollHeight="680px"
+                  [value]="listaOppoRoster"
+                  selectionMode="single"
+                  [(selection)]="selectedOppo"
+                  dataKey="id"
+                  [metaKeySelection]="false"       >
+                  <ng-template pTemplate="header">
+                     <tr>
+                        <th style="width: 50px;">Cap.</th>
+                        <th style="width: 50px;">Num</th>
+                        <th style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; ">-</th>
+                        <th style="min-width: 250px;">Nome</th>
+                     </tr>
+                  </ng-template>
+
+                  <ng-template pTemplate="body" let-opporoster>
+                     <tr [pSelectableRow]="opporoster"
+                         [pEditableRow]="opporoster">
+                        <td style="width: 60px">
+                           <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; ">
+                              <p-checkbox
+                                 [(ngModel)]="opporoster.capitano"
+                                 [binary]="true"
+                                 [disabled]="false"
+                              ></p-checkbox>
+                           </div>
+                        </td>
+                        <td>{{ opporoster.playNumber }}</td>
+                        <td  style="padding: 1px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
+                           <p-button
+                              class="p-button-table"
+                              styleClass="p-icon-20px-local"
+                              icon="pi pi-pencil"
+                              severity="primary"
+                              pTooltip="Modifica numero"
+                              tooltipPosition="top"
+                              (click)="BtnOppoPlayerEditNumberClick(opporoster)"
+                           ></p-button>
+                        </td>
+                        <td>{{ opporoster.playerName_lk }}</td>
+                     </tr>
+                  </ng-template>
+               </p-table>
+
+               <p>Giocatori: {{listaOppoRoster.length}}</p>
+
+               <div id="match-roster-div-oppobuttons"
+                    style="padding: 2px;"
+                    class="flex">
+
+                  <button
+                     pButton
+                     type="button"
+                     label="Aggiungi"
+                     class="p-button-primary"
+                     icon="pi pi-plus"
+                     (click)="BtnOppoRosterAddClick()"
+                  ></button>
+
+                  <button
+                     pButton
+                     type="button"
+                     label="Crea"
+                     class="p-button-info"
+                     icon="pi pi-plus-circle"
+                     (click)="BtnCreateNewPlayerOppoTeam()"
+                  ></button>
+
+                  <div class="push-right-container">
+                     <button
+                        pButton
+                        type="button"
+                        label="Togli"
+                        class="p-button-warning"
+                        icon="pi pi-minus"
+                        (click)="BtnOppoRosterTogliClick()"
+                     ></button>
+                  </div>
+
+               </div>
+
+               <div id="match-roster-div-oppocoach"
+                    style="padding-left: 5px;">
+                  <div class="form-group">
+                     <label for="oppoheadcoach">Head Coach:</label>
+                     <p-dropdown
+                        [style]="{'min-width': '255px'}"
+                        [options]="listaOppoCoach"
+                        optionLabel="nome"
+                        [checkmark]="true"
+                        [editable]="true"
+                        [(ngModel)]="oppoHeadCoachValue"
+                        [scrollHeight]="'300px'"/>
+                  </div>
+                  <div class="form-group">
+                     <label for="oppocoach2">Vice:</label>
+                     <p-dropdown
+                        [style]="{'min-width': '255px'}"
+                        [options]="listaOppoCoach"
+                        optionLabel="nome"
+                        [checkmark]="true"
+                        [editable]="true"
+                        [(ngModel)]="oppoViceValue"
+                        [scrollHeight]="'300px'"/>
+                  </div>
+               </div>
+
+            </div>
+         </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+
+         <div class="flex justify-content-between align-items-center w-full"
+              style="background-color: #161c2d;">
+            <div class="flex dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="BtnAnnullaDiag()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-success"
+                  (click)="BtnSalvaDiag()"
+               ></button>
+            </div>
+         </div>
+      </ng-template>
+   </p-card>
+</div>
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYNUMBER
+------------------------------------------------------------------>
+<p-dialog id="dialog-playnumber"
+          [modal]="true"
+          [(visible)]="dialogVisible_PlayNumber"
+          [closable]="false"
+          [style]="{ width: '35rem', height: '19rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="match-status-dialog-container">
+      <p-card header="">
+         <ng-template pTemplate="content">
+            <div>
+               <h2>{{dialogPlayNumber_Nome}}</h2>
+            </div>
+            <div class="form-group">
+               <label for="nome">Numero di maglia:</label>
+               <input type="text"
+                      id="giornata"
+                      [style]="{'max-width': '100px'}"
+                      [(ngModel)]="dialogPlayNumber_Value"
+                      pInputText
+                      required/>
+            </div>
+
+            <!--
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+            -->
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons"
+                 style="margin-top: 35px;">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="BtnDialogPlayNumberAnnullaClick()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="BtnDialogPlayNumberSalvaClick()"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG MATCHSTATUS   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYERS
+------------------------------------------------------------------>
+<p-dialog id="dialog-players"
+          [modal]="true"
+          [visible]="PlayersDialogVisible()"
+          [closable]="false"
+          (onShow)="onPlayersComponentShow()"
+          [style]="{ width: '550px', height: '900px', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-players-comp
+         (salvaPlayers)="BtnSalvaSelectPlayersDiagClick($event)"
+         (annullaPlayers)="BtnAnnullaSelectPlayersDiagClick()"
+      ></app-players-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYERS   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYER-EDIT
+------------------------------------------------------------------>
+<p-dialog id="dialog-player-edit"
+          [modal]="true"
+          [visible]="EditPlayerDialogVisible()"
+          [closable]="false"
+          (onShow)="onPlayerEditComponentShow()"
+          [style]="{ width: '580px', height: '550px', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-player-edit-comp
+         (salvaPlayer)="BtnSalvaPlayerEdit($event)"
+         (annullaPlayer)="BtnAnnullaPlayerEdit()"
+      ></app-player-edit-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYER-EDIT   --->

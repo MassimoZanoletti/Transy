@@ -315,7 +315,8 @@
             <ng-template pTemplate="content">
                <p-dataView [value]="listaMatch"
                            [paginator]="true"
-                           [rows]="8"
+                           [rows]="rowsCardsPerPag"
+                           [first]="firstCard"
                            layout="grid">
 
                   <ng-template let-matches pTemplate="grid">
@@ -616,12 +617,34 @@
           [(visible)]="dialogVisible_Players"
           [closable]="false"
           (onShow)="onPlayersComponentShow()"
-          [style]="{ width: '50rem', height: '30rem', padding: '10px', 'background-color': '#1f2937' }">
+          [style]="{ width: '590px', padding: '10px', 'background-color': '#1f2937' }"
+          [contentStyle]="{ height: '1400px', overflow: 'hidden' }"
+>
    <div>
       <app-players-comp
          (salvaPlayers)="SalvaPlayersDiag()"
          (annullaPlayers)="AnnullaPlayersDiag()"
       ></app-players-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYERS   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG Roster
+------------------------------------------------------------------>
+<p-dialog id="dialog-roster"
+          [modal]="true"
+          [(visible)]="dialogVisible_Roster"
+          [closable]="false"
+          (onShow)="onMatchRosterDialogShow()"
+          [style]="{ width: '1050px', height: '1150px', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-roster-comp
+         (salvaMatchRoster)="SalvaMatchRosterDiag($event)"
+         (annullaMatchRoster)="AnnullaMatchRosterDiag()"
+      ></app-roster-comp>
    </div>
 </p-dialog>
 <!--   FINE DIALOG PLAYERS   --->

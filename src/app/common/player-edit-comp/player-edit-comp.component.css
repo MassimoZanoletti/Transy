@@ -1,13 +1,15 @@
 
 
+
 .form-container
 {
    display: flex;
    /*justify-content: center;*/
-   align-items: start;        /* allineamento verticale in alto */
-   height: 710px;
-   width: 600px !important;
+   align-items: start;
+   height: 480px;
+   width: 500px !important;
    margin-top: 15px !important;
+   border: solid 1px black;
 
    mat-card {
       width: 400px;
@@ -22,6 +24,26 @@
 
 }
 
+
+.match-roster-card-header {
+   color: yellow;
+   font-size: 30px;
+   font-weight: bolder;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
+.match-roster-card-title {
+   color: white;
+   font-size: 22px;
+   font-weight: bold;
+   font-style: italic;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
 .form-group {
    display: flex;
    align-items: center;
@@ -35,7 +57,6 @@
 }
 
 .form-group input,
-.form-group p-calendar,
 .form-group p-inputgroup {
    flex: 1;
 }
@@ -44,10 +65,6 @@
    display: flex;
    justify-content: flex-end;
    gap: 0.2rem;
+   margin-left: auto !important;
 }
 
-
-:host ::ng-deep .p-card .p-card-title {
-   color: yellow; /* O un codice esadecimale come #FFFF00 */
-   margin-bottom: 15px;
-}

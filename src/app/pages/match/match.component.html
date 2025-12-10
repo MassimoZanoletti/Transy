@@ -1,0 +1,560 @@
+
+
+
+<p-tabView id="tab-match"
+           [(activeIndex)]="tabActiveIndex"
+           >
+   <!------------------ TAB ANAGRAFICA -------------->
+   <p-tabPanel id="tab-match-anagrafica"
+               header="Anagrafica">
+      <div id="div-match-anagrafica">
+         <div id="div-match-anag-title"
+              class="div-match-anag-title">
+            <div [ngStyle]="{'background-color': coloreCasa}"
+                 style="width: 40px; height: 40px; border-radius: 2px; margin: 0px; border: 1px solid #ccc;">
+            </div>
+            <p class="anag-match-title">{{matchTitle}}</p>
+            <div [ngStyle]="{'background-color': coloreOspite}"
+                 style="width: 40px; height: 40px; border-radius: 2px; margin: 0px; border: 1px solid #ccc;">
+            </div>
+         </div>
+         <div id="div-match-anag-info"
+              class="anag-match-info  ">
+            <div id="div-anag-match-info-left"
+                 class="anag-match-info-details">
+               <div class="card-container">
+                  <p-card
+                     styleClass="p-shadow-3"
+                  >
+
+                     <div class="p-card-content">
+                        <div class="info-row">
+                           <span class="info-label">Campionato:</span>
+                           <span class="valore-evidenziato">{{matchHeader.champNome_lk}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Fase:</span>
+                           <span class="valore-evidenziato">{{matchHeader.phaseAbbrev_lk}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Giornata:</span>
+                           <span class="valore-evidenziato">{{matchHeader.giornata}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Data:</span>
+                           <span class="valore-evidenziato">{{matchHeader.matchDateStr}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Luogo:</span>
+                           <span class="valore-evidenziato">{{matchHeader.location}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Num gara:</span>
+                           <span class="valore-evidenziato">{{matchHeader.matchNumber}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label">Arbitri:</span>
+                           <span class="valore-evidenziato">{{matchHeader.arbitro1}}</span>
+                        </div>
+                        <div class="info-row">
+                           <span class="info-label"> </span>
+                           <span class="valore-evidenziato">{{matchHeader.arbitro2}}</span>
+                        </div>
+                        <div class="info-row"
+                             style="margin-top: 10px;">
+                           <span class="info-label">Stato:</span>
+                           <span class="valore-evidenziato">{{StatoMAtchStr()}}</span>
+                        </div>
+                     </div>
+                  </p-card>
+               </div>
+               <div style="margin-bottom: 15px;">
+                  <p-button
+                     id="btn-edit-match-header"
+                     label="Modifica Match"
+                     icon="pi pi-pencil"
+                     severity="primary"
+                     pTooltip="Modifica i dati del match"
+                     tooltipPosition="top"
+                     (onClick)="BtnEditMatchHeader()"
+                  ></p-button>
+               </div>
+               <div>
+                  <p-button
+                     id="btn-edit-match-roster"
+                     label="Modifica Roster"
+                     icon="pi pi-user-edit"
+                     severity="primary"
+                     pTooltip="Modifica il roster delle due squadre"
+                     tooltipPosition="top"
+                     (onClick)="BtnEditMatchRoster()"
+                  ></p-button>
+               </div>
+            </div>
+            <p-divider layout="vertical" styleClass="mx-1"></p-divider>
+            <div id="div-anag-match-info-center"
+                 class="anag-match-info-details">
+               <p style="font-size: 1.4em; font-weight: bolder">{{homeTeamName}}</p>
+               <div *ngFor="let item of listaRosterCasa">
+                  <div class="item-card"
+                     [ngClass]="{ 'bordo-capitano': item.capitano === true }"
+                  >
+                     <div class="p-grid p-nogutter player-info-row">
+                        <div class="p-col-3 player-number">
+                           <span style="font-size: 1.2em; font-weight: bold; color: mediumpurple;">{{item.playNumber}}</span>
+                        </div>
+                        <div class="p-col-9 player-name"
+                              style="margin-left: 10px; font-weight: bold;">
+                           {{item.playerName_lk}}
+                        </div>
+                     </div>
+
+                     <div *ngIf="item.capitano" class="capitano-info">
+                        Capitano
+                     </div>
+
+                  </div>
+               </div>
+               <p>{{listaRosterCasa.length}} giocatori</p>
+               <p-divider layout="horizontal" styleClass="my-1"></p-divider>
+               <div>
+                  <p style="margin-bottom: 2px;">Head coach: <span style="font-weight: bolder">{{homeCoach1}}</span></p>
+                  <p style="margin-top: 2px;">Vice: <span style="font-weight: bolder">{{homeCoach2}}</span></p>
+               </div>
+            </div>
+            <p-divider layout="vertical" styleClass="mx-1"></p-divider>
+            <div id="div-anag-match-info-right"
+                 class="anag-match-info-details">
+               <p style="font-size: 1.4em; font-weight: bolder">{{awayTeamName}}</p>
+               <div *ngFor="let item of listaRosterFuori">
+                  <div class="item-card"
+                       [ngClass]="{ 'bordo-capitano': item.capitano === true }"
+                  >
+                     <div class="p-grid p-nogutter player-info-row">
+                        <div class="p-col-3 player-number">
+                           <span style="font-size: 1.2em; font-weight: bold; color: mediumpurple;">{{item.playNumber}}</span>
+                        </div>
+                        <div class="p-col-9 player-name"
+                             style="margin-left: 10px; font-weight: bold;">
+                           {{item.playerName_lk}}
+                        </div>
+                     </div>
+
+                     <div *ngIf="item.capitano" class="capitano-info">
+                        Capitano
+                     </div>
+
+                  </div>
+               </div>
+               <p>{{listaRosterFuori.length}} giocatori</p>
+               <p-divider layout="horizontal" styleClass="my-1"></p-divider>
+               <div>
+                  <p style="margin-bottom: 2px;">Head coach: <span style="font-weight: bolder">{{awayCoach1}}</span></p>
+                  <p style="margin-top: 2px;">Vice: <span style="font-weight: bolder">{{awayCoach2}}</span></p>
+               </div>
+            </div>
+         </div>
+      </div>
+   </p-tabPanel>
+   <!------------------ TAB GIOCO -------------->
+   <p-tabPanel id="tab-match-gioco"
+               header="Gioco">
+      <div id="div-match-gioco"
+            class="div-match-gioco">
+         <div id="div-gioco-alto"
+              class="div-gioco-alto">
+            <div id="div-gioco-myteam"
+                 class="div-gioco-myteam">
+               <app-team-comp
+                  componentId="compmyteam"
+                  #compMyTeam
+                  teamName="{{matchHeader.myTeamNome_lk}}"
+                  teamColor="{{matchHeader.myTeamColor}}"
+                  (componentClicked)="TeamClicked($event)"
+                  [isSelected]="'compmyteam' == currTeam"
+               ></app-team-comp>
+            </div>
+            <div id="div-gioco-timer"
+                 class="div-gioco-timer">
+               <app-timer-comp
+                  instanceId="comptimer"
+                  #compTimer
+                  (timeUpdated)="onTimeUpdate($event)"
+                  (started)="onTimerEvent($event)"
+                  (stopped)="onTimerEvent($event)">
+               </app-timer-comp>
+            </div>
+            <div id="div-gioco-oppoteam"
+                 class="div-gioco-oppoteam">
+               <app-team-comp
+                  componentId="compoppoteam"
+                  #compOppoTeam
+                  teamName="{{matchHeader.oppoTeamNome_lk}}"
+                  teamColor="{{matchHeader.oppoTeamColor}}"
+                  (componentClicked)="TeamClicked($event)"
+                  [isSelected]="'compoppoteam' == currTeam"
+               ></app-team-comp>
+            </div>
+         </div>
+         <div id="div-gioco-centro"
+              class="div-gioco-centro">
+            <div id="div-gioco-myfield"
+                 class="div-gioco-myfield">
+               <app-player-comp
+                  componentId="pl1"
+                  #compMyField1
+                  playerNumber="24"
+                  playerName="Briant K."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'pl1' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="pl2"
+                  #compMyField2
+                  playerNumber="32"
+                  playerName="James L."
+                  [playerFouls]="2"
+                  playerMinutes="00:00"
+                  [playerPoints]="28"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'pl2' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="pl3"
+                  #compMyField3
+                  playerNumber="18"
+                  playerName="Magic J."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'pl3' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="pl4"
+                  #compMyField4
+                  playerNumber="32"
+                  playerName="Kareem A."
+                  [playerFouls]="2"
+                  playerMinutes="00:00"
+                  [playerPoints]="36"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'pl4' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="pl5"
+                  #compMyField5
+                  playerNumber="8"
+                  playerName="Chamberlein W."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'pl5' == currPlayer">
+               </app-player-comp>
+            </div>
+            <div id="div-gioco-commands"
+                 class="div-gioco-commands">
+               <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <!-- -->
+                  <app-points-comp
+                     componentId="tl"
+                     #compTL
+                     title="T.L."
+                     colorNormal1="#444400"
+                     colorNormal2="#888800"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     (compBtnMinus1Clicked)="PointsWrong1($event)"
+                     (compBtnPlus1Clicked)="PointsOk1($event)">
+                  </app-points-comp>
+                  <app-points-comp
+                     componentId="t2"
+                     #compT2
+                     title="T.2"
+                     colorNormal1="#444400"
+                     colorNormal2="#888800"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     btn1Label="Tap<br>OUT"
+                     btn2Label="Tap<br>IN"
+                     (compBtnMinus1Clicked)="PointsWrong1($event)"
+                     (compBtnPlus1Clicked)="PointsOk1($event)"
+                     (compBtnMinus2Clicked)="PointsWrong2($event)"
+                     (compBtnPlus2Clicked)="PointsOk2($event)">
+                  </app-points-comp>
+                  <app-points-comp
+                     componentId="t3"
+                     #compT3
+                     title="T.3"
+                     colorNormal1="#444400"
+                     colorNormal2="#888800"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     (compBtnMinus1Clicked)="PointsWrong1($event)"
+                     (compBtnPlus1Clicked)="PointsOk1($event)">
+                  </app-points-comp>
+                  <!-- -->
+               </div>
+
+               <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <!-- -->
+                  <app-data-comp
+                     componentId="data-rimb"
+                     #compRimb
+                     title="Rimb."
+                     colorNormal1="#004444"
+                     colorNormal2="#008888"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     titolo1="Difesa"
+                     dato1="12"
+                     titolo2="Attacco"
+                     dato2="10"
+                     dato="Totali 22"
+                     (compBtn1Clicked)="DataBtn1Clicked($event)"
+                     (compBtn2Clicked)="DataBtn2Clicked($event)">
+                  </app-data-comp>
+                  <app-data-comp
+                     componentId="data-palle"
+                     #compPalle
+                     title="Palle"
+                     colorNormal1="#004444"
+                     colorNormal2="#008888"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     titolo1="Perse"
+                     dato1="12"
+                     colorDato1="#ff7777"
+                     titolo2="Recup."
+                     dato2="10"
+                     colorDato2="#77ff77"
+                     dato=""
+                     (compBtn1Clicked)="DataBtn1Clicked($event)"
+                     (compBtn2Clicked)="DataBtn2Clicked($event)">
+                  </app-data-comp>
+                  <app-data-comp
+                     componentId="data-stopp"
+                     #compStopp
+                     title="Stop."
+                     colorNormal1="#004444"
+                     colorNormal2="#008888"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     titolo1="Subite"
+                     dato1="12"
+                     colorDato1="#ff7777"
+                     titolo2="Fatte"
+                     dato2="10"
+                     colorDato2="#77ff77"
+                     dato=""
+                     (compBtn1Clicked)="DataBtn1Clicked($event)"
+                     (compBtn2Clicked)="DataBtn2Clicked($event)">
+                  </app-data-comp>
+                  <!-- -->
+               </div>
+
+               <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 5px;">
+                  <!-- -->
+                  <app-data-comp
+                     componentId="data-assist"
+                     #compAssist
+                     title="Ass."
+                     colorNormal1="#004444"
+                     colorNormal2="#008888"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     titolo1="Assist"
+                     dato1="12"
+                     (compBtn1Clicked)="DataBtn1Clicked($event)">
+                  </app-data-comp>
+                  <app-data-comp
+                     componentId="data-falli"
+                     #compFalli
+                     title="Falli"
+                     colorNormal1="#4d3434"
+                     colorNormal2="#a42e2e"
+                     colorSelected1="#dddddd"
+                     colorSelected2="#dddddd"
+                     titolo1="Fatti"
+                     dato1="12"
+                     colorDato1="#ff7777"
+                     titolo2="Subiti"
+                     dato2="10"
+                     colorDato2="#77ff77"
+                     dato=""
+                     (compBtn1Clicked)="DataBtn1Clicked($event)"
+                     (compBtn2Clicked)="DataBtn2Clicked($event)">
+                  </app-data-comp>
+                  <!-- -->
+               </div>
+            </div>
+
+            <div id="div-gioco-oppofield"
+                 class="div-gioco-oppofield">
+               <app-player-comp
+                  componentId="oppopl1"
+                  #compOppoField1
+                  playerNumber="24"
+                  playerName="Briant K."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'oppopl1' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="oppopl2"
+                  #compOppoField2
+                  playerNumber="32"
+                  playerName="James L."
+                  [playerFouls]="2"
+                  playerMinutes="00:00"
+                  [playerPoints]="28"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'oppopl2' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="oppopl3"
+                  #compOppoField3
+                  playerNumber="18"
+                  playerName="Magic J."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'oppopl3' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="oppopl4"
+                  #compOppoField4
+                  playerNumber="32"
+                  playerName="Kareem A."
+                  [playerFouls]="2"
+                  playerMinutes="00:00"
+                  [playerPoints]="36"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'oppopl4' == currPlayer">
+               </app-player-comp>
+               <app-player-comp
+                  componentId="oppopl5"
+                  #compOppoField5
+                  playerNumber="8"
+                  playerName="Chamberlein W."
+                  [playerFouls]="4"
+                  playerMinutes="00:00"
+                  [playerPoints]="32"
+                  colorSelected="#007700"
+                  (componentClicked)="PlayerClicked($event)"
+                  [isSelected]="'oppopl5' == currPlayer">
+               </app-player-comp>
+            </div>
+         </div>
+         <div id="div-gioco-basso"
+              class="div-gioco-basso">
+            <div id="div-gioco-mybench"
+                 class="div-gioco-mybench">
+               <div id="div-gioco-mybench1"
+                    class="div-gioco-mybench-row">
+                  <ng-container #mybench1></ng-container>
+               </div>
+               <div id="div-gioco-mybench2"
+                    class="div-gioco-mybench-row">
+                  <ng-container #mybench2></ng-container>
+               </div>
+               <div id="div-gioco-mybench3"
+                    class="div-gioco-mybench-row">
+                  <ng-container #mybench3></ng-container>
+               </div>
+            </div>
+            <div id="div-gioco-commands"
+                 class="div-gioco-commands">
+               <p>COMMANDS</p>
+            </div>
+            <div id="div-gioco-oppobench"
+                 class="div-gioco-oppobench">
+               <div id="div-gioco-mybench1"
+                    class="div-gioco-mybench-row">
+                  <ng-container #oppobench1></ng-container>
+               </div>
+               <div id="div-gioco-mybench2"
+                    class="div-gioco-mybench-row">
+                  <ng-container #oppobench2></ng-container>
+               </div>
+               <div id="div-gioco-mybench3"
+                    class="div-gioco-mybench-row">
+                  <ng-container #oppobench3></ng-container>
+               </div>
+            </div>
+         </div>
+      </div>
+   </p-tabPanel>
+   <!------------------ TAB STATISTICHE -------------->
+   <p-tabPanel id="tab-match-anagrafica-statistiche"
+               header="Statistiche">
+      <div id="div-match-statistiche">
+         Statistiche
+      </div>
+   </p-tabPanel>
+</p-tabView>
+
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG MATCHHEADER
+------------------------------------------------------------------>
+<p-dialog id="dialog-matchheader"
+          [modal]="true"
+          [(visible)]="dialogVisible_MatchHeader"
+          (onShow)="onMatchHeaderDialogShow()"
+          [closable]="false"
+          [style]="{ width: '46rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-matchheader-comp
+         [mhIsNew]="false"
+         [mhStagione]="(this.currSeason)?this.currSeason.nome:''"
+         [mhMatchHeader]="(this.diagMatchHeader)?this.diagMatchHeader:CreateEmptyMatchHeader()"
+         [mhMatchDate]="MatchDate()"
+         [mhChampAbbrev]="(diagMatchHeader)?diagMatchHeader.champNome_lk:'-'"
+         [listaTeams]="listaTeams"
+         (salvaMatchHeader)="SalvaMatchHeader($event)"
+         (annullaMatchHeader)="AnnullaMatchHeader()"
+      ></app-matchheader-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG MATCHHEADER   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG Roster
+------------------------------------------------------------------>
+<p-dialog id="dialog-roster"
+          [modal]="true"
+          [(visible)]="dialogVisible_Roster"
+          [closable]="false"
+          (onShow)="onMatchRosterDialogShow()"
+          [style]="{ width: '1070px', height: '1180px', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-roster-comp
+         (salvaMatchRoster)="SalvaMatchRosterDiag($event)"
+         (annullaMatchRoster)="AnnullaMatchRosterDiag()"
+      ></app-roster-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYERS   --->

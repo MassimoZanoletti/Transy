@@ -4,6 +4,10 @@
    <p-card header="{{titoloDiag}}">
       <ng-template pTemplate="content">
          <p-table
+            class="custom-header-table"
+            styleClass="p-datatable-gridlines"
+            [scrollable]="true"
+            scrollHeight="680px"
             [value]="listaPlayers"
             selectionMode="multiple"
             [(selection)]="selectedPlayers"
@@ -27,10 +31,11 @@
                </tr>
             </ng-template>
          </p-table>
-      </ng-template>
 
-      <p-divider
-         styleClass="my-1"></p-divider>
+         <p style="margin: 3px;">Selezionati {{selectedPlayers.length}} giocatori</p>
+         <p-divider styleClass="my-1"></p-divider>
+
+      </ng-template>
 
       <ng-template pTemplate="footer">
          <div class="flex justify-content-between align-items-center w-full">
@@ -41,7 +46,7 @@
                   label="Nuovo"
                   class="p-primary"
                   icon="pi pi-plus"
-                  (click)="Annulla()"
+                  (click)="CreateNewPlayer()"
                ></button>
             </div>
             <div class="flex dialog-footer-buttons">
@@ -64,3 +69,23 @@
       </ng-template>
    </p-card>
 </div>
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYER-EDIT
+------------------------------------------------------------------>
+<p-dialog id="dialog-player-edit"
+          [modal]="true"
+          [(visible)]="dialogVisible_PlayerEdit"
+          [closable]="false"
+          (onShow)="onPlayerEditComponentShow()"
+          [style]="{ width: '500px', height: '480px', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <app-player-edit-comp
+         (salvaPlayer)="salvaPlayerEdit($event)"
+         (annullaPlayer)="annullaPlayerEdit()"
+      ></app-player-edit-comp>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYER-EDIT   --->

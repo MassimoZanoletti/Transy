@@ -31,7 +31,7 @@ import {
    Season,
    Societa,
    TipoEvento,
-   CreateEmptyMatchHeader, Team
+   CreateEmptyMatchHeader, Team, MatchRoster
 } from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
@@ -52,9 +52,11 @@ import {PhaseService} from "../../services/phase.service";
 import {MatchheaderService} from "../../services/matchheader.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {TeamService} from "../../services/team.service";
-import { utils,
-         matchStatusType,
-         timeouts } from "../../common/utils";
+import {
+   utils,
+   matchStatusType,
+   timeouts, globs
+} from "../../common/utils";
 import {loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
@@ -68,6 +70,7 @@ import {InputTextModule} from "primeng/inputtext";
 import {DataView} from "primeng/dataview";
 import { MatchheaderCompComponent } from "../../common/matchheader-comp/matchheader-comp.component";
 import { PlayersCompComponent } from "../../common/players-comp/players-comp.component";
+import { RosterCompComponent } from "../../common/roster-comp/roster-comp.component";
 
 
 
@@ -109,7 +112,8 @@ export interface CbTipoEvento
                   RouterLink,
                   InputTextModule,
                   CalendarModule,
-                  PlayersCompComponent
+                  PlayersCompComponent,
+                  RosterCompComponent
                ],
                providers: [
                   DialogService, // Fornisci il servizio per DynamicDialog
@@ -152,10 +156,13 @@ export class MainPageComponent implements OnInit, OnDestroy
    listaTeams: Array<Team> = [];
    diagMatchStatus_Status: matchStatusType.Status = { code: "NotPl",  desc: "Non Giocato",  abbrev: "NP" };
    diagMatchStatus_Items: Array<matchStatusType.Status> = [];
+   firstCard: number = 0;
+   rowsCardsPerPag: number = 8;
 
    @ViewChild('eventsTable') pTable: Table | undefined;
    @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
+   @ViewChild(RosterCompComponent) matchRosterComp!: RosterCompComponent;
    //
    private dataCompInstances: Map<string, DataCompComponent> = new Map();
    private pointsCompInstances: Map<string, PointsCompComponent> = new Map();
@@ -173,6 +180,8 @@ export class MainPageComponent implements OnInit, OnDestroy
    private today: Date = new Date();
    public dialogVisible_MatchStatus: boolean = false;
    public dialogVisible_Players: boolean = false;
+   public dialogVisible_Roster: boolean = false;
+   private selectedMatchHeader: MatchHeader = CreateEmptyMatchHeader();
 
    constructor (public router: Router,
                 private seasonServ: SeasonsService,
@@ -231,6 +240,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   /*
    public RegisterDataComponent (id: string,
                                  instance: DataCompComponent)
    {
@@ -242,6 +252,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       this.dataCompInstances.delete (id);
    }
+   */
 
 
    public RegisterPointsComponent (id: string,
@@ -499,6 +510,13 @@ export class MainPageComponent implements OnInit, OnDestroy
       }
       finally
       {
+         if (this.listaMatch.length > 0)
+         {
+            const totPagine: number = Math.ceil(this.listaMatch.length / this.rowsCardsPerPag);
+            this.firstCard = (totPagine-1)*this.rowsCardsPerPag;
+         }
+         else
+            this.firstCard = 0;
          await this.SetLoading(0);
          this.cdr.detectChanges ();
       }
@@ -1240,6 +1258,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   ///*
    async PointsWrong1 (id: string)
    {
       const theComponent = this.pointsCompInstances.get (id);
@@ -1282,6 +1301,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          theComponent.Flash();
       }
    }
+   //*/
 
 
    public GetSocieta(): string
@@ -1396,7 +1416,15 @@ export class MainPageComponent implements OnInit, OnDestroy
 
    async OpenMatch (match: MatchHeader)
    {
-      this.dialogVisible_Players = true;
+      globs.openedMatchHeaderId = match.id;
+      this.router.navigate(['/match'], { queryParams: { id: match.id, phaseid: this.currFase?.id, seasonid: this.currSeason?.id } });
+
+      /*
+      //this.dialogVisible_Players = true;
+
+      this.selectedMatchHeader = match;
+      this.dialogVisible_Roster = true;
+      */
    }
 
 
@@ -1538,6 +1566,45 @@ export class MainPageComponent implements OnInit, OnDestroy
    AnnullaPlayersDiag()
    {
       this.dialogVisible_Players = false;
+   }
+
+
+   async SalvaMatchRosterDiag(event: [Array<MatchRoster>, MatchHeader])
+   {
+      this.dialogVisible_Roster = false;
+      const mH: MatchHeader = event[1];
+      const mR: Array<MatchRoster> = event[0];
+      //
+      if (this.selectedMatchHeader)
+      {
+         this.selectedMatchHeader.myCoach1Id_link = Number(mH.myCoach1Id_link);
+         this.selectedMatchHeader.myCoach2Id_link = Number(mH.myCoach2Id_link);
+         this.selectedMatchHeader.oppoCoach1Id_link = Number(mH.oppoCoach1Id_link);
+         this.selectedMatchHeader.oppoCoach2Id_link = Number(mH.oppoCoach2Id_link);
+         const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.selectedMatchHeader), null, -1);
+         let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.selectedMatchHeader.id, dataForDb));
+         if ((this.currSeason) && (this.currChamp) && (this.currFase))
+         {
+            await this.LoadChamp (this.currSeason.id);
+            await this.LoadPhase (this.currChamp.id);
+            await this.LoadMatchHeader (this.currFase.id);
+            this.cdr.detectChanges ();
+         }
+      }
+      console.log("Saved");
+   }
+
+
+   AnnullaMatchRosterDiag()
+   {
+      this.dialogVisible_Roster = false;
+   }
+
+
+   async onMatchRosterDialogShow()
+   {
+      if (this.matchRosterComp)
+         await this.matchRosterComp.onComponentShow(this.selectedMatchHeader.id, "");
    }
 
 

@@ -1,5 +1,5 @@
 
-import {Component, OnInit, OnDestroy, Input, Output, EventEmitter} from '@angular/core';
+import {Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
@@ -17,6 +17,10 @@ import {Team} from '../../models/datamod';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import {PlayerService} from "../../services/player.service";
+import {TeamService} from "../../services/team.service";
+import {MessageDialogService} from "../../services/message-dialog.service";
+import {firstValueFrom} from "rxjs";
 
 
 @Component({
@@ -57,6 +61,15 @@ export class MatchheaderCompComponent implements OnInit, OnDestroy
    private origData: MatchHeader | null = null;
    public atHomeOptions: any[] = [{ label: 'In Casa', value: true },{ label: 'In Trasferta', value: false }];
 
+
+   constructor(private cdr: ChangeDetectorRef,
+               private servTeam: TeamService,
+               private messageDialogService: MessageDialogService)
+   {
+
+   }
+
+
    ngOnInit (): void
    {
    }
@@ -67,8 +80,9 @@ export class MatchheaderCompComponent implements OnInit, OnDestroy
    }
 
 
-   onDialogShown()
+   async onDialogShown()
    {
+      await this.LoadTeamList();
       if (this.mhIsNew)
       {
          this.mhTitle = "Nuovo Match";
@@ -79,6 +93,17 @@ export class MatchheaderCompComponent implements OnInit, OnDestroy
       }
       //
       this.origData = JSON.parse(JSON.stringify(this.mhMatchHeader, null, 3));
+      this.cdr.detectChanges();
+   }
+
+
+   async LoadTeamList()
+   {
+      const theData = await firstValueFrom (this.servTeam.getAllData(this.mhMatchHeader.champId_lk));
+      if ((theData) && (theData.elements))
+      {
+         this.listaTeams = theData.elements;
+      }
    }
 
 

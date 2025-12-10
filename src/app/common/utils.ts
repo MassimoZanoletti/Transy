@@ -18,6 +18,7 @@ export namespace globs
    export let appVersion: string = "";
    export let colorNotSelected: string = "#333333";
    export let colorSelected: string = "#007700";
+   export let openedMatchHeaderId: number = 0;
 
    export const RecMsgClientPrefix: string = `${String.fromCharCode (0x2192)}${String.fromCharCode (0x2192)}        `;// →→ freccia destra
    export const RecMsgServerPrefix: string = `${String.fromCharCode (0x21D2)}${String.fromCharCode (0x21D2)}${String.fromCharCode (0x21D2)}               `;  // ⇒⇒⇒ freccia destra doppia

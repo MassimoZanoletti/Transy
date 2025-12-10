@@ -1,0 +1,246 @@
+
+.div-match-anag-title {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.anag-match-title {
+   margin-top: 2px !important;
+   margin-bottom: 2px !important;
+   margin-left: 20px !important;
+   margin-right: 20px !important;
+   font-size: 24px;
+   font-weight: bolder;
+   text-align: center !important;
+}
+
+
+.anag-match-info {
+   display: flex; /* Attiva la modalità Flexbox */
+
+   /* Distribuisce lo spazio rimanente tra gli elementi */
+   /*justify-content: space-between;*/
+
+   gap: 10px;
+
+   /* Allinea verticalmente gli elementi al centro della riga (se la riga è alta) */
+   align-items: center;
+
+   padding: 3px;
+}
+
+
+.anag-match-info-details {
+   padding: 15px;
+   margin: 5px;
+   /*border: 1px solid, #ff0000;*/
+}
+
+
+/* Contenitore della riga */
+.info-row {
+   display: flex; /* Abilita il layout flessibile */
+   align-items: baseline; /* Allinea il testo sulla riga di base (opzionale) */
+   margin-bottom: 2px; /* Spazio tra le righe */
+}
+
+/* L'Etichetta a larghezza fissa */
+.info-label {
+   /* Imposta una larghezza fissa sufficiente a contenere l'etichetta più lunga */
+   /* Misura la lunghezza di "Campionato:" o l'etichetta più lunga che hai */
+   width: 90px;
+   /* La proprietà flex-shrink: 0 impedisce al label di rimpicciolirsi */
+   flex-shrink: 0;
+   margin-right: 10px; /* Spazio tra etichetta e valore */
+}
+
+.valore-evidenziato {
+   color: yellow;
+   font-size: 1.2em;
+   font-weight: bold;
+}
+
+
+
+
+.item-card {
+   border: 1px solid #ccc; /* Bordo grigio sottile di default */
+   padding-left: 10px;
+   padding-right: 10px;
+   padding-top: 3px;
+   padding-bottom: 3px;
+   margin-bottom: 8px;
+   border-radius: 4px;
+}
+
+/* 🚩 Stile Condizionale (Definisce .bordo-capitano) */
+/* Questa classe viene applicata tramite [ngClass] */
+.bordo-capitano {
+   border: 2px solid #ffc107; /* Bordo giallo/oro più spesso */
+   box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+}
+
+/* Stili per la formattazione interna (opzionali ma consigliati) */
+.player-info-row {
+   display: flex;
+   align-items: center;
+   margin-bottom: 1px;
+}
+
+.capitano-info {
+   margin-top: 1px;
+   padding-left: 10px;
+   font-size: 0.85em;
+   font-style: italic;
+   color: #888;
+}
+
+.bordo-capitano .capitano-info {
+   /* Assicura che anche il testo "Capitano" sia evidenziato se la condizione è vera */
+   color: #ffc107;
+   font-weight: bold;
+}
+
+
+
+
+.tab-match-gioco {
+   border: 1px solid fuchsia;
+   margin: 1px !important;
+   padding: 1px !important;
+   background-color: yellow;
+   background: yellow;
+   height: 100%;
+   /*
+   display: flex;
+   width: 100%;
+   justify-content: space-between;
+   */
+}
+
+.div-match-gioco {
+   /*border: 1px solid #007bff;*/
+   /*background-color: red;*/
+   margin: 1px !important;
+   padding: 1px !important;
+   width: 100%;
+   height: 100%;
+   justify-content: space-between;
+}
+
+.div-gioco-alto {
+   border: 1px solid #ffc107;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   display: flex;
+   width: 100%;
+   justify-content: space-between;
+}
+
+.div-gioco-centro {
+   border: 1px solid #ffc107;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   display: flex;
+   width: 100%;
+   justify-content: space-between;
+}
+
+.div-gioco-basso {
+   border: 1px solid #ffc107;
+   margin: 1px !important;
+   padding: 1px !important;
+   display: flex;
+   height: 100%;
+   justify-content: space-between;
+}
+
+
+.div-gioco-myteam {
+   /*border: 1px solid green;*/
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 400px;
+}
+
+.div-gioco-timer {
+   /*border: 1px solid green;*/
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 330px;
+   margin-left: auto;
+   margin-right: auto;
+}
+
+.div-gioco-oppoteam {
+   /*border: 1px solid green;*/
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 400px;
+}
+
+
+.div-gioco-myfield {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 400px;
+}
+
+.div-gioco-oppofield {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 400px;
+}
+
+
+.div-gioco-commands {
+   display: flex;
+   gap: 20px;
+}
+
+
+
+
+.div-gioco-mybench {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 485px !important;
+}
+
+.div-gioco-commands {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   /*width: 100%;*/
+   margin-left: auto;
+   margin-right: auto;
+}
+
+.div-gioco-oppobench {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   width: 485px !important;
+}
+
+.div-gioco-mybench-row {
+   background-color: #880000;
+   display: flex !important;
+   flex-direction: row !important;
+   flex-wrap: wrap !important;
+   /*width: 100% !important;*/
+}

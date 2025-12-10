@@ -6,8 +6,12 @@ import {
    Input,
    Output,
    EventEmitter,
+   Host,
+   Inject,
+   forwardRef,
    ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {MatchComponent} from "../../pages/match/match.component";
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
 import {CardModule} from 'primeng/card';
@@ -15,9 +19,8 @@ import {TooltipModule} from "primeng/tooltip";
 import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
-import Color from 'Color';
+//import Color from 'Color';
 import { globs} from "../utils";
-import {MainPageComponent} from "../../pages/main-page/main-page.component";
 
 
 
@@ -30,9 +33,10 @@ import {MainPageComponent} from "../../pages/main-page/main-page.component";
      TooltipModule,
      InputMaskModule,
      FormsModule,
-     DialogModule
+     DialogModule,
   ],
   templateUrl: './points-comp.component.html',
+  //            template:    '<div>OK</div>',
   styleUrl:    './points-comp.component.css'
 })
 export class PointsCompComponent implements OnInit, OnDestroy
@@ -53,21 +57,22 @@ export class PointsCompComponent implements OnInit, OnDestroy
    @Output() compBtnPlus2Clicked = new EventEmitter<string>();
 
 
-   constructor (private cdr: ChangeDetectorRef,
-                private parent: MainPageComponent)
+   constructor (/*@Host() @Inject(forwardRef(() => MatchComponent)) private parent: any,*/
+                private cdr: ChangeDetectorRef)
    {
+      let myparent: MatchComponent;
    }
 
 
    ngOnInit ()
    {
-      this.parent.RegisterPointsComponent (this.componentId, this);
+      //this.parent.RegisterPointsComponent (this.componentId, this);
    }
 
 
    ngOnDestroy ()
    {
-      this.parent.UnregisterPointsComponent (this.componentId);
+      //this.parent.UnregisterPointsComponent (this.componentId);
    }
 
 

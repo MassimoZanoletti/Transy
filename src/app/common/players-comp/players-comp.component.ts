@@ -1,5 +1,5 @@
 
-import {Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectorRef} from '@angular/core';
+import {Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectorRef, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
@@ -9,7 +9,7 @@ import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import {InputTextModule} from "primeng/inputtext";
-import {CreateEmptyMatchHeader, MatchHeader, MessDlgData} from "../../models/datamod";
+import {CreateEmptyMatchHeader, CreateEmptyPlayer, MatchHeader, MessDlgData, TPlayer} from "../../models/datamod";
 import {CalendarModule} from "primeng/calendar";
 import { ColorPickerModule } from "primeng/colorpicker";
 import {DropdownModule} from 'primeng/dropdown';
@@ -24,6 +24,7 @@ import {TeamService} from "../../services/team.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
+import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.component";
 
 
 
@@ -47,6 +48,7 @@ import {firstValueFrom} from "rxjs";
                  SelectButtonModule,
                  DividerModule,
                  TableModule,
+                 PlayerEditCompComponent
               ],
   templateUrl: './players-comp.component.html',
   styleUrl:    './players-comp.component.css'
@@ -54,12 +56,16 @@ import {firstValueFrom} from "rxjs";
 export class PlayersCompComponent  implements OnInit, OnDestroy
 {
    @Input() teamId: number = 0;
-   @Output() salvaPlayers = new EventEmitter();
+   @Output() salvaPlayers = new EventEmitter<Array<IPlayer>>();
    @Output() annullaPlayers = new EventEmitter();
+
+   @ViewChild(PlayerEditCompComponent) playerEditComp!: PlayerEditCompComponent;
 
    listaPlayers: Array<IPlayer> = [];
    selectedPlayers: IPlayer[] = [];
    titoloDiag: string = "";
+   dialogVisible_PlayerEdit: boolean = false;
+   teamName: string = "";
 
    constructor(private cdr: ChangeDetectorRef,
                private servPlayer: PlayerService,
@@ -88,7 +94,10 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
          this.teamId = aTeamId;
          const teamData = await firstValueFrom (this.servTeam.getSingleData(aTeamId));
          if ((teamData) && (teamData.elements))
+         {
             this.titoloDiag = `Giocatori di ${teamData.elements.nome}`;
+            this.teamName = teamData.elements.nome;
+         }
       }
       this.listaPlayers = [];
       this.selectedPlayers = [];
@@ -104,7 +113,7 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
 
    Salva()
    {
-      this.salvaPlayers.emit();
+      this.salvaPlayers.emit(this.selectedPlayers);
    }
 
 
@@ -145,5 +154,59 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
                                                     });
    }
 
+
+   CreateNewPlayer()
+   {
+      this.dialogVisible_PlayerEdit = true;
+   }
+
+
+   async onPlayerEditComponentShow()
+   {
+      if ((this.playerEditComp) && (this.listaPlayers.length > 0))
+      {
+         let newPlayer: TPlayer = CreateEmptyPlayer();
+         await this.playerEditComp.onComponentShow (newPlayer, `Nuovo giocatore di ${this.teamName}`);
+      }
+   }
+
+
+   async annullaPlayerEdit()
+   {
+      this.dialogVisible_PlayerEdit = false;
+   }
+
+
+   async salvaPlayerEdit(newPlayer: TPlayer)
+   {
+      this.dialogVisible_PlayerEdit = false;
+      //
+
+      const response = await firstValueFrom (this.servPlayer.addNewData ("", "",   // non usati
+                                                                         newPlayer.nomedisp,
+                                                                         newPlayer.anno,
+                                                                         newPlayer.ruolo,
+                                                                         newPlayer.numero,
+                                                                         newPlayer.altezza,
+                                                                         "", // foto: non usata
+                                                                         this.teamId));
+      if (response.ok)
+      {
+         //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
+         await this.LoadTabellaPlayer ();
+      }
+      else
+      {
+         const dlgData: MessDlgData = {
+            title:      'ERRORE',
+            subtitle:   "Errore nella modifica dei dati",
+            message:    `${response.message}`,
+            messtype:   'error',
+            btncaption: 'Chiudi'
+         };
+         this.messageDialogService.showMessage (dlgData, '600px');
+      }
+      this.cdr.detectChanges ();
+   }
 
 }

@@ -1,3 +1,4 @@
+
 import {
    Component,
    ViewChild,
@@ -13,7 +14,9 @@ import {
    RouterOutlet,
    RouterModule,
    RouterLink,
-   RouterLinkActive, Router
+   RouterLinkActive,
+   Router,
+   NavigationEnd
 } from '@angular/router';
 import {ToolbarModule} from 'primeng/toolbar';
 import {ButtonModule} from 'primeng/button';
@@ -28,11 +31,13 @@ import {Menu} from 'primeng/menu';
 import { PrimeNGConfig } from 'primeng/api';
 import * as currentPackage from "../../package.json";
 import {InitLoggedUser, loggedUser} from "./services/users.service";
-import {utils} from "./common/utils";
+import { globs,
+         utils} from "./common/utils";
 import {LogService} from "./services/log.service";
 import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "./common/player-comp/player-comp.component";
 import {TeamCompComponent} from "./common/team-comp/team-comp.component";
+import { filter } from 'rxjs/operators';
 
 
 
@@ -158,8 +163,33 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    ngOnInit ()
    {
       window.addEventListener('beforeunload', this.beforeUnloadHandler);
+      //
+      this.router.events
+         .pipe(
+            // 1. Filtra solo gli eventi di fine navigazione
+            filter((event) => event instanceof NavigationEnd),
+
+            // 2. Filtra solo se l'URL di destinazione contiene la rotta specifica
+            //    (Es. /match/1234 o /match?param=x)
+            filter((event: any) => event.url.includes("/match"))
+         )
+         .subscribe(() => {
+            // A questo punto, l'evento scatta SOLO quando l'utente naviga su /match (o un suo derivato)
+
+            // Naviga l'albero delle rotte attive fino all'ultima foglia
+            let route = this.router.routerState.root;
+            while (route.firstChild) {
+               route = route.firstChild;
+            }
+
+            // 💡 Leggi i Path Parameters per la pagina 'match'
+            route.queryParamMap.subscribe(params => {
+               const tmp = params.get('id');
+               if (tmp)
+                  globs.openedMatchHeaderId = Number(tmp);
+            });
+         });      //
       this.cdr.detectChanges ();
-      console.log (`User: ${loggedUser.nome}`);
    }
 
 
@@ -247,6 +277,13 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
       event.returnValue = msg;
       return false; // Per compatibilità con i browser meno recenti
    }
+
+
+   MatchAperto(): boolean
+   {
+      return (globs.openedMatchHeaderId > 0);
+   }
+
 
    protected readonly loggedUser = loggedUser;
 }

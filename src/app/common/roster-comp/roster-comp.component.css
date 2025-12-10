@@ -1,0 +1,196 @@
+
+
+.form-container
+{
+   display: flex;
+   /*justify-content: center;*/
+   align-items: start;
+   height: 800px;
+   width: 1000px !important;
+   margin-top: 15px !important;
+   border: solid 1px black;
+
+   mat-card {
+      width: 400px;
+      color: white;
+   }
+
+   mat-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+      margin-top: 8px;
+   }
+
+}
+
+.match-roster-div-main {
+   /*background-color: white !important;*/
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+.match-roster-div-team {
+   /*background-color: blue !important;*/
+   margin: 1px !important;
+   padding: 3px !important;
+}
+
+
+.match-roster-card-header {
+   color: yellow;
+   font-size: 30px;
+   font-weight: bolder;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
+.match-roster-card-title {
+   color: white;
+   font-size: 22px;
+   font-weight: bold;
+   font-style: italic;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
+.form-group {
+   display: flex;
+   align-items: center;
+   margin-bottom: 0.25rem;
+}
+
+.form-group label {
+   width: 160px; /* larghezza fissa per allineamento */
+   margin-right: 1rem;
+   font-weight: bold;
+}
+
+.form-group input,
+.form-group p-inputgroup {
+   flex: 1;
+}
+
+.dialog-footer-buttons {
+   display: flex;
+   justify-content: flex-end;
+   gap: 0.2rem;
+   margin-left: auto !important;
+}
+
+
+/*
+:host ::ng-deep .p-card .p-card-header {
+   color: yellow;
+   margin-bottom: 15px;
+}
+*/
+
+/*
+::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+   background-color: #422d6b !important;
+   color: #ffe378 !important;
+   font-weight: bold;
+   font-size: 1.2em;
+   border-bottom: 2px solid #3949ab;
+}
+*/
+
+::ng-deep .custom-header-table .p-button {
+   min-height: 2.0rem;
+   padding-left: 3px !important;
+   padding-right: 3px !important;
+   margin-left: 3px !important;
+   margin-right: 3px !important;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+   padding-top: 0.08rem;
+   padding-bottom: 0.08rem;
+   line-height: 1.5;
+   font-size: 2em;
+}
+
+
+.team-name {
+   font-size: 1.5em;
+   margin-top: 2px !important;
+   margin-bottom: 2px !important;
+}
+
+
+.p-icon-20px-local {
+   /* Il componente p-button renderà un div che contiene il button */
+   /* Qui stai stilizzando il div container (se styleClass è usato in questo modo) */
+   width: 20px !important;
+   min-width: 20px !important;
+}
+
+/* Miriamo al pulsante effettivo .p-button che è figlio del container generato */
+.p-icon-20px-local > .p-button {
+   /* Forziamo gli stili principali */
+   width: 20px !important;
+   min-width: 20px !important;
+   height: 20px !important;
+   min-height: 20px !important;
+   padding: 0 !important;
+   display: flex !important;
+   align-items: center !important;
+   justify-content: center !important;
+}
+
+.p-icon-20px-local > .p-button .p-button-icon {
+   margin: 0 !important;
+}
+
+
+#match-roster-div-mybuttons {
+   /* Forziamo la larghezza del div ad occupare tutto lo spazio disponibile */
+   width: 100% !important; /* Usa 100% o un valore fisso che copra l'area desiderata */
+
+   display: flex !important;
+   justify-content: flex-start;
+   align-items: center;
+   gap: 0.5rem; /* Spazio tra gli elementi */
+}
+
+#match-roster-div-mybuttons .push-right-container {
+   /* Il margine automatico assorbe tutto lo spazio tra l'elemento precedente e questo */
+   margin-left: auto !important;
+
+   /* Nota: Poiché il suo figlio è un pulsante, potresti anche volere: */
+   display: flex; /* Assicura che il pulsante al suo interno si comporti bene */
+}
+
+
+#match-roster-div-oppobuttons {
+   /* Forziamo la larghezza del div ad occupare tutto lo spazio disponibile */
+   width: 100% !important; /* Usa 100% o un valore fisso che copra l'area desiderata */
+
+   display: flex !important;
+   justify-content: flex-start;
+   align-items: center;
+   gap: 0.5rem; /* Spazio tra gli elementi */
+}
+
+#match-roster-div-oppobuttons .push-right-container {
+   /* Il margine automatico assorbe tutto lo spazio tra l'elemento precedente e questo */
+   margin-left: auto !important;
+
+   /* Nota: Poiché il suo figlio è un pulsante, potresti anche volere: */
+   display: flex; /* Assicura che il pulsante al suo interno si comporti bene */
+}
+
+
+
+
+/* Nel file .css o .scss del componente che ospita la p-dialog */
+:host ::ng-deep #dialog-players .p-dialog {
+   max-height: 1400px !important;
+}
+:host ::ng-deep #dialog-players .p-dialog-content {
+   height: 1400px !important;
+   max-height: 1400px !important;
+   overflow: hidden !important;
+}

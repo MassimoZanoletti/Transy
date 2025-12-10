@@ -5,8 +5,8 @@
    display: flex;
    /*justify-content: center;*/
    align-items: start;        /* allineamento verticale in alto */
-   height: 680px;
-   width: 600px !important;
+   height: 800px !important;
+   width: 500px !important;
    margin-top: 15px !important;
 
    mat-card {
@@ -49,4 +49,24 @@
 :host ::ng-deep .p-card .p-card-title {
    color: yellow; /* O un codice esadecimale come #FFFF00 */
    margin-bottom: 15px;
+}
+
+
+::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+   background-color: #422d6b !important; /* blu scuro */
+   color: #ffe378 !important; /* testo bianco */
+   font-weight: bold;
+   font-size: 1.2em;
+   border-bottom: 2px solid #3949ab; /* bordo inferiore */
+}
+
+::ng-deep .custom-header-table .p-button {
+   min-height: 2.5rem;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+   padding-top: 0.08rem;
+   padding-bottom: 0.08rem;
+   line-height: 1.5;
+   font-size: 2em;
 }
