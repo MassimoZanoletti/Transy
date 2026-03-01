@@ -10,7 +10,7 @@ import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import { TeamService} from "../../services/team.service";
 import { MessDlgData,
-        Team } from "../../models/datamod";
+        IDSTeam } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 
 // PrimeNG modules
@@ -67,10 +67,10 @@ export class TeamEditComponent implements OnInit
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as Team).nome;
-                                                                          this.abbrev = (data.elements as Team).abbrev;
-                                                                          this.champId = (data.elements as Team).champid_link;
-                                                                          this.logo = (data.elements as Team).logo;
+                                                                          this.nome = (data.elements as IDSTeam).nome;
+                                                                          this.abbrev = (data.elements as IDSTeam).abbrev;
+                                                                          this.champId = (data.elements as IDSTeam).champid_link;
+                                                                          this.logo = (data.elements as IDSTeam).logo;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();

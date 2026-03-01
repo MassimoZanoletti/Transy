@@ -15,7 +15,7 @@ import {ProgressSpinnerModule} from "primeng/progressspinner";
 import {TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
 import {MessDlgData,
-   Societa} from "../../models/datamod";
+   IDSSocieta} from "../../models/datamod";
 import {SocietaService} from "../../services/societa.service";
 import {Router} from "@angular/router";
 import {MessageDialogService} from "../../services/message-dialog.service";
@@ -44,7 +44,7 @@ import { loggedUser } from "../../services/users.service";
 export class SocietaTableComponent implements OnInit
 {
    isLoading: boolean = false;
-   public tblData: Array<Societa> = [];
+   public tblData: Array<IDSSocieta> = [];
 
 
    constructor (public router: Router,

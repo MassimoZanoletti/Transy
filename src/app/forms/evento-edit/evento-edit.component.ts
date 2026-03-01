@@ -1,6 +1,7 @@
 
 import {
-   ChangeDetectorRef, Component,
+   ChangeDetectorRef,
+   Component,
    OnInit
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,8 @@ import { LogService } from "../../services/log.service";
 import { loggedUser } from "../../services/users.service";
 import {
    MessDlgData,
-   EventoElement, TipoEvento
+   EventoElement,
+   TipoEvento
 } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 

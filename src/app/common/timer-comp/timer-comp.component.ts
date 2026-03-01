@@ -307,4 +307,11 @@ export class TimerCompComponent implements OnInit, OnDestroy
       this.quartiVisible = false;
    }
 
+
+   public CurrentTime(): number
+   {
+      const timeElapsed = (Date.now () - this.startTime) / 1000;
+      return (this.totalSeconds - timeElapsed);
+   }
+
 }

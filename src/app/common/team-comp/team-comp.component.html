@@ -15,7 +15,7 @@
             </div>
             <div id="div-te-team-name"
                  class="div-te-team-name">
-               {{teamName}}
+               {{GetTeamName()}}
             </div>
          </div>
          <div id="div-te-riga-info"
@@ -27,22 +27,24 @@
                     class="div-te-team-tout-dati">
                   <div id="div-te-team-tout-1t"
                        class="div-te-team-tout-1t">
-                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">1° T:</span> <b>O O</b></p>
+                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">1° T:</span> <b>{{GetTimeout1T()}}</b></p>
                   </div>
                   <div id="div-te-team-tout-2t"
                        class="div-te-team-tout-2t">
-                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">2° T:</span> <b>O O O</b></p>
+                     <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">2° T:</span> <b>{{GetTimeout2T()}}</b></p>
                   </div>
                   <div id="div-te-team-tout-et"
                        class="div-te-team-tout-et">
                      <p class="div-te-team-tout-text"><span style="font-size: 0.8em; margin-right: 8px;">Extra T:</span></p>
-                     <p class="div-te-team-tout-text"><b>O O O O</b></p>
+                     <p class="div-te-team-tout-text"><b>{{GetTimeoutExtra()}}</b></p>
                   </div>
                </div>
                <div id="div-te-team-tout-btn"
                     class="div-te-team-tout-btn">
                   <button pButton
+                          id="btnTimeout"
                           class="btn-te-timeout"
+                          (click)="BtnTimeoutClick()"
                   >
                      Time<br>Out
                   </button>
@@ -59,11 +61,12 @@
                     class="div-te-team-falli-dati flex align-items-center gap-1">
                   <div id="div-te-team-falli-num"
                         class="div-te-team-falli-num">
-                     0
+                     {{GetFalliTeam()}}
                   </div>
                   <div id="div-te-team-falli-bonus"
+                       *ngIf="GetBonus()!=''"
                        class="div-te-team-falli-bonus">
-                     B
+                     {{GetBonus()}}
                   </div>
                </div>
             </div>
@@ -87,7 +90,7 @@
            class="div-te-stat1">
          <p class="p-stat">
             <span class="span-stat-titles">TL:</span>
-            <span class="span-stat-data">{{GetStatTL()}}</span>
+            <span class="span-stat-data">{{valoreTL}}</span>
          </p>
          <p class="p-stat">
             <span class="span-stat-titles">T2:</span>
@@ -130,3 +133,131 @@
       </div>
    </div>
 </div>
+
+
+<!-----------------------------------------------------------------
+               DIALOG TIMEOUT
+------------------------------------------------------------------>
+<p-dialog [modal]="true"
+          [(visible)]="timeoutVisible"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <ng-template pTemplate="header">
+        <span style="font-size: 2rem; color: #fbbf24; font-weight: bold; padding-bottom: 30px;">
+            Timeout {{team__Name}}
+        </span>
+   </ng-template>
+   <div  *ngIf="timeoutVisible"
+         class="flex align-items-center gap-3 mb-3">
+      <div>
+         <div id="divTimeoutPrimoTempo"
+              class="div-timeouts">
+            <span style="font-size: 1.2em; font-weight: bolder;">Primo tempo</span>
+            <div class="form-group">
+               <label for="sb1t1">1°:</label>
+               <p-selectButton
+                  id="sb1t1"
+                  [options]="timeoutOptions"
+                  [ngModel]="GetTOut1T(0)"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+            <div class="form-group">
+               <label for="sb1t2">2°:</label>
+               <p-selectButton
+                  id="sb1t2"
+                  [options]="timeoutOptions"
+                  [ngModel]="GetTOut1T(1)"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+         </div>
+         <div id="divTimeoutSecondoTempo"
+              class="div-timeouts">
+            <span style="font-size: 1.2em; font-weight: bolder;">Secondo tempo</span>
+            <div class="form-group">
+               <label for="sb2t1">1°:</label>
+               <p-selectButton
+                  id="sb2t1"
+                  [options]="timeoutOptions"
+                  [ngModel]="GetTOut2T(0)"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+            <div class="form-group">
+               <label for="sb2t2">2°:</label>
+               <p-selectButton
+                  id="sb2t2"
+                  [options]="timeoutOptions"
+                  [ngModel]="GetTOut2T(1)"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+            <div class="form-group">
+               <label for="sb2t3">3°:</label>
+               <p-selectButton
+                  id="sb2t3"
+                  [options]="timeoutOptions"
+                  [ngModel]="GetTOut2T(2)"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+         </div>
+      </div>
+      <div id="divTimeoutExtra"
+         class="div-timeouts">
+         <span style="font-size: 1.2em; font-weight: bolder;">Extra time</span>
+         <div class="form-group">
+            <label for="sbextra1">1°:</label>
+            <p-selectButton
+               id="sbextra1"
+               [options]="timeoutOptions"
+               [ngModel]="GetTOutExtra(0)"
+               optionLabel="label"
+               optionValue="value"
+               allowEmpty="false"/>
+         </div>
+         <div class="form-group">
+            <label for="sbextra2">2°:</label>
+            <p-selectButton
+               id="sbextra2"
+               [options]="timeoutOptions"
+               [ngModel]="GetTOutExtra(1)"
+               optionLabel="label"
+               optionValue="value"
+               allowEmpty="false"/>
+         </div>
+         <div class="form-group">
+            <label for="sbextra3">3°:</label>
+            <p-selectButton
+               id="sbextra3"
+               [options]="timeoutOptions"
+               [ngModel]="GetTOutExtra(2)"
+               optionLabel="label"
+               optionValue="value"
+               allowEmpty="false"/>
+         </div>
+         <div class="form-group">
+            <label for="sbextra4">4°:</label>
+            <p-selectButton
+               id="sbextra4"
+               [options]="timeoutOptions"
+               [ngModel]="GetTOutExtra(3)"
+               optionLabel="label"
+               optionValue="value"
+               allowEmpty="false"/>
+         </div>
+      </div>
+   </div>
+   <div class="flex align-items-center gap-3 mb-5">
+   </div>
+   <div class="flex justify-content-end gap-2">
+      <p-button label="Annulla" severity="secondary" (onClick)="timeoutVisible = false" />
+   </div>
+</p-dialog>
+<!--   FINE DIALOG   -->

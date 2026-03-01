@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {lastValueFrom, Observable} from 'rxjs';
-import { User } from '../models/datamod';
+import { IDSUser } from '../models/datamod';
 import { utils } from "../common/utils";
 
 
@@ -36,7 +36,7 @@ export class LogService
 
 
    updateData (aId: number,
-               aUser: User,
+               aUser: IDSUser,
                aDateTime: string,
                aMessage: string): Observable<any>
    {
@@ -52,7 +52,7 @@ export class LogService
    }
 
 
-   internalAddToLog (aUser: User,
+   internalAddToLog (aUser: IDSUser,
                      aMessage: string): Observable<any>
    {
       const operation: string = "add";
@@ -77,7 +77,7 @@ export class LogService
    }
 
 
-   async AddToLog (aUser: User,
+   async AddToLog (aUser: IDSUser,
                    aMessage: string): Promise<any>
    {
       //return await lastValueFrom(this.internalAddToLog(aUser, aMessage));

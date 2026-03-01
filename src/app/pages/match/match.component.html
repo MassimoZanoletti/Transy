@@ -1,8 +1,23 @@
 
 
+<div class="card flex justify-content-left">
+   <p-menu
+      #menuPartita
+      [model]="itemsMenuPartita"
+      [popup]="true"
+      [style]="{'width': 'auto', 'min-width': 'max-content', 'white-space': 'nowrap'}"/>
+   <p-button
+      (onClick)="menuPartita.toggle($event)"
+      icon="pi pi-ellipsis-v"
+      severity="help"
+      label="Gestione partita">
+   </p-button>
+</div>
+
 
 <p-tabView id="tab-match"
            [(activeIndex)]="tabActiveIndex"
+           (onChange)="HandleTabChange($event)"
            >
    <!------------------ TAB ANAGRAFICA -------------->
    <p-tabPanel id="tab-match-anagrafica"
@@ -168,8 +183,9 @@
                <app-team-comp
                   componentId="compmyteam"
                   #compMyTeam
-                  teamName="{{matchHeader.myTeamNome_lk}}"
+                  team__Name="{{matchHeader.myTeamNome_lk}}"
                   teamColor="{{matchHeader.myTeamColor}}"
+                  [matchTeamData]="GetTeamData()"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compmyteam' == currTeam"
                ></app-team-comp>
@@ -189,7 +205,7 @@
                <app-team-comp
                   componentId="compoppoteam"
                   #compOppoTeam
-                  teamName="{{matchHeader.oppoTeamNome_lk}}"
+                  team__Name="{{matchHeader.oppoTeamNome_lk}}"
                   teamColor="{{matchHeader.oppoTeamColor}}"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compoppoteam' == currTeam"

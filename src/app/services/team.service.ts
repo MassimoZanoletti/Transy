@@ -1,9 +1,10 @@
-import {map} from 'rxjs/operators';
+import {map, tap} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-   Team
+   CreateEmptyMatchHeader,
+   IDSTeam, IDSMatchHeader, IDSMatchHeaderDb, IDSMatchHeadersData
 } from "../models/datamod";
 
 
@@ -27,7 +28,22 @@ export class TeamService
       if (champ != null)
          qryTenant = `&champ=${champ}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
-      return this.http.get<any>(url);
+      //return this.http.get<any>(url);
+      return this.http.get<any>(url).pipe (
+         tap (value => {  }),
+         map ((dataFromDb) => {
+                 return {
+                    ok:         dataFromDb.ok,
+                    message:    dataFromDb.message,
+                    elements:   dataFromDb.elements.map ((dbElement: any) => {
+                                                            const tmElem: IDSTeam = { type: "iteam", id: dbElement.id, abbrev: dbElement.abbrev, logo: dbElement.logo, nome: dbElement.nome, champid_link: dbElement.champid_link };
+                                                            return tmElem;
+                                                         } // map internal
+                    ) // map internal
+                 } // return
+              } // map
+         ) // map
+      ); // pipe
    }
 
 

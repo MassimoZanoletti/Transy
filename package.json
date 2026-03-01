@@ -1,6 +1,6 @@
 {
-  "name": "BasketBall Scouting",
-  "version": "0.1.8.512101",
+  "name": "TRANSY",
+  "version": "0.2.0.512131",
   "copyrights": "© 2025/2026 by Massimo Zanoletti",
   "scripts": {
     "clean": ".bin\\clean.bat",

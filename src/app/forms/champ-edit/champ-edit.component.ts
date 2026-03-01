@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import { CampionatiService} from "../../services/campionati.service";
-import {MessDlgData, Champ} from "../../models/datamod";
+import {MessDlgData, IDSChamp} from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 
 // PrimeNG modules
@@ -66,9 +66,9 @@ export class ChampEditComponent implements OnInit
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as Champ).nome;
-                                                                          this.abbrev = (data.elements as Champ).abbrev;
-                                                                          this.seasonId = (data.elements as Champ).seasonid_link;
+                                                                          this.nome = (data.elements as IDSChamp).nome;
+                                                                          this.abbrev = (data.elements as IDSChamp).abbrev;
+                                                                          this.seasonId = (data.elements as IDSChamp).seasonid_link;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();

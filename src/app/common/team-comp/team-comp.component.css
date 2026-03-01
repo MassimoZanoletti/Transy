@@ -1,4 +1,37 @@
 
+.form-container
+{
+   display: flex;
+   align-items: start;
+   height: 710px;
+   width: 600px !important;
+   margin-top: 15px !important;
+
+   mat-card {
+      width: 400px;
+      color: white;
+   }
+
+   mat-form-field {
+      width: 100%;
+   }
+
+}
+
+.form-group {
+   display: flex;
+   align-items: center;
+   margin-bottom: 18px !important;
+   margin-top: 18px !important;
+}
+
+.form-group label {
+   /*width: 160px;*/
+   margin-right: 25px !important;
+   font-weight: bold;
+}
+
+
 .div-te-main {
    border: #ffffff solid 1px;
    margin: 0px;
@@ -218,4 +251,12 @@
    font-size: 1.0em;
    font-weight: bold;
    color: white;
+}
+
+
+.div-timeouts {
+   border: 1px solid silver;
+   border-radius: 4px;
+   margin: 5px;
+   padding: 20px !important;
 }

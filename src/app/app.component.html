@@ -1,7 +1,7 @@
 <p-toolbar styleClass="p-mb-4">
    <div class="p-toolbar-group-left">
       <span class="p-toolbar-text p-mr-3"
-            style="font-size: 1.5em; font-weight: bold;">BasketBall Scouting</span>
+            style="font-size: 1.5em; font-weight: bold;">TRANSY</span>
       <ng-container *ngIf="authService.isAuthenticated()">
          <button pButton
                  type="button"
@@ -39,6 +39,7 @@
                     [raised]="true">
             </button>
 
+            <!--
             <p-menu #partitaMenu
                     [style]="{'min-width': '300px'}"
                     [model]="mnuPartita"
@@ -46,11 +47,12 @@
             </p-menu>
             <button pButton
                     type="button"
-                    label="Partita"
+                    label="Gestione Partita"
                     class="p-button-text ml-3 mnu-button"
                     (click)="partitaMenu.toggle($event)"
                     [raised]="true">
             </button>
+            -->
          </div>
       </ng-container>
    </div>

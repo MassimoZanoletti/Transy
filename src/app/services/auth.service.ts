@@ -4,7 +4,7 @@ import {
    loggedUser, InitLoggedUser
 } from "./users.service";
 import {MessDlgData,
-   User,
+   IDSUser,
    LogMessage} from "../models/datamod";
 import {firstValueFrom} from "rxjs";
 import {utils} from "../common/utils";
@@ -22,7 +22,7 @@ export class AuthService
    constructor (private userServ: UserService,
                 private logService: LogService)
    {
-      const lu = utils.GetFromSessionStorage<User>("BBS_Logged_User");
+      const lu = utils.GetFromSessionStorage<IDSUser>("BBS_Logged_User");
       if (lu)
       {
          loggedUser.id = lu?.id,

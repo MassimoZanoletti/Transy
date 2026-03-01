@@ -9,11 +9,11 @@ import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import {InputTextModule} from "primeng/inputtext";
-import {CreateEmptyMatchHeader, MatchHeader} from "../../models/datamod";
+import {CreateEmptyMatchHeader, IDSMatchHeader} from "../../models/datamod";
 import {CalendarModule} from "primeng/calendar";
 import { ColorPickerModule } from "primeng/colorpicker";
 import {DropdownModule} from 'primeng/dropdown';
-import {Team} from '../../models/datamod';
+import {IDSTeam} from '../../models/datamod';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { SelectButtonModule } from 'primeng/selectbutton';
@@ -50,15 +50,15 @@ export class MatchheaderCompComponent implements OnInit, OnDestroy
    @Input () mhIsNew: boolean = false;
    @Input () mhTitle: string = "";
    @Input () mhStagione: string = "";
-   @Input () mhMatchHeader: MatchHeader = CreateEmptyMatchHeader();
+   @Input () mhMatchHeader: IDSMatchHeader = CreateEmptyMatchHeader();
    @Input () mhMatchDate: Date = new Date();
-   @Input () listaTeams: Array<Team> = [];
+   @Input () listaTeams: Array<IDSTeam> = [];
    @Input () mhChampAbbrev: string = "";
 
-   @Output() salvaMatchHeader = new EventEmitter<{ mh: MatchHeader }>();
+   @Output() salvaMatchHeader = new EventEmitter<{ mh: IDSMatchHeader }>();
    @Output() annullaMatchHeader = new EventEmitter();
 
-   private origData: MatchHeader | null = null;
+   private origData: IDSMatchHeader | null = null;
    public atHomeOptions: any[] = [{ label: 'In Casa', value: true },{ label: 'In Trasferta', value: false }];
 
 

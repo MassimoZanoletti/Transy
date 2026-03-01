@@ -19,13 +19,13 @@ import {Table, TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
 import {
    MessDlgData,
-   Season,
-   Societa,
-   User,
-   Champ,
-   Phase,
-   Team,
-   IPlayer
+   IDSSeason,
+   IDSSocieta,
+   IDSUser,
+   IDSChamp,
+   IDSPhase,
+   IDSTeam,
+   IDSPlayer
 } from "../../models/datamod";
 import { FormsModule } from '@angular/forms';
 import {Router} from "@angular/router";
@@ -112,12 +112,12 @@ export class DatabaseComponent implements OnInit
       { field: 'anno', header: 'Anno', style: "" }
    ]
    //
-   selSocieta: Societa | null = null;
-   selSeason: Season | null = null;
-   selChamp: Champ | null = null;
-   selPhase: Phase | null = null;
-   selTeam: Team | null = null;
-   selPlayer: IPlayer | null = null;
+   selSocieta: IDSSocieta | null = null;
+   selSeason: IDSSeason | null = null;
+   selChamp: IDSChamp | null = null;
+   selPhase: IDSPhase | null = null;
+   selTeam: IDSTeam | null = null;
+   selPlayer: IDSPlayer | null = null;
    selId: number = 0;
    //
    vertDataPositions: string[] = ['0px', '52px', '104px', '156px', '208px', '260px', '312px'];
@@ -149,7 +149,7 @@ export class DatabaseComponent implements OnInit
 
 
    isLoading: boolean = false;
-   public tblData: Array<User> = [];
+   public tblData: Array<IDSUser> = [];
    @ViewChild('tabellaTable') ptblTabelle: Table | undefined;
    @ViewChild('tabellaDeiDati') ptblDati: Table | undefined;
 
@@ -719,32 +719,33 @@ export class DatabaseComponent implements OnInit
          this.currDati = evento;
          if (this.currTabella.nome == "Società")
          {
-            this.selSocieta = (this.currDati as Societa);
+            this.selSocieta = (this.currDati as IDSSocieta);
             this.currTabella.selName = this.selSocieta.nome;
          }
          else if (this.currTabella.nome == "Stagioni")
          {
-            this.selSeason = (this.currDati as Season);
+            this.selSeason = (this.currDati as IDSSeason);
             this.currTabella.selName = this.selSeason.nome;
          }
          else if (this.currTabella.nome == "Campionati")
          {
-            this.selChamp = (this.currDati as Champ);
+            this.selChamp = (this.currDati as IDSChamp);
             this.currTabella.selName = this.selChamp.nome;
          }
          else if (this.currTabella.nome == "Fasi")
          {
-            this.selPhase = (this.currDati as Phase);
+            this.selPhase = (this.currDati as IDSPhase);
             this.currTabella.selName = this.selPhase.nome;
          }
          else if (this.currTabella.nome == "Squadre")
          {
-            this.selTeam = (this.currDati as Team);
+            this.selTeam = (this.currDati as IDSTeam);
+            this.selTeam.type = "iteam";
             this.currTabella.selName = this.selTeam.nome;
          }
          else if (this.currTabella.nome == "Giocatori")
          {
-            this.selPlayer = (this.currDati as IPlayer);
+            this.selPlayer = (this.currDati as IDSPlayer);
             this.currTabella.selName = this.selPlayer.nomedisp;
             this.selId = this.selPlayer.id;
          }
@@ -881,7 +882,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica società";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selSocieta = (this.currDati as Societa);
+         this.selSocieta = (this.currDati as IDSSocieta);
          this.selId = this.selSocieta.id;
          this.dialogValue_Nome = this.selSocieta.nome;
       }
@@ -894,7 +895,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica stagione";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selSeason = (this.currDati as Season);
+         this.selSeason = (this.currDati as IDSSeason);
          this.selId = this.selSeason.id;
          this.dialogValue_Nome = this.selSeason.nome;
          this.dialogValue_Abbrev = this.selSeason.abbrev;
@@ -908,7 +909,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica campionato";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selChamp = (this.currDati as Champ);
+         this.selChamp = (this.currDati as IDSChamp);
          this.selId = this.selChamp.id;
          this.dialogValue_Nome = this.selChamp.nome;
          this.dialogValue_Abbrev = this.selChamp.abbrev;
@@ -922,7 +923,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica fase";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selPhase = (this.currDati as Phase);
+         this.selPhase = (this.currDati as IDSPhase);
          this.selId = this.selPhase.id;
          this.dialogValue_Nome = this.selPhase.nome;
          this.dialogValue_Abbrev = this.selPhase.abbrev;
@@ -936,7 +937,8 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica squadra";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selTeam = (this.currDati as Team);
+         this.selTeam = (this.currDati as IDSTeam);
+         this.selTeam.type = "iteam";
          this.selId = this.selTeam.id;
          this.dialogValue_Nome = this.selTeam.nome;
          this.dialogValue_Abbrev = this.selTeam.abbrev;
@@ -950,7 +952,7 @@ export class DatabaseComponent implements OnInit
          this.dialogOperazione = "Modifica giocatore";
          this.dialogError = false;
          this.dialogErrorMessage = "";
-         this.selPlayer = (this.currDati as IPlayer);
+         this.selPlayer = (this.currDati as IDSPlayer);
          this.selId = this.selPlayer.id;
          this.dialogValue_Nome = this.selPlayer.nomedisp;
          this.dialogValue_Anno = this.selPlayer.anno;
@@ -976,7 +978,7 @@ export class DatabaseComponent implements OnInit
          return;
       if (this.currTabella.nome == "Società")
       {
-         this.selSocieta = (this.currDati as Societa);
+         this.selSocieta = (this.currDati as IDSSocieta);
          currId = Number(this.selSocieta.id);
          currName = this.selSocieta.nome;
          nomeTabella = "la Società";
@@ -984,7 +986,7 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Stagioni")
       {
-         this.selSeason = (this.currDati as Season);
+         this.selSeason = (this.currDati as IDSSeason);
          currId = this.selSeason.id;
          currName = this.selSeason.nome;
          nomeTabella = "la SStagione";
@@ -992,7 +994,7 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Campionati")
       {
-         this.selChamp = (this.currDati as Champ);
+         this.selChamp = (this.currDati as IDSChamp);
          currId = this.selChamp.id;
          currName = this.selChamp.nome;
          nomeTabella = "il Campionato";
@@ -1000,7 +1002,7 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Fasi")
       {
-         this.selPhase = (this.currDati as Phase);
+         this.selPhase = (this.currDati as IDSPhase);
          currId = this.selPhase.id;
          currName = this.selPhase.nome;
          nomeTabella = "la Fase";
@@ -1008,7 +1010,8 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Squadre")
       {
-         this.selTeam = (this.currDati as Team);
+         this.selTeam = (this.currDati as IDSTeam);
+         this.selTeam.type = "iteam";
          currId = this.selTeam.id;
          currName = this.selTeam.nome;
          nomeTabella = "la Fase";
@@ -1016,7 +1019,7 @@ export class DatabaseComponent implements OnInit
       }
       else if (this.currTabella.nome == "Giocatori")
       {
-         this.selPlayer = (this.currDati as IPlayer);
+         this.selPlayer = (this.currDati as IDSPlayer);
          currId = this.selPlayer.id;
          currName = this.selPlayer.nomedisp;
          nomeTabella = "il Giocatore";
@@ -1359,7 +1362,7 @@ export class DatabaseComponent implements OnInit
                   {
                      await this.LoadTabellaSocieta();
                      this.cdr.detectChanges ();
-                     this.selSocieta = (this.tabellaDati.find(item => item.id === this.selId) as Societa) || null;
+                     this.selSocieta = (this.tabellaDati.find(item => item.id === this.selId) as IDSSocieta) || null;
                      if (this.selSocieta)
                      {
                         this.selSocieta.nome = this.dialogValue_Nome;
@@ -1417,7 +1420,7 @@ export class DatabaseComponent implements OnInit
                   {
                      await this.LoadTabellaStagioni();
                      this.cdr.detectChanges ();
-                     this.selSeason = (this.tabellaDati.find(item => item.id === this.selId) as Season) || null;
+                     this.selSeason = (this.tabellaDati.find(item => item.id === this.selId) as IDSSeason) || null;
                      if (this.selSeason)
                      {
                         this.selSeason.nome = this.dialogValue_Nome;
@@ -1475,7 +1478,7 @@ export class DatabaseComponent implements OnInit
                   {
                      await this.LoadTabellaCampionati();
                      this.cdr.detectChanges ();
-                     this.selChamp = (this.tabellaDati.find(item => item.id === this.selId) as Champ) || null;
+                     this.selChamp = (this.tabellaDati.find(item => item.id === this.selId) as IDSChamp) || null;
                      if (this.selChamp)
                      {
                         this.selChamp.nome = this.dialogValue_Nome;
@@ -1535,7 +1538,7 @@ export class DatabaseComponent implements OnInit
                   {
                      await this.LoadTabellaFasi();
                      this.cdr.detectChanges ();
-                     this.selPhase = (this.tabellaDati.find(item => item.id === this.selId) as Phase) || null;
+                     this.selPhase = (this.tabellaDati.find(item => item.id === this.selId) as IDSPhase) || null;
                      if (this.selPhase)
                      {
                         this.selPhase.nome = this.dialogValue_Nome;
@@ -1593,9 +1596,10 @@ export class DatabaseComponent implements OnInit
                   {
                      await this.LoadTabellaTeam();
                      this.cdr.detectChanges ();
-                     this.selTeam = (this.tabellaDati.find(item => item.id === this.selId) as Team) || null;
+                     this.selTeam = (this.tabellaDati.find(item => item.id === this.selId) as IDSTeam) || null;
                      if (this.selTeam)
                      {
+                        this.selTeam.type = "iteam";
                         this.selTeam.nome = this.dialogValue_Nome;
                         console.log (this.selTeam.nome);
                         await this.SetSerlectedValueTo (this.selTeam.nome);

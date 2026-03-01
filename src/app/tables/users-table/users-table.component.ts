@@ -15,7 +15,7 @@ import {ProgressSpinnerModule} from "primeng/progressspinner";
 import {TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
 import {MessDlgData,
-   User} from "../../models/datamod";
+   IDSUser} from "../../models/datamod";
 import {UserService} from "../../services/users.service";
 import {Router} from "@angular/router";
 import {MessageDialogService} from "../../services/message-dialog.service";
@@ -44,7 +44,7 @@ import { loggedUser } from "../../services/users.service";
 export class UsersTableComponent implements OnInit
 {
    isLoading: boolean = false;
-   public tblData: Array<User> = [];
+   public tblData: Array<IDSUser> = [];
 
 
    constructor (public router: Router,

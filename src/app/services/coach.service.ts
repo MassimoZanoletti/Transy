@@ -3,8 +3,8 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-   Team,
-   Coach
+   IDSTeam,
+   TDSCoach
 } from "../models/datamod";
 
 

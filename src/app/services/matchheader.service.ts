@@ -2,8 +2,8 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-   MatchHeaderDb,
-   MatchHeader, MatchHeadersData
+   IDSMatchHeaderDb,
+   IDSMatchHeader, IDSMatchHeadersData
 } from "../models/datamod";
 import { map,
    tap } from "rxjs/operators";
@@ -33,15 +33,15 @@ export class MatchheaderService
       if (phase != null)
          qryTenant = `&phase=${phase}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
-      return this.http.get<MatchHeadersData>(url).pipe (
+      return this.http.get<IDSMatchHeadersData>(url).pipe (
          tap (value => {  }),
          map ((dataFromDb) => {
             return {
                ok:         dataFromDb.ok,
                message:    dataFromDb.message,
                elements:   dataFromDb.elements.map (dbElement => {
-                     const dbElm: MatchHeaderDb = (dbElement as MatchHeaderDb);
-                     const mhElem: MatchHeader = this.MatchHeaderFromDb (dbElm);
+                     const dbElm: IDSMatchHeaderDb = (dbElement as IDSMatchHeaderDb);
+                     const mhElem: IDSMatchHeader = this.MatchHeaderFromDb (dbElm);
                      return mhElem;
                   } // map internal
                ) // map internal
@@ -87,7 +87,7 @@ export class MatchheaderService
    }
 
 
-   MatchHeaderFromDb (dnElem: MatchHeaderDb): MatchHeader
+   MatchHeaderFromDb (dnElem: IDSMatchHeaderDb): IDSMatchHeader
    {
       const dateOptions: Intl.DateTimeFormatOptions = {
          day: '2-digit',      // Garantisce 01, 02, ..., 31
@@ -109,7 +109,7 @@ export class MatchheaderService
          at = true;
       else
          at = false;
-      const result: MatchHeader = {
+      const result: IDSMatchHeader = {
          id: Number(dnElem.id),
          title: dnElem.title,
          matchNumber: Number(dnElem.matchnumber),
@@ -154,7 +154,7 @@ export class MatchheaderService
    }
 
 
-   MatchHeaderToDb (mh: MatchHeader): MatchHeaderDb
+   MatchHeaderToDb (mh: IDSMatchHeader): IDSMatchHeaderDb
    {
       const parts = mh.matchDateStr.split('/');
       const day = parseInt(parts[0], 10);
@@ -162,7 +162,7 @@ export class MatchheaderService
       const year = parseInt(parts[2], 10);
       mh.matchDate = new Date(year, month - 1, day);
       const dbDateStr: string = `${mh.matchDate.getFullYear()}-${String(mh.matchDate.getMonth()+1).padStart(2, '0')}-${String(mh.matchDate.getDate()).padStart(2, '0')}`;
-      const result: MatchHeaderDb = {
+      const result: IDSMatchHeaderDb = {
          id: Number(mh.id),
          phaseid_link: Number(mh.phaseId_link),
          myteamid_link: Number(mh.myTeamId_link),

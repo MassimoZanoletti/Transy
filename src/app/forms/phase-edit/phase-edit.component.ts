@@ -10,7 +10,7 @@ import { Router} from "@angular/router";
 import { PhaseService } from "../../services/phase.service";
 import {
    MessDlgData,
-   Phase
+   IDSPhase
 } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 
@@ -68,10 +68,10 @@ export class PhaseEditComponent implements OnInit
                                                                    {
                                                                       if (data.ok)
                                                                       {
-                                                                         this.nome = (data.elements as Phase).nome;
-                                                                         this.abbrev = (data.elements as Phase).abbrev;
-                                                                         this.champId = (data.elements as Phase).champid_link;
-                                                                         this.exportFolder = (data.elements as Phase).exportfolder;
+                                                                         this.nome = (data.elements as IDSPhase).nome;
+                                                                         this.abbrev = (data.elements as IDSPhase).abbrev;
+                                                                         this.champId = (data.elements as IDSPhase).champid_link;
+                                                                         this.exportFolder = (data.elements as IDSPhase).exportfolder;
                                                                       }
                                                                    }
                                                                    this.cdr.detectChanges();

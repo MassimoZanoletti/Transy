@@ -60,3 +60,15 @@ html, body {
 ::ng-deep .icona-default .p-menuitem-icon {
    color: #9a65f8 !important;
 }
+
+::ng-deep .icona-verde .p-menuitem-icon {
+   color: #55FF55 !important;
+}
+
+::ng-deep .icona-blu .p-menuitem-icon {
+   color: #0062f6 !important;
+}
+
+::ng-deep .icona-azzurra .p-menuitem-icon {
+   color: #00ffff !important;
+}

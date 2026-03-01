@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import { SeasonsService} from "../../services/seasons.service";
-import {MessDlgData, Season} from "../../models/datamod";
+import {MessDlgData, IDSSeason} from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 
 // PrimeNG modules
@@ -66,9 +66,9 @@ export class SeasonEditComponent implements OnInit
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as Season).nome;
-                                                                          this.abbrev = (data.elements as Season).abbrev;
-                                                                          this.tenantId = (data.elements as Season).tenantid_link;
+                                                                          this.nome = (data.elements as IDSSeason).nome;
+                                                                          this.abbrev = (data.elements as IDSSeason).abbrev;
+                                                                          this.tenantId = (data.elements as IDSSeason).tenantid_link;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();

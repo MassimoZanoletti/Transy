@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Societa } from '../models/datamod';
+import { IDSSocieta } from '../models/datamod';
 
 @Injectable({
                providedIn: 'root'

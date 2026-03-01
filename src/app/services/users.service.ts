@@ -2,11 +2,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../models/datamod';
+import { IDSUser } from '../models/datamod';
 
 
 
-export let loggedUser: User = {
+export let loggedUser: IDSUser = {
    id: 0,
    nome: "",
    password: "",

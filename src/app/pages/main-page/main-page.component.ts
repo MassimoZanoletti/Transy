@@ -22,16 +22,16 @@ import {CardModule} from 'primeng/card';
 import {DropdownModule} from "primeng/dropdown";
 import {CalendarModule} from "primeng/calendar";
 import {
-   Champ,
+   IDSChamp,
    EventoElement,
-   MatchHeaderDb,
-   MatchHeader,
+   IDSMatchHeaderDb,
+   IDSMatchHeader,
    MessDlgData,
-   Phase,
-   Season,
-   Societa,
+   IDSPhase,
+   IDSSeason,
+   IDSSocieta,
    TipoEvento,
-   CreateEmptyMatchHeader, Team, MatchRoster
+   CreateEmptyMatchHeader, IDSTeam, TDSMatchRoster
 } from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
@@ -131,12 +131,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    isLoadingData: number = 0;
    listaEventi: Array<EventoElement> = [];
    currEvent: EventoElement | null = null;
-   listaSocieta: Array<Societa> = [];
-   currSocieta: Societa | null = null;
-   oldSocieta: Societa | null = null;
-   listaStagioni: Array<Season> = [];
-   currSeason: Season | null = null;
-   oldSeason: Season | null = null;
+   listaSocieta: Array<IDSSocieta> = [];
+   currSocieta: IDSSocieta | null = null;
+   oldSocieta: IDSSocieta | null = null;
+   listaStagioni: Array<IDSSeason> = [];
+   currSeason: IDSSeason | null = null;
+   oldSeason: IDSSeason | null = null;
    debug: number = 0;
    fltrDlgRef: DynamicDialogRef | undefined;
    totRec: number = 0;
@@ -145,15 +145,15 @@ export class MainPageComponent implements OnInit, OnDestroy
    windowHeight: number = 110;
    scrollHeight: string = "110px";
    timerId: any;
-   listaCampionati: Array<Champ> = [];
-   currChamp: Champ | null = null;
-   listaFasi: Array<Phase> = [];
-   currFase: Phase | null = null;
-   listaMatch: Array<MatchHeader> = [];
-   currMatchHeader: MatchHeader | null = null;
-   diagMatchHeader: MatchHeader | null = null;
+   listaCampionati: Array<IDSChamp> = [];
+   currChamp: IDSChamp | null = null;
+   listaFasi: Array<IDSPhase> = [];
+   currFase: IDSPhase | null = null;
+   listaMatch: Array<IDSMatchHeader> = [];
+   currMatchHeader: IDSMatchHeader | null = null;
+   diagMatchHeader: IDSMatchHeader | null = null;
    diagMatchHeader_IsNew: boolean = false;
-   listaTeams: Array<Team> = [];
+   listaTeams: Array<IDSTeam> = [];
    diagMatchStatus_Status: matchStatusType.Status = { code: "NotPl",  desc: "Non Giocato",  abbrev: "NP" };
    diagMatchStatus_Items: Array<matchStatusType.Status> = [];
    firstCard: number = 0;
@@ -181,7 +181,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogVisible_MatchStatus: boolean = false;
    public dialogVisible_Players: boolean = false;
    public dialogVisible_Roster: boolean = false;
-   private selectedMatchHeader: MatchHeader = CreateEmptyMatchHeader();
+   private selectedMatchHeader: IDSMatchHeader = CreateEmptyMatchHeader();
 
    constructor (public router: Router,
                 private seasonServ: SeasonsService,
@@ -285,14 +285,14 @@ export class MainPageComponent implements OnInit, OnDestroy
    async LoadCfg()
    {
       await this.LoadSocieta();
-      const tmpSoc: Societa | null = utils.GetFromLocalStorage<Societa> ("BBS_CurrSocieta");
+      const tmpSoc: IDSSocieta | null = utils.GetFromLocalStorage<IDSSocieta> ("BBS_CurrSocieta");
       if (tmpSoc != null)
       {
          this.currSocieta = this.listaSocieta.find (soc => soc.id === tmpSoc.id) || null;
       }
       //
       await this.LoadSeasons((this.currSocieta)?this.currSocieta.id:null);
-      const tmpSeason: Season | null = utils.GetFromLocalStorage<Season> ("BBS_CurrSeason");
+      const tmpSeason: IDSSeason | null = utils.GetFromLocalStorage<IDSSeason> ("BBS_CurrSeason");
       if (tmpSeason != null)
       {
          this.currSeason = this.listaStagioni.find (season => season.id === tmpSeason.id) || null;
@@ -381,7 +381,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          }
          else
          {
-            const tmpChamp: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrChamp");
+            const tmpChamp: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrChamp");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.champService.getAllData (seasonId));
             if ((data) && (data.ok))
@@ -416,7 +416,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          }
          else
          {
-            const tempPhase: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrPhase");
+            const tempPhase: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrPhase");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.phaseService.getAllData (champId));
             if ((data) && (data.ok))
@@ -451,7 +451,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          }
          else
          {
-            const tempPhase: Champ | null = utils.GetFromSessionStorage<Champ> ("BBS_CurrPhase");
+            const tempPhase: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrPhase");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.teamService.getAllData (champId));
             if ((data) && (data.ok))
@@ -482,7 +482,7 @@ export class MainPageComponent implements OnInit, OnDestroy
          }
          else
          {
-            const tempMatch: MatchHeader | null = utils.GetFromSessionStorage<MatchHeader> ("BBS_CurrMatchHeader");
+            const tempMatch: IDSMatchHeader | null = utils.GetFromSessionStorage<IDSMatchHeader> ("BBS_CurrMatchHeader");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.matchHeaderServ.getAllData (phaseId));
             if ((data) && (data.ok))
@@ -1322,7 +1322,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async EditMatchHeader(match: MatchHeader)
+   async EditMatchHeader(match: IDSMatchHeader)
    {
       this.currMatchHeader = match;
       this.diagMatchHeader = CreateEmptyMatchHeader();
@@ -1355,7 +1355,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async DeleteMatchHeader(match: MatchHeader)
+   async DeleteMatchHeader(match: IDSMatchHeader)
    {
       const dlgData: MessDlgData = {
          title:               'Cancellazione Match',
@@ -1414,7 +1414,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async OpenMatch (match: MatchHeader)
+   async OpenMatch (match: IDSMatchHeader)
    {
       globs.openedMatchHeaderId = match.id;
       this.router.navigate(['/match'], { queryParams: { id: match.id, phaseid: this.currFase?.id, seasonid: this.currSeason?.id } });
@@ -1428,7 +1428,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async MatchStatus(match: MatchHeader)
+   async MatchStatus(match: IDSMatchHeader)
    {
       this.currMatchHeader = match;
       if (this.currMatchHeader)
@@ -1448,13 +1448,13 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async onMatchHeaderDblClick (item: MatchHeader)
+   async onMatchHeaderDblClick (item: IDSMatchHeader)
    {
       await this.OpenMatch(item);
    }
 
 
-   MatchStatusToString (item: MatchHeader): string
+   MatchStatusToString (item: IDSMatchHeader): string
    {
       switch (item.matchStatus)
       {
@@ -1465,7 +1465,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async SalvaMatchHeader(datiMH: { mh: MatchHeader})
+   async SalvaMatchHeader(datiMH: { mh: IDSMatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
       if (this.diagMatchHeader_IsNew)
@@ -1569,11 +1569,11 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
-   async SalvaMatchRosterDiag(event: [Array<MatchRoster>, MatchHeader])
+   async SalvaMatchRosterDiag(event: [Array<TDSMatchRoster>, IDSMatchHeader])
    {
       this.dialogVisible_Roster = false;
-      const mH: MatchHeader = event[1];
-      const mR: Array<MatchRoster> = event[0];
+      const mH: IDSMatchHeader = event[1];
+      const mR: Array<TDSMatchRoster> = event[0];
       //
       if (this.selectedMatchHeader)
       {

@@ -10,7 +10,7 @@ import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import {loggedUser, UserService} from "../../services/users.service";
 import { MessDlgData,
-   User } from "../../models/datamod";
+   IDSUser } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 import {ButtonDirective} from "primeng/button";
 import {CardModule} from "primeng/card";
@@ -80,8 +80,8 @@ export class UserEditComponent implements OnInit
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as User).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
-                                                                          this.password = (data.elements as User).password;
+                                                                          this.nome = (data.elements as IDSUser).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
+                                                                          this.password = (data.elements as IDSUser).password;
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();

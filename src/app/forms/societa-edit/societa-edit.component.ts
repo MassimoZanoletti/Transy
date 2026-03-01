@@ -10,7 +10,7 @@ import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import { SocietaService} from "../../services/societa.service";
 import { MessDlgData,
-   Societa} from "../../models/datamod";
+   IDSSocieta} from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
 import {ButtonDirective} from "primeng/button";
 import {CardModule} from "primeng/card";
@@ -64,7 +64,7 @@ export class SocietaEditComponent implements OnInit
                                                                     {
                                                                        if (data.ok)
                                                                        {
-                                                                          this.nome = (data.elements as Societa).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
+                                                                          this.nome = (data.elements as IDSSocieta).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();

@@ -9,12 +9,12 @@ import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import {InputTextModule} from "primeng/inputtext";
-import {CreateEmptyMatchHeader, CreateEmptyPlayer, MatchHeader, MessDlgData, TPlayer} from "../../models/datamod";
+import {CreateEmptyMatchHeader, CreateEmptyPlayer, IDSMatchHeader, MessDlgData, TDSPlayer} from "../../models/datamod";
 import {CalendarModule} from "primeng/calendar";
 import { ColorPickerModule } from "primeng/colorpicker";
 import {DropdownModule} from 'primeng/dropdown';
-import { IPlayer,
-        Team} from '../../models/datamod';
+import { IDSPlayer,
+        IDSTeam} from '../../models/datamod';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { SelectButtonModule } from 'primeng/selectbutton';
@@ -56,13 +56,13 @@ import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.comp
 export class PlayersCompComponent  implements OnInit, OnDestroy
 {
    @Input() teamId: number = 0;
-   @Output() salvaPlayers = new EventEmitter<Array<IPlayer>>();
+   @Output() salvaPlayers = new EventEmitter<Array<IDSPlayer>>();
    @Output() annullaPlayers = new EventEmitter();
 
    @ViewChild(PlayerEditCompComponent) playerEditComp!: PlayerEditCompComponent;
 
-   listaPlayers: Array<IPlayer> = [];
-   selectedPlayers: IPlayer[] = [];
+   listaPlayers: Array<IDSPlayer> = [];
+   selectedPlayers: IDSPlayer[] = [];
    titoloDiag: string = "";
    dialogVisible_PlayerEdit: boolean = false;
    teamName: string = "";
@@ -119,6 +119,25 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
 
    async LoadTabellaPlayer()
    {
+      const playersData = await firstValueFrom (this.servPlayer.getAllData(this.teamId));
+      if ((playersData) && (playersData.ok) && (playersData.elements))
+      {
+         this.listaPlayers = playersData.elements;
+      }
+      else
+      {
+         const dlgData: MessDlgData = {
+            title:      'ERRORE',
+            subtitle:   'Errore durante il caricamento dei dati dei giocatori dal server',
+            message:    `${playersData.message}`,
+            messtype:   'error',
+            btncaption: 'Chiudi'
+         };
+         this.messageDialogService.showMessage (dlgData, '600px');
+      }
+      this.cdr.detectChanges ();
+      //
+      /*
       this.servPlayer.getAllData(this.teamId).subscribe (data =>
                                                     {
                                                        if (data)
@@ -152,6 +171,7 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
                                                        }
                                                        this.cdr.detectChanges ();
                                                     });
+      */
    }
 
 
@@ -165,7 +185,7 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
    {
       if ((this.playerEditComp) && (this.listaPlayers.length > 0))
       {
-         let newPlayer: TPlayer = CreateEmptyPlayer();
+         let newPlayer: TDSPlayer = CreateEmptyPlayer();
          await this.playerEditComp.onComponentShow (newPlayer, `Nuovo giocatore di ${this.teamName}`);
       }
    }
@@ -177,7 +197,7 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
    }
 
 
-   async salvaPlayerEdit(newPlayer: TPlayer)
+   async salvaPlayerEdit(newPlayer: TDSPlayer)
    {
       this.dialogVisible_PlayerEdit = false;
       //

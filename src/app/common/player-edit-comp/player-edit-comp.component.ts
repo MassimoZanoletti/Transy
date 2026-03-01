@@ -12,7 +12,7 @@ import { DialogModule } from 'primeng/dialog';
 import {InputTextModule} from "primeng/inputtext";
 import {
    CreateEmptyPlayer,
-   TPlayer
+   TDSPlayer
 } from "../../models/datamod";
 import {CalendarModule} from "primeng/calendar";
 import { ColorPickerModule } from "primeng/colorpicker";
@@ -51,9 +51,9 @@ import {DividerModule} from 'primeng/divider';
 export class PlayerEditCompComponent  implements OnInit, OnDestroy
 {
    public titoloDiag: string = "";
-   public thePlayer: TPlayer = CreateEmptyPlayer();
+   public thePlayer: TDSPlayer = CreateEmptyPlayer();
 
-   @Output() salvaPlayer = new EventEmitter<TPlayer>();
+   @Output() salvaPlayer = new EventEmitter<TDSPlayer>();
    @Output() annullaPlayer = new EventEmitter();
 
 
@@ -74,7 +74,7 @@ export class PlayerEditCompComponent  implements OnInit, OnDestroy
    }
 
 
-   async onComponentShow(aPlayer: TPlayer,
+   async onComponentShow(aPlayer: TDSPlayer,
                          aTitle: string)
    {
       this.titoloDiag = aTitle;

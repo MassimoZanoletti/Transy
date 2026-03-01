@@ -27,21 +27,24 @@ import {TooltipModule} from 'primeng/tooltip';
 import {CardModule} from 'primeng/card';
 import {DropdownModule} from "primeng/dropdown";
 import {CalendarModule} from "primeng/calendar";
-import { TabViewModule } from 'primeng/tabview';
+import {TabViewChangeEvent, TabViewModule} from 'primeng/tabview';
+import { MenuItem } from 'primeng/api';
 import {
-   Champ,
+   IDSChamp,
    EventoElement,
-   MatchHeaderDb,
-   MatchHeader,
+   IDSMatchHeaderDb,
+   IDSMatchHeader,
    MessDlgData,
-   Phase,
-   Season,
-   Societa,
+   IDSPhase,
+   IDSSeason,
+   IDSSocieta,
    TipoEvento,
    CreateEmptyMatchHeader,
-   Team,
-   MatchRoster,
-   Coach
+   IDSTeam,
+   TDSMatchRoster,
+   TDSCoach,
+   TDSPlayer,
+   TMatchTeam, TMatchPlayer
 } from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
@@ -77,6 +80,10 @@ import {TeamService} from "../../services/team.service";
 import {MatchrosterService} from "../../services/matchroster.service";
 import {PlayerService} from "../../services/player.service";
 import {CoachService} from "../../services/coach.service";
+import {
+   matchGlobs, TCurrMatch,
+   TSavedMatch
+} from "../../common/curr-match";
 
 
 
@@ -111,7 +118,8 @@ import {CoachService} from "../../services/coach.service";
      InputTextModule,
      CalendarModule,
      PlayersCompComponent,
-     RosterCompComponent
+     RosterCompComponent,
+     MenuModule
   ],
   providers: [
      DialogService, // Fornisci il servizio per DynamicDialog
@@ -125,9 +133,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
    @ViewChild(RosterCompComponent) matchRosterComp!: RosterCompComponent;
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
-   @ViewChild('compTimer') compTimerInstance!: TimerCompComponent;
-   @ViewChild('compMyTeam') compMyTeamInstance!: TeamCompComponent;
-   @ViewChild('compOppoTeam') compOppoTeamInstance!: TeamCompComponent;
+   @ViewChild('compTimer') compTimer!: TimerCompComponent;
+   @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
+   @ViewChild('compOppoTeam') compOppoTeam!: TeamCompComponent;
    @ViewChild('compMyField1') compMyField1!: PlayerCompComponent;
    @ViewChild('compMyField2') compMyField2!: PlayerCompComponent;
    @ViewChild('compMyField3') compMyField3!: PlayerCompComponent;
@@ -166,27 +174,31 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public coloreCasa: string = "#ffffff";
    public coloreOspite: string = "#ff0000";
    public matchTitle: string = "";
-   public matchHeader: MatchHeader = CreateEmptyMatchHeader();
-   public listaRoster: Array<MatchRoster> = [];
-   public listaRosterCasa: Array<MatchRoster> = [];
-   public listaRosterFuori: Array<MatchRoster> = [];
-   public listaMyCoach: Array<Coach> = [];
-   public listaOppoCoach: Array<Coach> = [];
-   public listaTeams: Array<Team> = [];
+   public matchHeader: IDSMatchHeader = CreateEmptyMatchHeader();
+   public listaRoster: Array<TDSMatchRoster> = [];
+   public listaRosterCasa: Array<TDSMatchRoster> = [];
+   public listaRosterFuori: Array<TDSMatchRoster> = [];
+   public listaMyCoach: Array<TDSCoach> = [];
+   public listaOppoCoach: Array<TDSCoach> = [];
+   public listaTeams: Array<IDSTeam> = [];
    public homeTeamName: string = "";
    public awayTeamName: string = "";
    public homeCoach1: string = "";
    public homeCoach2: string = "";
    public awayCoach1: string = "";
    public awayCoach2: string = "";
-   public diagMatchHeader: MatchHeader | null = null;
+   public diagMatchHeader: IDSMatchHeader | null = null;
    public dialogVisible_MatchHeader: boolean = false;
-   public currSeason: Season | null = null;
-   public currPhase: Phase | null = null;
+   public currSeason: IDSSeason | null = null;
+   public currPhase: IDSPhase | null = null;
    public dialogVisible_Roster: boolean = false;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
+   public currSel: any = null;
+   public MyFieldPlayers: Array<PlayerCompComponent> = [];
+   public OppoFieldPlayers: Array<PlayerCompComponent> = [];
+   public itemsMenuPartita: MenuItem[] | undefined;
 
    constructor(private cdr: ChangeDetectorRef,
                private vcr: ViewContainerRef,
@@ -226,6 +238,34 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    ngOnInit()
    {
+      this.itemsMenuPartita = [
+         {
+            label: "",
+            items: [
+               {label: "Modifica Numeri/Nomi", icon: 'pi pi-book', styleClass: 'icona-default', routerLink: ['.']},
+               {label: "Azioni", icon: 'pi pi-bolt', styleClass: 'icona-gialla', routerLink: ['/']},
+               {label: "Tempi di gioco", icon: 'pi pi-stopwatch', styleClass: 'icona-default', routerLink: ['/']},
+               {label: "Falli totali", icon: 'pi pi-flag-fill', styleClass: 'icona-rossa', routerLink: ['/']}
+            ]
+         },
+         {
+            separator: true
+         },
+         {
+            label: "",
+            items: [
+               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', routerLink: ['/']},
+               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', routerLink: ['/']}
+            ]
+         },
+         {
+            label: ">>>>>>>>>DEBUG<<<<<<<<<",
+            items: [
+               {label: "Salva in storage", icon: 'pi pi-save', styleClass: 'icona-azzurra', command: () => { this.BtnCurrMatchSave()} },
+               {label: "Carica da storage", icon: 'pi pi-upload', styleClass: 'icona-azzurra', command: () => { this.BtnCurrMatchLoad()} }
+            ]
+         }
+      ];
       /*
       this.routeSubscription = this.route.queryParamMap.subscribe(params =>
                                                                   {
@@ -288,6 +328,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async ngAfterViewInit()
    {
+      matchGlobs.currSavedMatch.compTimer = this.compTimer;
       this.routeSubscription = this.route.queryParamMap.subscribe(params =>
                                                                   {
                                                                      this.route.queryParamMap.subscribe (params =>
@@ -342,6 +383,31 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async InitializeComponent()
    {
+      /*
+      if (matchGlobs.currMatch == null)
+         matchGlobs.currMatch = await TCurrMatch.Create(this.servMatchHeader, this.servMatchRoster, this.servTeam);
+      */
+      if (matchGlobs.currSavedMatch == null)
+         matchGlobs.currSavedMatch = new TSavedMatch();
+      if (await matchGlobs.currSavedMatch.LoadFromStorage())
+      {
+         if (matchGlobs.currSavedMatch.lastMatchId == globs.openedMatchHeaderId)
+         {
+            await this.SelezionaTab(matchGlobs.currSavedMatch.lastTabIndex);
+         }
+         else
+         {
+            await this.SelezionaTab(0);
+            matchGlobs.currSavedMatch.lastTabIndex = 0;
+            matchGlobs.currSavedMatch.lastMatchId = globs.openedMatchHeaderId;
+         }
+      }
+      //
+      if (matchGlobs.currMatch == null)
+      {
+         matchGlobs.currMatch = new TCurrMatch(this.servMatchHeader, this.servMatchRoster, this.servTeam);
+      }
+      //
       await this.LoadMatchHeader(globs.openedMatchHeaderId);
       await this.LoadMatchRoster(globs.openedMatchHeaderId);
       await this.LoadCoachs(globs.openedMatchHeaderId);
@@ -360,25 +426,25 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          this.homeCoach2 = String(this.matchHeader.myCoach2Id_link);
          if (this.matchHeader.myCoach1Id_link > 0)
          {
-            const ch: Coach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach1Id_link) == cc.id) as Coach);
+            const ch: TDSCoach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach1Id_link) == cc.id) as TDSCoach);
             if (ch)
                this.homeCoach1 = `${ch.nome}`;
          }
          if (this.matchHeader.myCoach2Id_link > 0)
          {
-            const ch: Coach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach2Id_link) == cc.id) as Coach);
+            const ch: TDSCoach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach2Id_link) == cc.id) as TDSCoach);
             if (ch)
                this.homeCoach2 = `${ch.nome}`;
          }
          if (this.matchHeader.oppoCoach1Id_link > 0)
          {
-            const ch: Coach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach1Id_link) == cc.id) as Coach);
+            const ch: TDSCoach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach1Id_link) == cc.id) as TDSCoach);
             if (ch)
                this.awayCoach1 = `${ch.nome}`;
          }
          if (this.matchHeader.oppoCoach2Id_link > 0)
          {
-            const ch: Coach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach2Id_link) == cc.id) as Coach);
+            const ch: TDSCoach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach2Id_link) == cc.id) as TDSCoach);
             if (ch)
                this.awayCoach2 = `${ch.nome}`;
          }
@@ -394,7 +460,45 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       //
       await this.CreateBenchComponents();
       //
+      this.MyFieldPlayers.push (this.compMyField1);
+      this.MyFieldPlayers.push (this.compMyField2);
+      this.MyFieldPlayers.push (this.compMyField3);
+      this.MyFieldPlayers.push (this.compMyField4);
+      this.MyFieldPlayers.push (this.compMyField5);
+      this.OppoFieldPlayers.push (this.compOppoField1);
+      this.OppoFieldPlayers.push (this.compOppoField2);
+      this.OppoFieldPlayers.push (this.compOppoField3);
+      this.OppoFieldPlayers.push (this.compOppoField4);
+      this.OppoFieldPlayers.push (this.compOppoField5);
+      //
+      if (matchGlobs.currMatch != null)
+      {
+         if ((matchGlobs.currMatch.myTeam != null) && (this.compMyTeam))
+            this.compMyTeam.matchTeamData = matchGlobs.currMatch.myTeam();
+         if ((matchGlobs.currMatch.oppTeam != null) && (this.compOppoTeam))
+            this.compOppoTeam.matchTeamData = matchGlobs.currMatch.oppTeam();
+      }
+      await this.compMyTeam.Update();
+      //await this.compOppoTeam.Update();
+      //
+      await matchGlobs.currSavedMatch.SaveToStorage();
+      //
       this.cdr.detectChanges();
+      //
+      const sn = matchGlobs.currMatch.myTeam()?.name()
+      await this.compMyTeam.AssingTeam(matchGlobs.currMatch.myTeam());
+   }
+
+
+   async BtnCurrMatchSave()
+   {
+      await matchGlobs.currMatch?.SaveToStorage();
+   }
+
+
+   async BtnCurrMatchLoad()
+   {
+      await matchGlobs.currMatch?.LoadFromStorage();
    }
 
 
@@ -404,7 +508,39 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if ((theData) && (theData.elements))
       {
          this.matchHeader = this.servMatchHeader.MatchHeaderFromDb(theData.elements);
+         matchGlobs.currMatch?.matchHeader.set(this.servMatchHeader.MatchHeaderFromDb(theData.elements));
+         console.log("matchGlobs.currMatch\n"+JSON.stringify(matchGlobs.currMatch,null,3)+"\n----------------------------------");
+         const myTeamData = await firstValueFrom (this.servTeam.getSingleData(this.matchHeader.myTeamId_link));
+         console.log("myTeamData\n"+JSON.stringify(myTeamData,null,3)+"\n----------------------------------");
+         if ((myTeamData) && (myTeamData.ok))
+            matchGlobs.currMatch?.myTeam()?.FromJson(myTeamData.elements);
+         console.log("matchGlobs.currMatch?.myTeam()\n"+JSON.stringify(matchGlobs.currMatch?.myTeam(),null,3)+"\n----------------------------------");
+         let nnn:string | undefined = "-";
+         try
+         {
+            const mt: TMatchTeam | null | undefined = matchGlobs.currMatch?.myTeam();
+            if (mt)
+               nnn = mt.name();
+         }
+         catch (e)
+         {
+            nnn = `Error: '${JSON.stringify(e)}'`;
+         }
+         console.log("matchGlobs.currMatch?.myTeam()?.name()\n"+nnn+"\n----------------------------------");
+         console.log("letto");
       }
+   }
+
+
+   GetTeamData(): TMatchTeam | null
+   {
+      if (this.compMyTeam)
+         if (this.compMyTeam.matchTeamData)
+            return this.compMyTeam.matchTeamData;
+         else
+            return null;
+      else
+         return null;
    }
 
 
@@ -418,7 +554,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          const theData = await firstValueFrom (this.servMatchRoster.getAllData(matchHeaderId));
          if ((theData) && (theData.elements))
          {
-            const fullList: Array<MatchRoster> = theData.elements;
+            const fullList: Array<TDSMatchRoster> = theData.elements;
             for (let iii=0;   iii<fullList.length;   iii++)
             {
                if (fullList[iii].isMyTeam)
@@ -437,8 +573,78 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                }
             }
          }
+         //
          this.listaRosterCasa.sort(this.OrdinaGiocatoriByNumero);
          this.listaRosterFuori.sort(this.OrdinaGiocatoriByNumero);
+         let myList:  TDSMatchRoster[] = [];
+         let oppoList:  TDSMatchRoster[] = [];
+         if (this.matchHeader.atHome)
+         {
+            myList = this.listaRosterCasa;
+            oppoList = this.listaRosterFuori;
+         }
+         else
+         {
+            myList = this.listaRosterFuori;
+            oppoList = this.listaRosterCasa;
+         }
+         if (matchGlobs.currMatch != null)
+         {
+            const cm: TCurrMatch = matchGlobs.currMatch;
+            if (cm.myTeam () != null)
+            {
+               const mt: TMatchTeam | null = cm.myTeam();
+               if (mt != null)
+               {
+                  mt.Roster = [];
+                  for (let iii = 0; iii < myList.length; iii++)
+                  {
+                     let plr: TMatchPlayer | null = new TMatchPlayer ();
+                     myList[iii].dbgMatch;
+                     myList[iii].dbgPlayer;
+                     myList[iii].matchHeaderId_link;
+                     myList[iii].matchRosterIndex;
+                     myList[iii].type;
+                     plr.playerRecID = myList[iii].playerId_link;
+                     plr.isMyTeam.set (myList[iii].isMyTeam);
+                     plr.playName.set (myList[iii].playerName_lk);
+                     plr.captain.set (myList[iii].capitano);
+                     plr.playNumber.set (myList[iii].playNumber);
+                     plr.inQuintetto.set (myList[iii].quintetto);
+                     plr.rosterRecID = myList[iii].id;
+                     mt.Roster.push (plr);
+                  }
+               }
+            }
+            //
+            const cm2: TCurrMatch = matchGlobs.currMatch;
+            if (cm2.oppTeam () != null)
+            {
+               const ot: TMatchTeam | null = cm2.oppTeam();
+               if (ot != null)
+               {
+                  ot.Roster = [];
+                  for (let iii = 0; iii < oppoList.length; iii++)
+                  {
+                     let plr: TMatchPlayer = new TMatchPlayer ();
+                     oppoList[iii].dbgMatch;
+                     oppoList[iii].dbgPlayer;
+                     oppoList[iii].matchHeaderId_link;
+                     oppoList[iii].matchRosterIndex;
+                     oppoList[iii].type;
+                     plr.playerRecID = oppoList[iii].playerId_link;
+                     plr.isMyTeam.set (oppoList[iii].isMyTeam);
+                     plr.playName.set (oppoList[iii].playerName_lk);
+                     plr.captain.set (oppoList[iii].capitano);
+                     plr.playNumber.set (oppoList[iii].playNumber);
+                     plr.inQuintetto.set (oppoList[iii].quintetto);
+                     plr.rosterRecID = oppoList[iii].id;
+                     ot.Roster.push (plr);
+                  }
+               }
+            }
+         }
+         //
       }
    }
 
@@ -666,8 +872,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   OrdinaGiocatoriByNumero (a: MatchRoster,
-                            b: MatchRoster): number
+   OrdinaGiocatoriByNumero (a: TDSMatchRoster,
+                            b: TDSMatchRoster): number
    {
       const numA = a.playNumber;
       const numB = b.playNumber;
@@ -699,6 +905,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async SelezionaTab(tabIndex: number)
    {
       this.tabActiveIndex = tabIndex;
+   }
+
+
+   async HandleTabChange (event: TabViewChangeEvent)
+   {
+      this.tabActiveIndex = event.index;
+      matchGlobs.currSavedMatch.lastTabIndex = event.index;
+      await matchGlobs.currSavedMatch.SaveToStorage();
    }
 
 
@@ -749,7 +963,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   async SalvaMatchHeader(datiMH: { mh: MatchHeader})
+   async SalvaMatchHeader(datiMH: { mh: IDSMatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
       this.matchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
@@ -793,11 +1007,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   async SalvaMatchRosterDiag(event: [Array<MatchRoster>, MatchHeader])
+   async SalvaMatchRosterDiag(event: [Array<TDSMatchRoster>, IDSMatchHeader])
    {
       this.dialogVisible_Roster = false;
-      const mH: MatchHeader = event[1];
-      const mR: Array<MatchRoster> = event[0];
+      const mH: IDSMatchHeader = event[1];
+      const mR: Array<TDSMatchRoster> = event[0];
       //
       if (this.matchHeader)
       {
@@ -815,15 +1029,17 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   TeamClicked(id: string)
+   async TeamClicked(id: string)
    {
       this.currTeam = id;
+      await this.UpdateSelection("team", id);
    }
 
 
-   PlayerClicked(id: string)
+   async PlayerClicked(id: string)
    {
       this.currPlayer = id;
+      await this.UpdateSelection("player", id);
    }
 
 
@@ -1046,8 +1262,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   BenchClicked(id: string)
+   async BenchClicked(id: string)
    {
+      await this.UpdateSelection("bench", id);
+
       const clickedRef = this.myBenchRefs.find(ref => ref.instance.componentId.toString() === id);
       if (clickedRef)
       {
@@ -1073,6 +1291,143 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          btncaption: 'Chiudi'
       };
       this.messageDialogService.showMessage (dlgData, '600px');
+   }
+
+
+   async ClearSelection()
+   {
+      this.currSel = null;
+      matchGlobs.currSavedMatch.currSelectionId = 0;
+      matchGlobs.currSavedMatch.currSelectionType = "";
+      this.currBench = "";
+      this.currPlayer = "";
+      this.currTeam = "";
+      this.compMyTeam.isSelected = false;
+      this.compOppoTeam.isSelected = false;
+      for (let iii=0;   iii<5;   iii++)
+      {
+         this.MyFieldPlayers[iii].isSelected = false;
+         this.OppoFieldPlayers[iii].isSelected = false;
+      }
+      for (let iii=0;   iii<this.myBenchRefs.length;   iii++)
+      {
+         this.myBenchRefs[iii].instance.isSelected = false;
+      }
+      for (let iii=0;   iii<this.oppoBenchRefs.length;   iii++)
+      {
+         this.oppoBenchRefs[iii].instance.isSelected = false;
+      }
+   }
+
+
+   async UpdateSelection (senderType: string,
+                          senderId: string)
+   {
+      await this.ClearSelection();
+      senderType = senderType.toLowerCase();
+      senderId = senderId.toLowerCase();
+      if (senderType == "team")
+      {
+         if (senderId == "compmyteam")
+         {
+            this.compMyTeam.isSelected = true;
+         }
+         else if (senderId == "compoppoteam")
+         {
+            this.compOppoTeam.isSelected = true;
+         }
+      }
+      else if (senderType == "player")
+      {
+         if (senderId == "pl1")
+         {
+            this.compMyField1.isSelected = true;
+         }
+         else if (senderId == "pl2")
+         {
+            this.compMyField2.isSelected = true;
+         }
+         else if (senderId == "pl3")
+         {
+            this.compMyField3.isSelected = true;
+         }
+         else if (senderId == "pl4")
+         {
+            this.compMyField4.isSelected = true;
+         }
+         else if (senderId == "pl5")
+         {
+            this.compMyField5.isSelected = true;
+         }
+         else if (senderId == "oppopl1")
+         {
+            this.compOppoField1.isSelected = true;
+         }
+         else if (senderId == "oppopl2")
+         {
+            this.compOppoField2.isSelected = true;
+         }
+         else if (senderId == "oppopl3")
+         {
+            this.compOppoField3.isSelected = true;
+         }
+         else if (senderId == "oppopl4")
+         {
+            this.compOppoField4.isSelected = true;
+         }
+         else if (senderId == "oppopl5")
+         {
+            this.compOppoField5.isSelected = true;
+         }
+      }
+      else if (senderType == "bench")
+      {
+
+      }
+      /*
+      {
+         if (sender.type == "iteam")
+         {
+            if (this.compMyTeam.teamName == (sender as ITeam).nome)
+            {
+               this.currSel = (sender as ITeam);
+               this.currSavedMatch.currSelectionId = (sender as ITeam).id;
+               this.currSavedMatch.currSelectionType = "team";
+               this.compMyTeam.isSelected = true;
+            }
+            if (this.compOppoTeam.teamName == (sender as ITeam).nome)
+            {
+               this.currSel = (sender as ITeam);
+               this.currSavedMatch.currSelectionId = (sender as ITeam).id;
+               this.currSavedMatch.currSelectionType = "team";
+               this.compOppoTeam.isSelected = true;
+            }
+         }
+         if (sender.type == "tdsplayer")
+         {
+            for (let iii=0;   iii<5;   iii++)
+            {
+               if (this.MyFieldPlayers[iii].playerName == (sender as TPlayer).nomedisp)
+               {
+                  this.currSel = (sender as TPlayer);
+                  this.currSavedMatch.currSelectionId = (sender as TPlayer).id;
+                  this.currSavedMatch.currSelectionType = "player";
+                  this.MyFieldPlayers[iii].isSelected = true;
+               }
+            }
+            for (let iii=0;   iii<5;   iii++)
+            {
+               if (this.OppoFieldPlayers[iii].playerName == (sender as TPlayer).nomedisp)
+               {
+                  this.currSel = (sender as TPlayer);
+                  this.currSavedMatch.currSelectionId = (sender as TPlayer).id;
+                  this.currSavedMatch.currSelectionType = "player";
+                  this.OppoFieldPlayers[iii].isSelected = true;
+               }
+            }
+         }
+      }
+      */
    }
 
 

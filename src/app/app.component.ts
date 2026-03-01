@@ -135,7 +135,9 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 
    // Definisci una variabile privata per il riferimento al menu
    private _strumentiMenuInstance!: Menu;
+   /*
    private _partitaMenuInstance!: Menu;
+   */
 
 
    // Usa un setter per @ViewChild per reagire quando il menu diventa disponibile
@@ -149,6 +151,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    }
 
 
+/*
    // Usa un setter per @ViewChild per reagire quando il menu diventa disponibile
    @ViewChild ('partitaMenu', {static: false})
    set partitaMenuRef (menu: Menu)
@@ -158,6 +161,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          this._partitaMenuInstance = menu;
       }
    }
+   */
 
 
    ngOnInit ()
@@ -251,12 +255,14 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    }
 
 
+   /*
    PartitaMenuClick (event: MouseEvent, menu: Menu)
    {
       // Qui `menu` è il riferimento valido passato dal template
       menu.toggle (event);
       this.cdr.detectChanges (); // Forziamo un ciclo di change detection
    }
+   */
 
 
    IsAdmin (): boolean

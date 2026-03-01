@@ -14,17 +14,17 @@ import {
    CreateEmptyMatchHeader,
    CreateEmptyMatchRoster,
    CreateEmptyPlayer,
-   MatchHeader,
+   IDSMatchHeader,
    MessDlgData,
-   TPlayer,
-   Coach, Societa
+   TDSPlayer,
+   TDSCoach, IDSSocieta
 } from "../../models/datamod";
 import {CalendarModule} from "primeng/calendar";
 import { ColorPickerModule } from "primeng/colorpicker";
 import {DropdownModule} from 'primeng/dropdown';
-import { IPlayer,
-   Team,
-   MatchRoster
+import { IDSPlayer,
+   IDSTeam,
+   TDSMatchRoster
 } from '../../models/datamod';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
@@ -74,7 +74,7 @@ import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.comp
 export class RosterCompComponent implements OnInit, OnDestroy
 {
 
-   @Output() salvaMatchRoster = new EventEmitter<[Array<MatchRoster>, MatchHeader]>();
+   @Output() salvaMatchRoster = new EventEmitter<[Array<TDSMatchRoster>, IDSMatchHeader]>();
    @Output() annullaMatchRoster = new EventEmitter();
 
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
@@ -82,20 +82,20 @@ export class RosterCompComponent implements OnInit, OnDestroy
 
 
    public titoloDiag: string = "Match";
-   public matchHeader: MatchHeader = CreateEmptyMatchHeader();
-   public listaRoster: Array<MatchRoster> = [];
-   public listaMyRoster: Array<MatchRoster> = [];
-   public listaOppoRoster: Array<MatchRoster> = [];
-   public selectedMy: MatchRoster = CreateEmptyMatchRoster();
-   public selectedOppo: MatchRoster = CreateEmptyMatchRoster();
+   public matchHeader: IDSMatchHeader = CreateEmptyMatchHeader();
+   public listaRoster: Array<TDSMatchRoster> = [];
+   public listaMyRoster: Array<TDSMatchRoster> = [];
+   public listaOppoRoster: Array<TDSMatchRoster> = [];
+   public selectedMy: TDSMatchRoster = CreateEmptyMatchRoster();
+   public selectedOppo: TDSMatchRoster = CreateEmptyMatchRoster();
    public dialogVisible_PlayNumber: boolean = false;
    public dialogPlayNumber_Value: string = "";
    public dialogPlayNumber_Nome: string = "";
    public dialogVisible_Players: number = 0;
    public dialogVisible_PlayerEdit: number = 0;
    public localChangeRoster: number = 0;
-   public listaMyCoach: Array<Coach> = [];
-   public listaOppoCoach: Array<Coach> = [];
+   public listaMyCoach: Array<TDSCoach> = [];
+   public listaOppoCoach: Array<TDSCoach> = [];
    editingRows: any[] = []; // Array per tenere traccia delle righe in modifica
    public myHeadCoachValue: any;
    public myViceValue: any;
@@ -264,8 +264,8 @@ export class RosterCompComponent implements OnInit, OnDestroy
    }
 
 
-   OrdinaGiocatoriByNumero (a: MatchRoster,
-                            b: MatchRoster): number
+   OrdinaGiocatoriByNumero (a: TDSMatchRoster,
+                            b: TDSMatchRoster): number
    {
       const numA = a.playNumber;
       const numB = b.playNumber;
@@ -317,7 +317,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
          const theData = await firstValueFrom (this.servMatchRoster.getAllData(matchHeaderId));
          if ((theData) && (theData.elements))
          {
-            const fullList: Array<MatchRoster> = theData.elements;
+            const fullList: Array<TDSMatchRoster> = theData.elements;
             for (let iii=0;   iii<fullList.length;   iii++)
             {
                if (fullList[iii].isMyTeam)
@@ -456,17 +456,19 @@ export class RosterCompComponent implements OnInit, OnDestroy
    }
 
 
-   BtnSalvaSelectPlayersDiagClick(giocatori: Array<IPlayer>)
+   BtnSalvaSelectPlayersDiagClick(giocatori: Array<IDSPlayer>)
    {
       for (let iii=0;   iii<giocatori.length;   iii++)
       {
-         let newPl: MatchRoster = CreateEmptyMatchRoster();
+         let newPl: TDSMatchRoster = CreateEmptyMatchRoster();
          newPl.id = 1000000+giocatori[iii].id;
          newPl.playerId_link = giocatori[iii].id;
          newPl.playerName_lk = giocatori[iii].nomedisp;
          newPl.playNumber = giocatori[iii].numero;
          newPl.isMyTeam = true;
          newPl.matchHeaderId_link = this.matchHeader.id;
+         newPl.dbgPlayer = giocatori[iii].nomedisp;
+         newPl.dbgMatch = this.matchHeader.title;
          if (this.dialogVisible_Players == 1)
          {
             newPl.isMyTeam = true;
@@ -600,6 +602,17 @@ export class RosterCompComponent implements OnInit, OnDestroy
             }
          }
       }
+      // controllo i campi di debug
+      if (result)
+      {
+         for (let iii=0;   iii<this.listaMyRoster.length;   iii++)
+         {
+            if (this.listaMyRoster[iii].dbgPlayer == "")
+               this.listaMyRoster[iii].dbgPlayer = this.listaMyRoster[iii].playerName_lk;
+            if (this.listaMyRoster[iii].dbgMatch == "")
+               this.listaMyRoster[iii].dbgMatch = this.matchHeader.title;
+         }
+      }
       return result;
    }
 
@@ -704,6 +717,17 @@ export class RosterCompComponent implements OnInit, OnDestroy
             }
          }
       }
+      // controllo i campi di debug
+      if (result)
+      {
+         for (let iii=0;   iii<this.listaOppoRoster.length;   iii++)
+         {
+            if (this.listaOppoRoster[iii].dbgPlayer == "")
+               this.listaOppoRoster[iii].dbgPlayer = this.listaOppoRoster[iii].playerName_lk;
+            if (this.listaOppoRoster[iii].dbgMatch == "")
+               this.listaOppoRoster[iii].dbgMatch = this.matchHeader.title;
+         }
+      }
       return result;
    }
 
@@ -735,7 +759,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
             teamName = this.matchHeader.myTeamNome_lk;
          if (this.dialogVisible_PlayerEdit == 2)
             teamName = this.matchHeader.oppoTeamNome_lk;
-         let newPlayer: TPlayer = CreateEmptyPlayer();
+         let newPlayer: TDSPlayer = CreateEmptyPlayer();
          await this.playerEditComp.onComponentShow (newPlayer, `Nuovo giocatore di ${teamName}`);
       }
    }
@@ -747,7 +771,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
    }
 
 
-   async BtnSalvaPlayerEdit(newPlayer: TPlayer)
+   async BtnSalvaPlayerEdit(newPlayer: TDSPlayer)
    {
       let teamId: number = 0;
 
@@ -769,7 +793,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
          //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
          if (this.dialogVisible_PlayerEdit == 1)
          {
-            let newRoster: MatchRoster = CreateEmptyMatchRoster();
+            let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();
             newRoster.id = 1000000+newPlayer.id;
             newRoster.playerId_link = newPlayer.id;
             newRoster.playerName_lk = newPlayer.nomedisp;
@@ -780,7 +804,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
          }
          if (this.dialogVisible_PlayerEdit == 2)
          {
-            let newRoster: MatchRoster = CreateEmptyMatchRoster();
+            let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();
             newRoster.id = 1000000+newPlayer.id;
             newRoster.playerId_link = newPlayer.id;
             newRoster.playerName_lk = newPlayer.nomedisp;

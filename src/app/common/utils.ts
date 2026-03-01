@@ -10,6 +10,7 @@
 
 
 import {Input} from "@angular/core";
+import {TCurrMatch} from "./curr-match";
 
 
 export namespace globs
@@ -29,6 +30,12 @@ export namespace globs
    export const RabbitMessagePrefix: string = `📣 `; // 📣
    export const bckColorFalli: Array<string> = ["#6c6c6c", "#ffaaaa", "#ffff99", "#ffbbbb", "#ff00ff", "#000000"];
    export const txtColorFalli: Array<string> = ["#00b400", "#0000ff", "#009900", "#ff0000", "#ffff00", "#ffffff"];
+   export const maxPlayerFouls: number = 5;
+   export const MaxRegQuarters: number = 4;
+   export const MaxExtraQuarters: number = 4;
+   export const FalliPerBonus: number = 4;
+   export const DurationRegulTime = 500;  // in secondi
+   export const DurationExtraTime = 300;  // in secondi
 };
 
 
@@ -533,6 +540,13 @@ export class utils
       }
    }
 
+
+   static GetTimeStr (aTimeInSec: number): string
+   {
+      const nn: number = Math.trunc(aTimeInSec / 60);
+      const ss: number = aTimeInSec % 60;
+      return `${utils.Dlt_PadDigits(nn, 1)}:${utils.Dlt_PadDigits(ss, 2)}`;
+   }
 
 }// class utils
 

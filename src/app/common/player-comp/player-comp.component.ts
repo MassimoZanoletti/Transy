@@ -1,14 +1,19 @@
 
-import {Component, OnInit, OnDestroy, Input, Output, EventEmitter} from '@angular/core';
+import {Component,
+   OnInit,
+   OnDestroy,
+   Input,
+   Output,
+   EventEmitter} from '@angular/core';
 import {CommonModule} from '@angular/common';
 // PrimeNG modules
 import {ButtonModule} from 'primeng/button';
-import {CardModule} from 'primeng/card';
 import {TooltipModule} from "primeng/tooltip";
 import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
-import { globs} from "../utils";
+import { globs } from "../utils";
+import {CreateEmptyPlayer, TDSPlayer} from "../../models/datamod";
 
 
 
@@ -34,6 +39,7 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    @Input() playerFouls: number = 0;
    @Input() playerMinutes: string = "";
    @Input() playerPoints: number = 0;
+   @Input() playerRef: TDSPlayer = CreateEmptyPlayer();
    @Input() colorNormal: string = globs.colorNotSelected
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
