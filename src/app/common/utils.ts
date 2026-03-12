@@ -17,6 +17,8 @@ export namespace globs
 {
    export let appName: string = "";
    export let appVersion: string = "";
+   export let appCopyrights: string = "";
+   export let appDate: string = "";
    export let colorNotSelected: string = "#333333";
    export let colorSelected: string = "#007700";
    export let openedMatchHeaderId: number = 0;

@@ -10,7 +10,8 @@
       (onClick)="menuPartita.toggle($event)"
       icon="pi pi-ellipsis-v"
       severity="help"
-      label="Gestione partita">
+      label="Gestione partita"
+      [style]="{'height': '30px', 'padding-top': '0', 'padding-bottom': '0', 'font-size': '0.85rem'}">
    </p-button>
 </div>
 
@@ -185,7 +186,7 @@
                   #compMyTeam
                   team__Name="{{matchHeader.myTeamNome_lk}}"
                   teamColor="{{matchHeader.myTeamColor}}"
-                  [matchTeamData]="GetTeamData()"
+                  [matchTeamData]="GetMyTeamData()"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compmyteam' == currTeam"
                ></app-team-comp>
@@ -207,6 +208,7 @@
                   #compOppoTeam
                   team__Name="{{matchHeader.oppoTeamNome_lk}}"
                   teamColor="{{matchHeader.oppoTeamColor}}"
+                  [matchTeamData]="GetOppoTeamData()"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compoppoteam' == currTeam"
                ></app-team-comp>

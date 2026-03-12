@@ -532,15 +532,15 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   GetTeamData(): TMatchTeam | null
+   GetMyTeamData(): TMatchTeam | null
    {
-      if (this.compMyTeam)
-         if (this.compMyTeam.matchTeamData)
-            return this.compMyTeam.matchTeamData;
-         else
-            return null;
-      else
-         return null;
+      return matchGlobs.currMatch?.myTeam() ?? null;
+   }
+
+
+   GetOppoTeamData(): TMatchTeam | null
+   {
+      return matchGlobs.currMatch?.oppTeam() ?? null;
    }
 
 

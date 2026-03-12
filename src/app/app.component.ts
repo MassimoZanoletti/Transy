@@ -63,14 +63,14 @@ import { filter } from 'rxjs/operators';
             })
 export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 {
-   public pkg: { name: string; version: string; copyrights: string } = currentPackage;
+   public pkg: { name: string; version: string; copyrights: string, comp_date: string } = currentPackage;
 
    title = 'BBSAuth';
    mnuPartita: MenuItem[] | undefined;
    mnuStrumenti: MenuItem[] | undefined;
-   appVersion: string = "V. ";
-   appTitle: string = "RS";
-   appCopyrights: string = "";
+   //appVersion: string = "V. ";
+   //appTitle: string = "RS";
+   //appCopyrights: string = "";
    separatore: string = "   ::     ";
 
    // Rimuovi la dichiarazione diretta tabelleMenuRef!: Menu;
@@ -126,10 +126,10 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          }
       ];
       //
-      this.appTitle = this.pkg.name;
-      ;
-      this.appVersion = `  (v. ${this.pkg.version})   `;
-      this.appCopyrights = `${this.pkg.copyrights}`;
+      globs.appName = this.pkg.name;
+      globs.appDate = this.pkg.comp_date;
+      globs.appVersion = `  (v. ${this.pkg.version})   `;
+      globs.appCopyrights = `${this.pkg.copyrights}`;
    }
 
 
@@ -292,4 +292,5 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 
 
    protected readonly loggedUser = loggedUser;
+   protected readonly globs = globs;
 }

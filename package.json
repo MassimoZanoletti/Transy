@@ -2,6 +2,7 @@
   "name": "TRANSY",
   "version": "0.2.0.512131",
   "copyrights": "© 2025/2026 by Massimo Zanoletti",
+  "comp_date": "2026-03-08",
   "scripts": {
     "clean": ".bin\\clean.bat",
     "clean-all": ".bin\\clean-all.bat",

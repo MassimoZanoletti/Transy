@@ -115,12 +115,23 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    GetTeamName(): string
    {
-      let result: string = "";
       if (this.matchTeamData != null)
-         result = `<${this.matchTeamData.name()}>`;
-      else
-         result = "XYZ";
-      return result;
+         return this.matchTeamData.name();
+      return "";
+   }
+
+
+   GetTotPunti(): number
+   {
+      return this.matchTeamData?.CalcPunti() ?? 0;
+   }
+
+
+   GetPuntiQuarto(): number
+   {
+      if (!this.matchTeamData) return 0;
+      const cq = this.matchTeamData.currQuarter() >= 0 ? this.matchTeamData.currQuarter() : 0;
+      return this.matchTeamData.GetQuarto(cq)?.punti ?? 0;
    }
 
 
@@ -239,84 +250,95 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    async GetStatTL(): Promise<string>
    {
-      //return `${await this.matchTeamData.CalcTLRealizz()}/${await this.matchTeamData.CalcTLTentati()} ${await this.matchTeamData.CalcTLPerc()}%`;
-      /*
-      const tlr: number = await this.matchTeamData.CalcTLRealizz();
-      return `0/0 0%`;
-      */
-      let result: string = "";
-      try
-      {
-         if (this.matchTeamData)
-         {
-            const tlr: number = this.matchTeamData.CalcTLRealizz ();
-            const tlt: number = this.matchTeamData.CalcTLTentati ();
-            const tlp: string = this.matchTeamData.CalcTLPerc ();
-            result = `${tlr}/${tlt} ${tlp}%`;
-         }
-      }
-      catch (e)
-      {
-         result = JSON.stringify(e);
-      }
-      if (this.matchTeamData)
-         result = this.matchTeamData.name();
-      console.log(`GetStatTL\n'${result}'\n--------------------`);
-      return result;
-      /*
-      return new Promise (resolve => {
-         const sss: string = `${tlr}/${tlt} ${tlp}%`;
-         resolve (sss);
-      });
-      */
+      if (!this.matchTeamData) return "";
+      const r = this.matchTeamData.CalcTLRealizz();
+      const t = this.matchTeamData.CalcTLTentati();
+      const p = this.matchTeamData.CalcTLPerc();
+      return t > 0 ? `${r}/${t} ${p}` : "";
    }
 
 
    GetStatT2(): string
    {
-      return "10/20 50%";
+      if (!this.matchTeamData) return "";
+      let r = 0, t = 0;
+      for (const pl of this.matchTeamData.Roster)
+      {
+         r += pl.CalcT2Realizz();
+         t += pl.CalcT2Tentati();
+      }
+      const p = t > 0 ? ((r * 100) / t).toFixed(0) : "0";
+      return t > 0 ? `${r}/${t} ${p}%` : "";
    }
 
 
    GetStatT3(): string
    {
-      return "4/10 40%";
+      if (!this.matchTeamData) return "";
+      let r = 0, t = 0;
+      for (const pl of this.matchTeamData.Roster)
+      {
+         r += pl.CalcT3Realizz();
+         t += pl.CalcT3Tentati();
+      }
+      const p = t > 0 ? ((r * 100) / t).toFixed(0) : "0";
+      return t > 0 ? `${r}/${t} ${p}%` : "";
    }
 
 
    GetStatTdC(): string
    {
-      return "14/30 47%";
+      if (!this.matchTeamData) return "";
+      let r = 0, t = 0;
+      for (const pl of this.matchTeamData.Roster)
+      {
+         r += pl.CalcT2Realizz() + pl.CalcT3Realizz();
+         t += pl.CalcT2Tentati() + pl.CalcT3Tentati();
+      }
+      const p = t > 0 ? ((r * 100) / t).toFixed(0) : "0";
+      return t > 0 ? `${r}/${t} ${p}%` : "";
    }
 
 
    GetStatPPer(): string
    {
-      return "12";
+      return this.matchTeamData ? `${this.matchTeamData.pPerse()}` : "";
    }
 
 
    GetStatPRec(): string
    {
-      return "9";
+      return this.matchTeamData ? `${this.matchTeamData.pRecuperate()}` : "";
    }
 
 
    GetStatFFat(): string
    {
-      return "11";
+      if (!this.matchTeamData) return "";
+      let total = 0;
+      for (const pl of this.matchTeamData.Roster)
+         total += pl.TotFalli();
+      return `${total}`;
    }
 
 
    GetStatFSub(): string
    {
-      return "13";
+      if (!this.matchTeamData) return "";
+      let total = 0;
+      for (const pl of this.matchTeamData.Roster)
+         total += pl.falliSubiti();
+      return `${total}`;
    }
 
 
    GetStatRimb(): string
    {
-      return "12<->8  [20]";
+      if (!this.matchTeamData) return "";
+      const d = this.matchTeamData.rimbDifesa();
+      const a = this.matchTeamData.rimbAttacco();
+      const tot = this.matchTeamData.CalcRimbalzi();
+      return `${d}<->${a} [${tot}]`;
    }
 
 

@@ -1,4 +1,32 @@
 
+::ng-deep #tab-match .p-tabview-nav li .p-tabview-nav-link {
+   padding: 4px 12px !important;
+   height: 40px !important;
+   min-height: unset !important;
+   line-height: 1 !important;
+   font-size: 0.85rem;
+   border: none !important;
+   border-radius: 4px 4px 0 0 !important;
+   background-color: transparent !important;
+   color: #aaa !important;
+}
+
+::ng-deep #tab-match .p-tabview-nav {
+   height: 40px !important;
+   min-height: unset !important;
+}
+
+::ng-deep #tab-match .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+   background-color: #6f3cc2 !important;
+   color: #ffe378 !important;
+   border-bottom-color: #422d6b !important;
+}
+
+::ng-deep #tab-match .p-tabview-nav li:not(.p-highlight):hover .p-tabview-nav-link {
+   background-color: rgba(59, 130, 246, 0.15) !important;
+   color: #ffffff !important;
+}
+
 .div-match-anag-title {
    display: flex;
    align-items: center;

@@ -1,5 +1,6 @@
 <p-toolbar styleClass="p-mb-4">
    <div class="p-toolbar-group-left">
+      <img src="assets/Transy-ico.png" alt="Transy" style="max-width: 64px; max-height: 64px; margin-right: 8px; vertical-align: middle;" />
       <span class="p-toolbar-text p-mr-3"
             style="font-size: 1.5em; font-weight: bold;">TRANSY</span>
       <ng-container *ngIf="authService.isAuthenticated()">
@@ -75,5 +76,5 @@
 </div>
 
 <div class="app-footer">
-   <p style="white-space: pre-wrap !important;">{{appTitle}} {{appVersion}}{{separatore}}{{appCopyrights}}</p>
+   <p style="white-space: pre-wrap !important;">{{globs.appName}} {{globs.appVersion}} {{globs.appDate}} {{separatore}}{{globs.appCopyrights}}</p>
 </div>
