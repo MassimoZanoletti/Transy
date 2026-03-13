@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "bbs": {
+    "transy": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/bbs",
+            "outputPath": "dist/transy",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -49,6 +49,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "./",
               "budgets": [
                 {
                   "type": "initial",
@@ -75,10 +76,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "bbs:build:production"
+              "buildTarget": "transy:build:production"
             },
             "development": {
-              "buildTarget": "bbs:build:development"
+              "buildTarget": "transy:build:development"
             }
           },
           "defaultConfiguration": "development"
