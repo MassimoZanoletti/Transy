@@ -788,27 +788,27 @@ export class TMatchPlayer
    public currCronotime: number = 0;
    public internalSort: number = 0;
 
-   public tempoGioco        = signal<number>(0);
-   public falliSubiti       = signal<number>(0);
-   public rimbAttacco       = signal<number>(0);
-   public rimbDifesa        = signal<number>(0);
-   public pRecuperate       = signal<number>(0);
-   public pPerse            = signal<number>(0);
-   public stoppSubite       = signal<number>(0);
-   public stoppFatte        = signal<number>(0);
-   public assist            = signal<number>(0);
-   public inTime            = signal<number>(0);
-   public outTime           = signal<number>(0);
-   public IsMyTeam          = signal<boolean>(true);
-   public inGioco           = signal<boolean>(false);
-   public inQuintetto       = signal<boolean>(false);
-   public isMyTeam          = signal<boolean>(true);
-   public falliFatti        = signal<TFallo[]>([]);
-   public realizzazioni		= signal<TRealizzazione[]>([]);
-   public plusMinus          = signal<number>(0);
-   public playName = signal<string>("");
-   public playNumber = signal<string>("");
-   public captain = signal<boolean>(false);
+   public tempoGioco          = signal<number>(0);
+   public falliSubiti         = signal<number>(0);
+   public rimbAttacco         = signal<number>(0);
+   public rimbDifesa          = signal<number>(0);
+   public pRecuperate         = signal<number>(0);
+   public pPerse              = signal<number>(0);
+   public stoppSubite         = signal<number>(0);
+   public stoppFatte          = signal<number>(0);
+   public assist              = signal<number>(0);
+   public inTime              = signal<number>(0);
+   public outTime             = signal<number>(0);
+   public IsMyTeam            = signal<boolean>(true);
+   public inGioco             = signal<boolean>(false);
+   public inQuintetto         = signal<boolean>(false);
+   public isMyTeam            = signal<boolean>(true);
+   public falliFatti          = signal<TFallo[]>([]);
+   public realizzazioni		   = signal<TRealizzazione[]>([]);
+   public plusMinus           = signal<number>(0);
+   public playName            = signal<string>("");
+   public playNumber          = signal<string>("");
+   public captain             = signal<boolean>(false);
 
 
    constructor()

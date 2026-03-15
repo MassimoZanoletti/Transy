@@ -1,0 +1,118 @@
+
+
+
+.form-container
+{
+   display: flex;
+   /*justify-content: center;*/
+   align-items: start;
+   width: 770px !important;   /* deve essere 70px meno della dimensione dichiarata nella dialog */
+   height: 630px;             /* deve essere 70px meno della dimensione dichiarata nella dialog */
+   margin-top: 15px !important;
+   border: solid 1px black;
+
+   mat-card {
+      width: 400px;
+      color: white;
+   }
+
+   mat-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+      margin-top: 8px;
+   }
+
+}
+
+
+.player-falli-card-header {
+   color: yellow;
+   font-size: 30px;
+   font-weight: bolder;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
+.player-falli-card-title {
+   color: white;
+   font-size: 22px;
+   font-weight: bold;
+   font-style: italic;
+   margin: 1px !important;
+   padding: 1px !important;
+}
+
+
+.form-group {
+   display: flex;
+   align-items: center;
+   margin-bottom: 0.9rem;
+   border: 1px solid #555;
+   border-radius: 6px;
+   padding: 0.25rem 0.5rem;
+}
+
+.fallo-label-col {
+   display: flex;
+   flex-direction: column;
+   width: 80px;
+   margin-right: 0.5rem;
+}
+
+.fallo-label-col label {
+   font-weight: bold;
+   width: auto;
+   margin-right: 0;
+}
+
+.fallo-info {
+   font-size: 0.9rem;
+   color: #ffcc44;
+   white-space: nowrap;
+}
+
+.form-group input,
+.form-group p-inputgroup {
+   flex: 1;
+}
+
+::ng-deep .chk-commesso .p-checkbox,
+::ng-deep .chk-commesso .p-checkbox-box {
+   width: 40px !important;
+   height: 40px !important;
+}
+
+::ng-deep .chk-commesso .p-checkbox-icon {
+   font-size: 1.5rem !important;
+}
+
+.chk-extra-label {
+   margin-left: 0.75rem;
+   margin-right: 0.25rem;
+   font-weight: bold;
+}
+
+.liberi-btn {
+   width: 2rem;
+   height: 2rem;
+   padding: 0;
+   justify-content: center;
+   background-color: #444;
+   border-color: #666;
+   color: #ccc;
+}
+
+.liberi-btn-active {
+   background-color: #1976d2;
+   border-color: #1976d2;
+   color: white;
+}
+
+.dialog-footer-buttons {
+   display: flex;
+   justify-content: flex-end;
+   gap: 0.2rem;
+   margin-left: auto !important;
+}
+

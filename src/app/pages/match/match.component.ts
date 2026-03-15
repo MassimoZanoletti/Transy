@@ -84,43 +84,47 @@ import {
    matchGlobs, TCurrMatch,
    TSavedMatch
 } from "../../common/curr-match";
+import {PlayerEditCompComponent} from "../../common/player-edit-comp/player-edit-comp.component";
+import { FalloDlgComponent } from "../../dialogs/fallo-dlg/fallo-dlg.component";
 
 
 
 @Component({
   selector:    'app-match',
   standalone:  true,
-  imports:     [
-     TableModule,
-     FormsModule,
-     CommonModule,
-     ButtonModule,
-     TooltipModule,
-     CardModule,
-     DropdownModule,
-     BlockUIModule,
-     ProgressSpinnerModule,
-     DividerModule,
-     CheckboxModule,
-     DialogModule,
-     DynamicDialogModule,
-     DataViewModule,
-     TabViewModule,
-     TimerCompComponent,
-     PlayerCompComponent,
-     TeamCompComponent,
-     BenchCompComponent,
-     PointsCompComponent,
-     DataCompComponent,
-     MatchheaderCompComponent,
-     MenuModule,
-     RouterLink,
-     InputTextModule,
-     CalendarModule,
-     PlayersCompComponent,
-     RosterCompComponent,
-     MenuModule
-  ],
+              imports: [
+                 TableModule,
+                 FormsModule,
+                 CommonModule,
+                 ButtonModule,
+                 TooltipModule,
+                 CardModule,
+                 DropdownModule,
+                 BlockUIModule,
+                 ProgressSpinnerModule,
+                 DividerModule,
+                 CheckboxModule,
+                 DialogModule,
+                 DynamicDialogModule,
+                 DataViewModule,
+                 TabViewModule,
+                 TimerCompComponent,
+                 PlayerCompComponent,
+                 TeamCompComponent,
+                 BenchCompComponent,
+                 PointsCompComponent,
+                 DataCompComponent,
+                 MatchheaderCompComponent,
+                 MenuModule,
+                 RouterLink,
+                 InputTextModule,
+                 CalendarModule,
+                 PlayersCompComponent,
+                 RosterCompComponent,
+                 MenuModule,
+                 PlayerEditCompComponent,
+                 FalloDlgComponent
+              ],
   providers: [
      DialogService, // Fornisci il servizio per DynamicDialog
      MessageService // Opzionale, per i messaggi
@@ -133,6 +137,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(MatchheaderCompComponent) matchHeaderComp!: MatchheaderCompComponent;
    @ViewChild(RosterCompComponent) matchRosterComp!: RosterCompComponent;
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
+   @ViewChild(FalloDlgComponent) playerFalliComp!: FalloDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
    @ViewChild('compOppoTeam') compOppoTeam!: TeamCompComponent;
@@ -189,6 +194,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public awayCoach2: string = "";
    public diagMatchHeader: IDSMatchHeader | null = null;
    public dialogVisible_MatchHeader: boolean = false;
+   public dialogVisible_Falli: boolean = false;
    public currSeason: IDSSeason | null = null;
    public currPhase: IDSPhase | null = null;
    public dialogVisible_Roster: boolean = false;
@@ -755,118 +761,116 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
       // MyTeam
       start = 0;
-      stop = this.listaRosterCasa.length;
-      if (stop > 6)
-         stop = 6;
-      for (let iii=start;   iii<stop;   iii++)
+      stop = 0;
+      if (matchGlobs.currMatch?.myTeam () != null)
       {
-         const benchRef = this.contMyBench1.createComponent(BenchCompComponent);
-         benchRef.instance.componentId = this.listaRosterCasa[iii].id.toString();
-         benchRef.instance.playerName = this.listaRosterCasa[iii].playerName_lk;
-         benchRef.instance.playerNum = this.listaRosterCasa[iii].playNumber;
-         benchRef.instance.isSelected = false;
-         //
-         benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-         benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-         //
-         this.myBenchRefs.push(benchRef);
-      }
-      if (this.listaRosterCasa.length > 6)
-      {
-         start = 6;
-         stop = this.listaRosterCasa.length;
-         if (stop > 12)
-            stop = 12;
-         for (let iii=start;   iii<stop;   iii++)
+         const mt: TMatchTeam | null = matchGlobs.currMatch.myTeam ();
+         if (mt != null)
          {
-            const benchRef = this.contMyBench2.createComponent(BenchCompComponent);
-            benchRef.instance.componentId = this.listaRosterCasa[iii].id.toString();
-            benchRef.instance.playerName = this.listaRosterCasa[iii].playerName_lk;
-            benchRef.instance.playerNum = this.listaRosterCasa[iii].playNumber;
-            benchRef.instance.isSelected = false;
-            //
-            benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-            benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-            //
-            this.myBenchRefs.push(benchRef);
-         }
-      }
-      if (this.listaRosterCasa.length > 12)
-      {
-         start = 12;
-         stop = this.listaRosterCasa.length;
-         if (stop > 18)
-            stop = 18;
-         for (let iii=start;   iii<stop;   iii++)
-         {
-            const benchRef = this.contMyBench3.createComponent(BenchCompComponent);
-            benchRef.instance.componentId = this.listaRosterCasa[iii].id.toString();
-            benchRef.instance.playerName = this.listaRosterCasa[iii].playerName_lk;
-            benchRef.instance.playerNum = this.listaRosterCasa[iii].playNumber;
-            benchRef.instance.isSelected = false;
-            //
-            benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-            benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-            //
-            this.myBenchRefs.push(benchRef);
+            stop = mt.Roster.length;
+            if (stop > 6)
+               stop = 6;
+            for (let iii=start;   iii<stop;   iii++)
+            {
+               const benchRef = this.contMyBench1.createComponent(BenchCompComponent);
+               benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
+               benchRef.instance.player = mt.Roster[iii];
+               benchRef.instance.isSelected = false;
+               benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+               benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+               this.myBenchRefs.push(benchRef);
+            }
+            if (mt.Roster.length > 6)
+            {
+               start = 6;
+               stop = mt.Roster.length;
+               if (stop > 12)
+                  stop = 12;
+               for (let iii=start;   iii<stop;   iii++)
+               {
+                  const benchRef = this.contMyBench2.createComponent(BenchCompComponent);
+                  benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
+                  benchRef.instance.player = mt.Roster[iii];
+                  benchRef.instance.isSelected = false;
+                  benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  this.myBenchRefs.push(benchRef);
+               }
+            }
+            if (mt.Roster.length > 12)
+            {
+               start = 12;
+               stop = mt.Roster.length;
+               if (stop > 18)
+                  stop = 18;
+               for (let iii=start;   iii<stop;   iii++)
+               {
+                  const benchRef = this.contMyBench3.createComponent(BenchCompComponent);
+                  benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
+                  benchRef.instance.player = mt.Roster[iii];
+                  benchRef.instance.isSelected = false;
+                  benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  this.myBenchRefs.push(benchRef);
+               }
+            }
          }
       }
       // OppoTeam
       start = 0;
-      stop = this.listaRosterFuori.length;
-      if (stop > 6)
-         stop = 6;
-      for (let iii=start;   iii<stop;   iii++)
+      stop = 0;
+      if (matchGlobs.currMatch?.oppTeam () != null)
       {
-         const benchRef = this.contOppoBench1.createComponent(BenchCompComponent);
-         benchRef.instance.componentId = this.listaRosterFuori[iii].id.toString();
-         benchRef.instance.playerName = this.listaRosterFuori[iii].playerName_lk;
-         benchRef.instance.playerNum = this.listaRosterFuori[iii].playNumber;
-         benchRef.instance.isSelected = false;
-         //
-         benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-         benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-         //
-         this.oppoBenchRefs.push(benchRef);
-      }
-      if (this.listaRosterFuori.length > 6)
-      {
-         start = 6;
-         stop = this.listaRosterFuori.length;
-         if (stop > 12)
-            stop = 12;
-         for (let iii=start;   iii<stop;   iii++)
+         const ot: TMatchTeam | null = matchGlobs.currMatch.oppTeam ();
+         if (ot != null)
          {
-            const benchRef = this.contOppoBench2.createComponent(BenchCompComponent);
-            benchRef.instance.componentId = this.listaRosterFuori[iii].id.toString();
-            benchRef.instance.playerName = this.listaRosterFuori[iii].playerName_lk;
-            benchRef.instance.playerNum = this.listaRosterFuori[iii].playNumber;
-            benchRef.instance.isSelected = false;
-            //
-            benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-            benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-            //
-            this.oppoBenchRefs.push(benchRef);
-         }
-      }
-      if (this.listaRosterFuori.length > 12)
-      {
-         start = 12;
-         stop = this.listaRosterFuori.length;
-         if (stop > 18)
-            stop = 18;
-         for (let iii=start;   iii<stop;   iii++)
-         {
-            const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
-            benchRef.instance.componentId = this.listaRosterFuori[iii].id.toString();
-            benchRef.instance.playerName = this.listaRosterFuori[iii].playerName_lk;
-            benchRef.instance.playerNum = this.listaRosterFuori[iii].playNumber;
-            benchRef.instance.isSelected = false;
-            //
-            benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-            benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
-            //
-            this.oppoBenchRefs.push(benchRef);
+            stop = ot.Roster.length;
+            if (stop > 6)
+               stop = 6;
+            for (let iii=start;   iii<stop;   iii++)
+            {
+               const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
+               benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
+               benchRef.instance.player = ot.Roster[iii];
+               benchRef.instance.isSelected = false;
+               benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+               benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+               this.oppoBenchRefs.push(benchRef);
+            }
+            if (ot.Roster.length > 6)
+            {
+               start = 6;
+               stop = ot.Roster.length;
+               if (stop > 12)
+                  stop = 12;
+               for (let iii=start;   iii<stop;   iii++)
+               {
+                  const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
+                  benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
+                  benchRef.instance.player = ot.Roster[iii];
+                  benchRef.instance.isSelected = false;
+                  benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  this.oppoBenchRefs.push(benchRef);
+               }
+            }
+            if (ot.Roster.length > 12)
+            {
+               start = 12;
+               stop = ot.Roster.length;
+               if (stop > 18)
+                  stop = 18;
+               for (let iii=start;   iii<stop;   iii++)
+               {
+                  const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
+                  benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
+                  benchRef.instance.player = ot.Roster[iii];
+                  benchRef.instance.isSelected = false;
+                  benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
+                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  this.oppoBenchRefs.push(benchRef);
+               }
+            }
          }
       }
    }
@@ -998,6 +1002,25 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       if (this.matchRosterComp)
          await this.matchRosterComp.onComponentShow(this.matchHeader.id, "");
+   }
+
+
+   async onFalliDialogShow()
+   {
+      if (this.playerFalliComp)
+         await this.playerFalliComp.onComponentShow(null, "");
+   }
+
+
+   salvaPlayerFalli(event: TMatchPlayer | null)
+   {
+      this.dialogVisible_Falli = false;
+   }
+
+
+   annullaPlayerFalli()
+   {
+      this.dialogVisible_Falli = false;
    }
 
 
@@ -1195,69 +1218,166 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compRimb)
          {
-            this.compRimb.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.rimbDifesa.set(player.rimbDifesa() + 1);
+               this.UpdateCommandsData(player);
+               this.compRimb.Flash();
+            }
          }
       }
       else if (id == "data-palle")
       {
-         if (this.compPalle)
+         (this.compPalle)
          {
-            this.compPalle.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.pPerse.set(player.pPerse() + 1);
+               this.UpdateCommandsData(player);
+               this.compPalle?.Flash();
+            }
          }
       }
       else if (id == "data-stopp")
       {
          if (this.compStopp)
          {
-            this.compStopp.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.stoppSubite.set(player.stoppSubite() + 1);
+               this.UpdateCommandsData(player);
+               this.compStopp?.Flash();
+            }
          }
       }
       else if (id == "data-assist")
       {
          if (this.compAssist)
          {
-            this.compAssist.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.assist.set(player.assist() + 1);
+               this.UpdateCommandsData(player);
+               this.compAssist?.Flash();
+            }
          }
       }
       else if (id == "data-falli")
       {
          if (this.compFalli)
          {
-            this.compFalli.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               //player.assist.set(player.assist() + 1);
+               this.dialogVisible_Falli = true;
+               this.UpdateCommandsData(player);
+               this.compFalli?.Flash();
+            }
          }
       }
    }
 
 
-   DataBtn2Clicked (id: string)
+   async DataBtn2Clicked (id: string)
    {
       if (id == "data-rimb")
       {
          if (this.compRimb)
          {
-            this.compRimb.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.rimbAttacco.set(player.rimbAttacco() + 1);
+               this.UpdateCommandsData(player);
+               this.compRimb.Flash();
+            }
          }
       }
       else if (id == "data-palle")
       {
-         if (this.compPalle)
+         (this.compPalle)
          {
-            this.compPalle.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.pRecuperate.set(player.pRecuperate() + 1);
+               this.UpdateCommandsData(player);
+               this.compPalle?.Flash();
+            }
          }
       }
       else if (id == "data-stopp")
       {
          if (this.compStopp)
          {
-            this.compStopp.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.stoppFatte.set(player.stoppFatte() + 1);
+               this.UpdateCommandsData(player);
+               this.compStopp?.Flash();
+            }
          }
       }
       else if (id == "data-falli")
       {
          if (this.compFalli)
          {
-            this.compFalli.Flash();
+            const player = this.GetPlayerByBenchId(this.currBench);
+            if (player)
+            {
+               player.falliSubiti.set(player.falliSubiti() + 1);
+               this.UpdateCommandsData(player);
+               this.compFalli?.Flash();
+            }
          }
+      }
+   }
+
+
+   GetPlayerByBenchId(id: string): TMatchPlayer | null
+   {
+      const myRef = this.myBenchRefs.find(ref => ref.instance.componentId === id);
+      if (myRef?.instance.player)
+         return myRef.instance.player;
+      const oppoRef = this.oppoBenchRefs.find(ref => ref.instance.componentId === id);
+      if (oppoRef?.instance.player)
+         return oppoRef.instance.player;
+      return null;
+   }
+
+
+   UpdateCommandsData(player: TMatchPlayer | null)
+   {
+      if (this.compPalle)
+      {
+         this.compPalle.dato1 = player ? player.pPerse().toString()      : "0";
+         this.compPalle.dato2 = player ? player.pRecuperate().toString() : "0";
+      }
+      if (this.compRimb)
+      {
+         this.compRimb.dato1 = player ? player.rimbDifesa().toString()  : "0";
+         this.compRimb.dato2 = player ? player.rimbAttacco().toString() : "0";
+         this.compRimb.dato  = player ? `Totali ${player.rimbDifesa() + player.rimbAttacco()}` : "";
+      }
+      if (this.compStopp)
+      {
+         this.compStopp.dato1 = player ? player.stoppSubite().toString()   : "0";
+         this.compStopp.dato2 = player ? player.stoppFatte().toString()    : "0";
+      }
+      if (this.compAssist)
+      {
+         this.compAssist.dato1 = player ? player.assist().toString()   : "0";
+      }
+      if (this.compFalli)
+      {
+         this.compStopp.dato1 = player ? player.GetFalliFatti().toString()   : "0";
+         this.compFalli.dato2 = player ? player.falliSubiti().toString()    : "0";
       }
    }
 
@@ -1266,17 +1386,22 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       await this.UpdateSelection("bench", id);
 
-      const clickedRef = this.myBenchRefs.find(ref => ref.instance.componentId.toString() === id);
-      if (clickedRef)
+      const clickedMyRef = this.myBenchRefs.find(ref => ref.instance.componentId.toString() === id);
+      if (clickedMyRef)
       {
-         clickedRef.instance.isSelected = true;
+         clickedMyRef.instance.isSelected = true;
+      }
+      else
+      {
+         const clickedOppoRef = this.oppoBenchRefs.find(ref => ref.instance.componentId.toString() === id);
+         if (clickedOppoRef)
+         {
+            clickedOppoRef.instance.isSelected = true;
+         }
       }
 
       this.currBench = id;
-      const bbb = this.listaRosterCasa.find(elem =>  elem.id.toString() == id)
-      if (bbb)
-      {
-      }
+      this.UpdateCommandsData(this.GetPlayerByBenchId(id));
    }
 
 
@@ -1302,6 +1427,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       this.currBench = "";
       this.currPlayer = "";
       this.currTeam = "";
+      this.UpdateCommandsData(null);
       this.compMyTeam.isSelected = false;
       this.compOppoTeam.isSelected = false;
       for (let iii=0;   iii<5;   iii++)

@@ -1,0 +1,152 @@
+
+<div id="player-falli-form"
+     class="form-container">
+   <p-card>
+
+      <ng-template pTemplate="header">
+         <p class="player-falli-card-header">FALLI</p>
+      </ng-template>
+
+      <ng-template pTemplate="title">
+         <p class="player-falli-card-title">Giocatore: {{PlayerName()}}</p>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+
+         <div class="form-group">
+            <div class="fallo-label-col">
+               <label>Fallo 1:</label>
+               <span *ngIf="falli[0].fCommesso" class="fallo-info">{{FalloTempo(0)}}</span>
+            </div>
+            <p-checkbox class="chk-commesso" [(ngModel)]="falli[0].fCommesso" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="falli[0].numLiberi === 0" (click)="falli[0].numLiberi = 0"></button>
+            <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="falli[0].numLiberi === 1" (click)="falli[0].numLiberi = 1"></button>
+            <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="falli[0].numLiberi === 2" (click)="falli[0].numLiberi = 2"></button>
+            <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="falli[0].numLiberi === 3" (click)="falli[0].numLiberi = 3"></button>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Tecnico</label>
+            <p-checkbox [(ngModel)]="falli[0].fTecnico" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Antisp.</label>
+            <p-checkbox [(ngModel)]="falli[0].fAntisportivo" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Espulso</label>
+            <p-checkbox [(ngModel)]="falli[0].fEspulsione" [binary]="true"></p-checkbox>
+         </div>
+
+         <div class="form-group">
+            <div class="fallo-label-col">
+               <label>Fallo 2:</label>
+               <span *ngIf="falli[1].fCommesso" class="fallo-info">{{FalloTempo(1)}}</span>
+            </div>
+            <p-checkbox class="chk-commesso" [(ngModel)]="falli[1].fCommesso" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="falli[1].numLiberi === 0" (click)="falli[1].numLiberi = 0"></button>
+            <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="falli[1].numLiberi === 1" (click)="falli[1].numLiberi = 1"></button>
+            <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="falli[1].numLiberi === 2" (click)="falli[1].numLiberi = 2"></button>
+            <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="falli[1].numLiberi === 3" (click)="falli[1].numLiberi = 3"></button>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Tecnico</label>
+            <p-checkbox [(ngModel)]="falli[1].fTecnico" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Antisp.</label>
+            <p-checkbox [(ngModel)]="falli[1].fAntisportivo" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Espulso</label>
+            <p-checkbox [(ngModel)]="falli[1].fEspulsione" [binary]="true"></p-checkbox>
+         </div>
+
+         <div class="form-group">
+            <div class="fallo-label-col">
+               <label>Fallo 3:</label>
+               <span *ngIf="falli[2].fCommesso" class="fallo-info">{{FalloTempo(2)}}</span>
+            </div>
+            <p-checkbox class="chk-commesso" [(ngModel)]="falli[2].fCommesso" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="falli[2].numLiberi === 0" (click)="falli[2].numLiberi = 0"></button>
+            <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="falli[2].numLiberi === 1" (click)="falli[2].numLiberi = 1"></button>
+            <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="falli[2].numLiberi === 2" (click)="falli[2].numLiberi = 2"></button>
+            <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="falli[2].numLiberi === 3" (click)="falli[2].numLiberi = 3"></button>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Tecnico</label>
+            <p-checkbox [(ngModel)]="falli[2].fTecnico" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Antisp.</label>
+            <p-checkbox [(ngModel)]="falli[2].fAntisportivo" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Espulso</label>
+            <p-checkbox [(ngModel)]="falli[2].fEspulsione" [binary]="true"></p-checkbox>
+         </div>
+
+         <div class="form-group">
+            <div class="fallo-label-col">
+               <label>Fallo 4:</label>
+               <span *ngIf="falli[3].fCommesso" class="fallo-info">{{FalloTempo(3)}}</span>
+            </div>
+            <p-checkbox class="chk-commesso" [(ngModel)]="falli[3].fCommesso" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="falli[3].numLiberi === 0" (click)="falli[3].numLiberi = 0"></button>
+            <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="falli[3].numLiberi === 1" (click)="falli[3].numLiberi = 1"></button>
+            <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="falli[3].numLiberi === 2" (click)="falli[3].numLiberi = 2"></button>
+            <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="falli[3].numLiberi === 3" (click)="falli[3].numLiberi = 3"></button>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Tecnico</label>
+            <p-checkbox [(ngModel)]="falli[3].fTecnico" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Antisp.</label>
+            <p-checkbox [(ngModel)]="falli[3].fAntisportivo" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Espulso</label>
+            <p-checkbox [(ngModel)]="falli[3].fEspulsione" [binary]="true"></p-checkbox>
+         </div>
+
+         <div class="form-group">
+            <div class="fallo-label-col">
+               <label>Fallo 5:</label>
+               <span *ngIf="falli[4].fCommesso" class="fallo-info">{{FalloTempo(4)}}</span>
+            </div>
+            <p-checkbox class="chk-commesso" [(ngModel)]="falli[4].fCommesso" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="falli[4].numLiberi === 0" (click)="falli[4].numLiberi = 0"></button>
+            <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="falli[4].numLiberi === 1" (click)="falli[4].numLiberi = 1"></button>
+            <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="falli[4].numLiberi === 2" (click)="falli[4].numLiberi = 2"></button>
+            <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="falli[4].numLiberi === 3" (click)="falli[4].numLiberi = 3"></button>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Tecnico</label>
+            <p-checkbox [(ngModel)]="falli[4].fTecnico" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Antisp.</label>
+            <p-checkbox [(ngModel)]="falli[4].fAntisportivo" [binary]="true"></p-checkbox>
+            <p-divider layout="vertical" class="form-group-divider"></p-divider>
+            <label class="chk-extra-label">Espulso</label>
+            <p-checkbox [(ngModel)]="falli[4].fEspulsione" [binary]="true"></p-checkbox>
+         </div>
+
+
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+
+         <div class="flex justify-content-between align-items-center w-full"
+              style="background-color: #161c2d;">
+            <div class="flex dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="Annulla()"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-success"
+                  (click)="Salva()"
+               ></button>
+            </div>
+         </div>
+      </ng-template>
+   </p-card>
+</div>

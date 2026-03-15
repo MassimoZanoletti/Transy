@@ -8,16 +8,16 @@
         class="flex div-be-riga1-numero-quint align-items-center gap-1">
       <div id="div-be-riga1-quint"
            class="div-be-riga1-quint">
-         O
+         {{GetQuintetto()}}
       </div>
       <div id="div-be-riga1-numero"
            class="div-be-riga1-numero">
-         {{playerNum}}
+         {{GetPlayerNum()}}
       </div>
    </div>
    <div id="div-be-riga2-nome"
         class="div-be-riga2-nome">
-      {{playerName}}
+      {{GetPlayerName()}}
    </div>
    <div id="div-be-riga3-falli-punti"
         class="div-be-riga3-falli-punti flex align-items-center gap-1">
@@ -42,6 +42,6 @@
    </div>
    <div id="div-be-riga4-tempo"
         class="div-be-riga4-tempo">
-      00:00
+      {{GetMinuti()}}
    </div>
 </div>

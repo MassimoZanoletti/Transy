@@ -88,7 +88,7 @@
 <app-player-comp
    componentId="pl5"
    playerNumber="8"
-   playerName="Chamberlein W."
+   playerName="Chamberlain W."
    [playerFouls]="4"
    playerMinutes="00:00"
    [playerPoints]="32"
@@ -99,8 +99,6 @@
 
 <app-bench-comp
    componentId="b1"
-   playerName="Briant K."
-   playerNum="24"
    (componentClicked)="BenchClicked($event)"
    (componentDoubleClicked)="BenchDoubleClicked($event)"
    [isSelected]="'b1' == currBench"
@@ -108,8 +106,6 @@
 </app-bench-comp>
 <app-bench-comp
    componentId="b2"
-   playerName="Chamberlein W."
-   playerNum="8"
    (componentClicked)="BenchClicked($event)"
    (componentDoubleClicked)="BenchDoubleClicked($event)"
    [isSelected]="'b2' == currBench"

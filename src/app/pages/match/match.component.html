@@ -223,7 +223,7 @@
                   #compMyField1
                   playerNumber="24"
                   playerName="Briant K."
-                  [playerFouls]="4"
+                  [playerFouls]="0"
                   playerMinutes="00:00"
                   [playerPoints]="32"
                   colorSelected="#007700"
@@ -233,9 +233,9 @@
                <app-player-comp
                   componentId="pl2"
                   #compMyField2
-                  playerNumber="32"
+                  playerNumber="23"
                   playerName="James L."
-                  [playerFouls]="2"
+                  [playerFouls]="1"
                   playerMinutes="00:00"
                   [playerPoints]="28"
                   colorSelected="#007700"
@@ -245,9 +245,9 @@
                <app-player-comp
                   componentId="pl3"
                   #compMyField3
-                  playerNumber="18"
+                  playerNumber="32"
                   playerName="Magic J."
-                  [playerFouls]="4"
+                  [playerFouls]="2"
                   playerMinutes="00:00"
                   [playerPoints]="32"
                   colorSelected="#007700"
@@ -257,9 +257,9 @@
                <app-player-comp
                   componentId="pl4"
                   #compMyField4
-                  playerNumber="32"
+                  playerNumber="33"
                   playerName="Kareem A."
-                  [playerFouls]="2"
+                  [playerFouls]="3"
                   playerMinutes="00:00"
                   [playerPoints]="36"
                   colorSelected="#007700"
@@ -269,11 +269,11 @@
                <app-player-comp
                   componentId="pl5"
                   #compMyField5
-                  playerNumber="8"
-                  playerName="Chamberlein W."
+                  playerNumber="13"
+                  playerName="Chamberlain W."
                   [playerFouls]="4"
                   playerMinutes="00:00"
-                  [playerPoints]="32"
+                  [playerPoints]="8"
                   colorSelected="#007700"
                   (componentClicked)="PlayerClicked($event)"
                   [isSelected]="'pl5' == currPlayer">
@@ -334,10 +334,10 @@
                      colorSelected1="#dddddd"
                      colorSelected2="#dddddd"
                      titolo1="Difesa"
-                     dato1="12"
+                     dato1="0"
                      titolo2="Attacco"
-                     dato2="10"
-                     dato="Totali 22"
+                     dato2="0"
+                     dato=""
                      (compBtn1Clicked)="DataBtn1Clicked($event)"
                      (compBtn2Clicked)="DataBtn2Clicked($event)">
                   </app-data-comp>
@@ -350,10 +350,10 @@
                      colorSelected1="#dddddd"
                      colorSelected2="#dddddd"
                      titolo1="Perse"
-                     dato1="12"
+                     dato1="0"
                      colorDato1="#ff7777"
                      titolo2="Recup."
-                     dato2="10"
+                     dato2="0"
                      colorDato2="#77ff77"
                      dato=""
                      (compBtn1Clicked)="DataBtn1Clicked($event)"
@@ -368,10 +368,10 @@
                      colorSelected1="#dddddd"
                      colorSelected2="#dddddd"
                      titolo1="Subite"
-                     dato1="12"
+                     dato1="0"
                      colorDato1="#ff7777"
                      titolo2="Fatte"
-                     dato2="10"
+                     dato2="0"
                      colorDato2="#77ff77"
                      dato=""
                      (compBtn1Clicked)="DataBtn1Clicked($event)"
@@ -391,7 +391,7 @@
                      colorSelected1="#dddddd"
                      colorSelected2="#dddddd"
                      titolo1="Assist"
-                     dato1="12"
+                     dato1="0"
                      (compBtn1Clicked)="DataBtn1Clicked($event)">
                   </app-data-comp>
                   <app-data-comp
@@ -403,10 +403,10 @@
                      colorSelected1="#dddddd"
                      colorSelected2="#dddddd"
                      titolo1="Fatti"
-                     dato1="12"
+                     dato1="0"
                      colorDato1="#ff7777"
                      titolo2="Subiti"
-                     dato2="10"
+                     dato2="0"
                      colorDato2="#77ff77"
                      dato=""
                      (compBtn1Clicked)="DataBtn1Clicked($event)"
@@ -423,7 +423,7 @@
                   #compOppoField1
                   playerNumber="24"
                   playerName="Briant K."
-                  [playerFouls]="4"
+                  [playerFouls]="5"
                   playerMinutes="00:00"
                   [playerPoints]="32"
                   colorSelected="#007700"
@@ -433,9 +433,9 @@
                <app-player-comp
                   componentId="oppopl2"
                   #compOppoField2
-                  playerNumber="32"
+                  playerNumber="23"
                   playerName="James L."
-                  [playerFouls]="2"
+                  [playerFouls]="4"
                   playerMinutes="00:00"
                   [playerPoints]="28"
                   colorSelected="#007700"
@@ -445,11 +445,11 @@
                <app-player-comp
                   componentId="oppopl3"
                   #compOppoField3
-                  playerNumber="18"
+                  playerNumber="32"
                   playerName="Magic J."
-                  [playerFouls]="4"
+                  [playerFouls]="3"
                   playerMinutes="00:00"
-                  [playerPoints]="32"
+                  [playerPoints]="12"
                   colorSelected="#007700"
                   (componentClicked)="PlayerClicked($event)"
                   [isSelected]="'oppopl3' == currPlayer">
@@ -457,7 +457,7 @@
                <app-player-comp
                   componentId="oppopl4"
                   #compOppoField4
-                  playerNumber="32"
+                  playerNumber="33"
                   playerName="Kareem A."
                   [playerFouls]="2"
                   playerMinutes="00:00"
@@ -469,11 +469,11 @@
                <app-player-comp
                   componentId="oppopl5"
                   #compOppoField5
-                  playerNumber="8"
-                  playerName="Chamberlein W."
-                  [playerFouls]="4"
+                  playerNumber="13"
+                  playerName="Chamberlain W."
+                  [playerFouls]="1"
                   playerMinutes="00:00"
-                  [playerPoints]="32"
+                  [playerPoints]="8"
                   colorSelected="#007700"
                   (componentClicked)="PlayerClicked($event)"
                   [isSelected]="'oppopl5' == currPlayer">
@@ -507,11 +507,11 @@
                     class="div-gioco-mybench-row">
                   <ng-container #oppobench1></ng-container>
                </div>
-               <div id="div-gioco-mybench2"
+               <div id="div-gioco-oppobench2"
                     class="div-gioco-mybench-row">
                   <ng-container #oppobench2></ng-container>
                </div>
-               <div id="div-gioco-mybench3"
+               <div id="div-gioco-oppobench3"
                     class="div-gioco-mybench-row">
                   <ng-container #oppobench3></ng-container>
                </div>
@@ -576,3 +576,23 @@
    </div>
 </p-dialog>
 <!--   FINE DIALOG PLAYERS   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG PLAYER-FALLI
+------------------------------------------------------------------>
+<p-dialog id="dialog-player-falli"
+          [modal]="true"
+          [(visible)]="dialogVisible_Falli"
+          [closable]="false"
+          (onShow)="onFalliDialogShow()"
+          [style]="{ width: '840px', height: '700px', padding: '10px', 'background-color': '#1f2937' }"> <!-- width deve essere 70px e height 70px più della dimensione dichiarata nel componente -->
+   <div>
+      <app-fallo-dlg
+         (salvaFalli)="salvaPlayerFalli($event)"
+         (annullaFalli)="annullaPlayerFalli()"
+      ></app-fallo-dlg>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG PLAYER-FALLI   --->

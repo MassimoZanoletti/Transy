@@ -10,6 +10,7 @@ import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import Color from 'Color';
 import { globs} from "../utils";
+import { TMatchPlayer } from '../../models/datamod';
 
 
 
@@ -30,8 +31,7 @@ import { globs} from "../utils";
 export class BenchCompComponent implements OnInit, OnDestroy
 {
    @Input() componentId!: string;
-   @Input() playerName: string = "";
-   @Input() playerNum: string = "";
+   @Input() player: TMatchPlayer | null = null;
    @Input() colorNormal: string = globs.colorNotSelected
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
@@ -83,13 +83,13 @@ export class BenchCompComponent implements OnInit, OnDestroy
 
    GetFalli(): string
    {
-      return "2";
+      return (this.player ? this.player.GetFalliFatti() : 0).toString();
    }
 
 
    GetFoulsBackgroundColor(): string
    {
-      let tempFalli: number = 2;
+      let tempFalli: number = this.player ? this.player.GetFalliFatti() : 0;
       if (tempFalli <= 0)
          tempFalli = 0;
       if (tempFalli > 5)
@@ -100,7 +100,7 @@ export class BenchCompComponent implements OnInit, OnDestroy
 
    GetFoulsTextColor(): string
    {
-      let tempFalli: number = 2;
+      let tempFalli: number = this.player ? this.player.GetFalliFatti() : 0;
       if (tempFalli <= 0)
          tempFalli = 0;
       if (tempFalli > 5)
@@ -111,8 +111,43 @@ export class BenchCompComponent implements OnInit, OnDestroy
 
    GetPunti(): string
    {
-      return "22";
+      return (this.player ? this.player.CalcolaPunti() : 0).toString();
    }
 
+
+   GetQuintetto()
+   {
+      const cap   = this.player ? this.player.captain()     : false;
+      const quint = this.player ? this.player.inQuintetto() : false;
+      if (cap)
+         return (quint ? "🟠👑" : "○👑");
+      else
+         return (quint ? "🟠" : "○");
+   }
+
+
+   GetPlayerName(): string
+   {
+      return this.player ? this.player.playName() : "";
+   }
+
+
+   GetPlayerNum(): string
+   {
+      return this.player ? this.player.playNumber() : "";
+   }
+
+
+   GetMinuti(): string
+   {
+      if (this.player)
+      {
+         const secs = this.player.tempoGioco();
+         const m = Math.floor(secs / 60);
+         const s = secs % 60;
+         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+      return "00:00";
+   }
 
 }
