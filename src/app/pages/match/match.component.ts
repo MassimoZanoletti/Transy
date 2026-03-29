@@ -31,14 +31,12 @@ import {TabViewChangeEvent, TabViewModule} from 'primeng/tabview';
 import { MenuItem } from 'primeng/api';
 import {
    IDSChamp,
-   EventoElement,
    IDSMatchHeaderDb,
    IDSMatchHeader,
    MessDlgData,
    IDSPhase,
    IDSSeason,
    IDSSocieta,
-   TipoEvento,
    CreateEmptyMatchHeader,
    IDSTeam,
    TDSMatchRoster,
@@ -70,7 +68,6 @@ import {ActivatedRoute} from "@angular/router";
 import {globs, matchStatusType, utils} from "../../common/utils";
 import {SeasonsService} from "../../services/seasons.service";
 import {SocietaService} from "../../services/societa.service";
-import {EventiService} from "../../services/eventi.service";
 import {CampionatiService} from "../../services/campionati.service";
 import {PhaseService} from "../../services/phase.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
@@ -195,6 +192,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public diagMatchHeader: IDSMatchHeader | null = null;
    public dialogVisible_MatchHeader: boolean = false;
    public dialogVisible_Falli: boolean = false;
+   public playerForFalli: TMatchPlayer | null = null;
+   public quartoForFalli: number = 0;
+   public tempoForFalli: number = 0;
    public currSeason: IDSSeason | null = null;
    public currPhase: IDSPhase | null = null;
    public dialogVisible_Roster: boolean = false;
@@ -1008,7 +1008,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async onFalliDialogShow()
    {
       if (this.playerFalliComp)
-         await this.playerFalliComp.onComponentShow(null, "");
+         await this.playerFalliComp.onComponentShow(this.playerForFalli, this.quartoForFalli, this.tempoForFalli);
    }
 
 
@@ -1273,7 +1273,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.GetPlayerByBenchId(this.currBench);
             if (player)
             {
-               //player.assist.set(player.assist() + 1);
+               if (this.compTimer)
+               {
+                  this.compTimer.stop();
+               }
+               this.playerForFalli = player;
+               this.quartoForFalli = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+               this.tempoForFalli  = this.compTimer ? this.compTimer.GetTimeSeconds()  : 0;
                this.dialogVisible_Falli = true;
                this.UpdateCommandsData(player);
                this.compFalli?.Flash();

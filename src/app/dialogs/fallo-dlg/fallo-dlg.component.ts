@@ -28,6 +28,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import {DividerModule} from 'primeng/divider';
+import {utils} from "../../common/utils";
 
 
 
@@ -59,6 +60,9 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
 {
    public thePlayer: TMatchPlayer | null = null;
    public falli: Array<TFallo> = [];
+   public quarto: number = 0;
+   public tempoSec: number = 0;
+   public tempoStr: string = "";
 
    @Output() salvaFalli = new EventEmitter<TMatchPlayer | null>();
    @Output() annullaFalli = new EventEmitter();
@@ -86,9 +90,22 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
 
 
    async onComponentShow(aPlayer: TMatchPlayer | null,
-                         aTitle: string)
+                         aQuarto: number,
+                         aTempo: number)
    {
       this.thePlayer = aPlayer;
+      if ((aQuarto > 0) && (aTempo > 0))
+      {
+         this.quarto = aQuarto;
+         this.tempoSec = aTempo;
+         this.tempoStr = `${Math.trunc(aTempo/60)}:${utils.Dlt_PadDigits (aTempo % 60, 2)}`;
+      }
+      else
+      {
+         this.quarto = 0;
+         this.tempoSec = 0;
+         this.tempoStr = ``;
+      }
       //
       this.cdr.detectChanges();
    }
@@ -120,6 +137,15 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
       if (this.thePlayer == null)
          return "";
       else
-         return this.thePlayer.playName();
+         return `${this.thePlayer.playNumber()}) ${this.thePlayer.playName()}`;
+   }
+
+
+   GetTempo(): string
+   {
+      if ((this.quarto > 0) && (this.tempoStr != ""))
+         return `Q${this.quarto}    ${this.tempoStr}`;
+      else
+         return "";
    }
 }

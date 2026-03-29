@@ -9,7 +9,6 @@ import {SocietaTableComponent} from "./tables/societa-table/societa-table.compon
 import {SocietaEditComponent} from "./forms/societa-edit/societa-edit.component";
 import {UsersTableComponent} from "./tables/users-table/users-table.component";
 import {UserEditComponent} from "./forms/user-edit/user-edit.component";
-import {EventoEditComponent} from "./forms/evento-edit/evento-edit.component";
 import {LogTableComponent} from "./tables/log-table/log-table.component";
 import {DatabaseComponent} from "./pages/database/database.component";
 import {ChampEditComponent} from "./forms/champ-edit/champ-edit.component";
@@ -30,7 +29,6 @@ export const routes: Routes = [
    { path: 'societaedit', component: SocietaEditComponent, canActivate: [AuthGuard] },
    { path: 'userstable', component: UsersTableComponent, canActivate: [AuthGuard] },
    { path: 'useraedit', component: UserEditComponent, canActivate: [AuthGuard] },
-   { path: 'eventoedit', component: EventoEditComponent, canActivate: [AuthGuard] },
    { path: 'logtable', component: LogTableComponent, canActivate: [AuthGuard] },
    { path: 'database', component: DatabaseComponent, canActivate: [AuthGuard] },
    { path: 'champedit', component: ChampEditComponent, canActivate: [AuthGuard] },

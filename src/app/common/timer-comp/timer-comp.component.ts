@@ -314,4 +314,19 @@ export class TimerCompComponent implements OnInit, OnDestroy
       return (this.totalSeconds - timeElapsed);
    }
 
+
+   public GetTimeSeconds(): number
+   {
+      if (this.isRunning)
+         return Math.floor(this.CurrentTime());
+      else
+         return this.pausedTime;
+   }
+
+
+   public GetQuarterNumber(): number
+   {
+      return parseInt(this.currQuarter, 10);
+   }
+
 }
