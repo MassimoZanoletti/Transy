@@ -1,0 +1,78 @@
+<p-toast
+   [showTransformOptions]="'translateX(100%)'"
+   [showTransitionOptions]="'250ms'"
+   [hideTransitionOptions]="'250ms'"
+   [hideTransformOptions]="'scale(0)'"></p-toast>
+<div class="sostit-container">
+
+   <div class="sostit-header">
+      <span class="sostit-teamname">{{ teamName }}</span>
+      <p-inputMask class="sostit-tempo"
+                   [(ngModel)]="tempoEdit"
+                   mask="99:99"
+                   placeholder="mm:ss">
+      </p-inputMask>
+   </div>
+
+   <p-divider></p-divider>
+
+   <div class="sostit-body">
+
+      <div class="sostit-lista">
+         <div class="sostit-lista-title">In gioco</div>
+         <div class="sostit-lista-item"
+              *ngFor="let player of playersInGioco">
+            <p-checkbox [(ngModel)]="selectedInGioco"
+                        [value]="player"
+                        [inputId]="'ig_' + player.playerRecID">
+            </p-checkbox>
+            <label [for]="'ig_' + player.playerRecID" class="sostit-player-label">
+               {{ player.playNumber() }} &nbsp; {{ player.playName() }}
+            </label>
+         </div>
+      </div>
+
+      <div class="sostit-separator"></div>
+
+      <div class="sostit-lista">
+         <div class="sostit-lista-title">In panchina</div>
+         <div class="sostit-lista-item"
+              *ngFor="let player of playersInPanchina">
+            <p-checkbox [(ngModel)]="selectedInPanchina"
+                        [value]="player"
+                        [inputId]="'ip_' + player.playerRecID">
+            </p-checkbox>
+            <label [for]="'ip_' + player.playerRecID" class="sostit-player-label">
+               {{ player.playNumber() }} &nbsp; {{ player.playName() }}
+            </label>
+         </div>
+      </div>
+
+   </div>
+
+   <p-divider></p-divider>
+
+   <div class="sostit-footer">
+      <p-button label="Annulla"
+                severity="secondary"
+                icon="pi pi-times"
+                (onClick)="Annulla()">
+      </p-button>
+      <p-button label="Quintetto"
+                severity="help"
+                (onClick)="Quintetto()">
+         <img src="assets/Quintetto.png" style="width:64px;height:64px;" alt="Sss"/>
+      </p-button>
+      <p-button label="Così in campo"
+                severity="info"
+                (onClick)="InCampo()">
+         <img src="assets/InCampo.png" style="width:64px;height:64px;" alt="Sss"/>
+      </p-button>
+      <p-button label="Sostituisci"
+                severity="success"
+                (onClick)="Salva()">
+         <img src="assets/Sostit-2-viola.png" style="width:64px;height:64px;" alt="Sss"/>
+      </p-button>
+   </div>
+
+</div>

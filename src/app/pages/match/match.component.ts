@@ -27,6 +27,8 @@ import {TooltipModule} from 'primeng/tooltip';
 import {CardModule} from 'primeng/card';
 import {DropdownModule} from "primeng/dropdown";
 import {CalendarModule} from "primeng/calendar";
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import {TabViewChangeEvent, TabViewModule} from 'primeng/tabview';
 import { MenuItem } from 'primeng/api';
 import {
@@ -42,7 +44,7 @@ import {
    TDSMatchRoster,
    TDSCoach,
    TDSPlayer,
-   TMatchTeam, TMatchPlayer
+   TMatchTeam, TMatchPlayer, TFallo
 } from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
@@ -52,7 +54,6 @@ import {DialogModule} from 'primeng/dialog';
 import {DialogService,
    DynamicDialogModule,
    DynamicDialogRef} from 'primeng/dynamicdialog';
-import {MessageService} from 'primeng/api';
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
 import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
@@ -83,6 +84,8 @@ import {
 } from "../../common/curr-match";
 import {PlayerEditCompComponent} from "../../common/player-edit-comp/player-edit-comp.component";
 import { FalloDlgComponent } from "../../dialogs/fallo-dlg/fallo-dlg.component";
+import { SostituzioneCompComponent } from "../../common/sostituzione-comp/sostituzione-comp.component";
+import { TOperation, TOperationType } from "../../common/operation";
 
 
 
@@ -120,7 +123,9 @@ import { FalloDlgComponent } from "../../dialogs/fallo-dlg/fallo-dlg.component";
                  RosterCompComponent,
                  MenuModule,
                  PlayerEditCompComponent,
-                 FalloDlgComponent
+                 FalloDlgComponent,
+                 SostituzioneCompComponent,
+                 ToastModule
               ],
   providers: [
      DialogService, // Fornisci il servizio per DynamicDialog
@@ -135,7 +140,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(RosterCompComponent) matchRosterComp!: RosterCompComponent;
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
    @ViewChild(FalloDlgComponent) playerFalliComp!: FalloDlgComponent;
+   @ViewChild(SostituzioneCompComponent) sostituzioneComp!: SostituzioneCompComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
+   @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
    @ViewChild('compOppoTeam') compOppoTeam!: TeamCompComponent;
    @ViewChild('compMyField1') compMyField1!: PlayerCompComponent;
@@ -198,6 +205,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public currSeason: IDSSeason | null = null;
    public currPhase: IDSPhase | null = null;
    public dialogVisible_Roster: boolean = false;
+   public dialogVisible_Sostit: boolean = false;
+   public sostTeamName: string = '';
+   public sostTempo: string = '';
+   public sostPlayers: TMatchPlayer[] = [];
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -205,6 +216,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public MyFieldPlayers: Array<PlayerCompComponent> = [];
    public OppoFieldPlayers: Array<PlayerCompComponent> = [];
    public itemsMenuPartita: MenuItem[] | undefined;
+   public TOperationType = TOperationType;
 
    constructor(private cdr: ChangeDetectorRef,
                private vcr: ViewContainerRef,
@@ -221,7 +233,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                private matchHeaderServ: MatchheaderService,
                private zone: NgZone,
                public fltrDialogService: DialogService,
-               public fltrMessageService: MessageService)
+               public msgService: MessageService)
 
                /*
                            private seasonServ: SeasonsService,
@@ -248,10 +260,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             label: "",
             items: [
-               {label: "Modifica Numeri/Nomi", icon: 'pi pi-book', styleClass: 'icona-default', routerLink: ['.']},
-               {label: "Azioni", icon: 'pi pi-bolt', styleClass: 'icona-gialla', routerLink: ['/']},
-               {label: "Tempi di gioco", icon: 'pi pi-stopwatch', styleClass: 'icona-default', routerLink: ['/']},
-               {label: "Falli totali", icon: 'pi pi-flag-fill', styleClass: 'icona-rossa', routerLink: ['/']}
+               {label: "Modifica Numeri/Nomi", icon: 'pi pi-book', styleClass: 'icona-default', command:() => { this.mnuModificaNomiNumery(); } },
+               {label: "Azioni", icon: 'pi pi-bolt', styleClass: 'icona-gialla', command:() => { this.mnuAzioni(); } },
+               {label: "Tempi di gioco", icon: 'pi pi-stopwatch', styleClass: 'icona-default', command:() => { this.mnuTempiDiGioco(); } },
+               {label: "Falli totali", icon: 'pi pi-flag-fill', styleClass: 'icona-rossa', command:() => { this.mnuFalliTotali(); } }
             ]
          },
          {
@@ -260,8 +272,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             label: "",
             items: [
-               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', routerLink: ['/']},
-               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', routerLink: ['/']}
+               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTempiGioco(); } },
+               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTutto(); } }
             ]
          },
          {
@@ -414,6 +426,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          matchGlobs.currMatch = new TCurrMatch(this.servMatchHeader, this.servMatchRoster, this.servTeam);
       }
       //
+      await matchGlobs.currMatch.EnsureOperationList();
+      //
       await this.LoadMatchHeader(globs.openedMatchHeaderId);
       await this.LoadMatchRoster(globs.openedMatchHeaderId);
       await this.LoadCoachs(globs.openedMatchHeaderId);
@@ -485,7 +499,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             this.compOppoTeam.matchTeamData = matchGlobs.currMatch.oppTeam();
       }
       await this.compMyTeam.Update();
-      //await this.compOppoTeam.Update();
+      await this.compOppoTeam.Update();
       //
       await matchGlobs.currSavedMatch.SaveToStorage();
       //
@@ -515,25 +529,12 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          this.matchHeader = this.servMatchHeader.MatchHeaderFromDb(theData.elements);
          matchGlobs.currMatch?.matchHeader.set(this.servMatchHeader.MatchHeaderFromDb(theData.elements));
-         console.log("matchGlobs.currMatch\n"+JSON.stringify(matchGlobs.currMatch,null,3)+"\n----------------------------------");
          const myTeamData = await firstValueFrom (this.servTeam.getSingleData(this.matchHeader.myTeamId_link));
-         console.log("myTeamData\n"+JSON.stringify(myTeamData,null,3)+"\n----------------------------------");
          if ((myTeamData) && (myTeamData.ok))
             matchGlobs.currMatch?.myTeam()?.FromJson(myTeamData.elements);
-         console.log("matchGlobs.currMatch?.myTeam()\n"+JSON.stringify(matchGlobs.currMatch?.myTeam(),null,3)+"\n----------------------------------");
-         let nnn:string | undefined = "-";
-         try
-         {
-            const mt: TMatchTeam | null | undefined = matchGlobs.currMatch?.myTeam();
-            if (mt)
-               nnn = mt.name();
-         }
-         catch (e)
-         {
-            nnn = `Error: '${JSON.stringify(e)}'`;
-         }
-         console.log("matchGlobs.currMatch?.myTeam()?.name()\n"+nnn+"\n----------------------------------");
-         console.log("letto");
+         const oppoTeamData = await firstValueFrom (this.servTeam.getSingleData(this.matchHeader.oppoTeamId_link));
+         if ((oppoTeamData) && (oppoTeamData.ok))
+            matchGlobs.currMatch?.oppTeam()?.FromJson(oppoTeamData.elements);
       }
    }
 
@@ -547,6 +548,34 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    GetOppoTeamData(): TMatchTeam | null
    {
       return matchGlobs.currMatch?.oppTeam() ?? null;
+   }
+
+
+   GetOperList(): TOperation[]
+   {
+      return matchGlobs.currMatch?.matchOperList()?.items() ?? [];
+   }
+
+
+   GetOperTimeStr(op: TOperation): string
+   {
+      return utils.GetTimeStr(op.time());
+   }
+
+
+   GetOperQuarterStr(op: TOperation): string
+   {
+      const q = op.quarter();
+      const prefix = q <= globs.MaxRegQuarters ? 'Q' : 'E';
+      return `${prefix}${q}`;
+   }
+
+
+   GetOperPlayerStr(op: TOperation): string
+   {
+      const p1 = op.Player1Str();
+      const p2 = op.Player2Str();
+      return p2 ? `${p1} ${p2}` : p1;
    }
 
 
@@ -1008,13 +1037,30 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async onFalliDialogShow()
    {
       if (this.playerFalliComp)
-         await this.playerFalliComp.onComponentShow(this.playerForFalli, this.quartoForFalli, this.tempoForFalli);
+      {
+         console.log("ENTRO:");
+         console.log(`${this.playerForFalli?.playName()}`);
+         const ff: Array<TFallo> | undefined = this.playerForFalli?.falliFatti();
+         if (ff)
+         {
+            for (let i=0;   i<globs.maxPlayerFouls;   i++)
+            {
+               console.log (`${i + 1}) ${ff[i].fCommesso}`);
+            }
+         }
+         await this.playerFalliComp.onComponentShow (this.playerForFalli, this.quartoForFalli, this.tempoForFalli);
+      }
    }
 
 
-   salvaPlayerFalli(event: TMatchPlayer | null)
+   salvaPlayerFalli(event: {player: TMatchPlayer | null, nuovoFallo: boolean})
    {
       this.dialogVisible_Falli = false;
+      if ((event.player != null) && (this.playerForFalli != null))
+      {
+         this.playerForFalli.falliFatti.set(event.player.falliFatti());
+         this.cdr.detectChanges();
+      }
    }
 
 
@@ -1224,6 +1270,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.rimbDifesa.set(player.rimbDifesa() + 1);
                this.UpdateCommandsData(player);
                this.compRimb.Flash();
+               await this.AddGameOperation(TOperationType.totRimbDifesa, player);
             }
          }
       }
@@ -1237,6 +1284,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.pPerse.set(player.pPerse() + 1);
                this.UpdateCommandsData(player);
                this.compPalle?.Flash();
+               await this.AddGameOperation(TOperationType.totPPersa, player);
             }
          }
       }
@@ -1250,6 +1298,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.stoppSubite.set(player.stoppSubite() + 1);
                this.UpdateCommandsData(player);
                this.compStopp?.Flash();
+               await this.AddGameOperation(TOperationType.totStopSubita, player);
             }
          }
       }
@@ -1263,6 +1312,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.assist.set(player.assist() + 1);
                this.UpdateCommandsData(player);
                this.compAssist?.Flash();
+               await this.AddGameOperation(TOperationType.totAssist, player);
             }
          }
       }
@@ -1301,6 +1351,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.rimbAttacco.set(player.rimbAttacco() + 1);
                this.UpdateCommandsData(player);
                this.compRimb.Flash();
+               await this.AddGameOperation(TOperationType.totRimbAttacco, player);
             }
          }
       }
@@ -1314,6 +1365,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.pRecuperate.set(player.pRecuperate() + 1);
                this.UpdateCommandsData(player);
                this.compPalle?.Flash();
+               await this.AddGameOperation(TOperationType.totPRecuperata, player);
             }
          }
       }
@@ -1327,6 +1379,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.stoppFatte.set(player.stoppFatte() + 1);
                this.UpdateCommandsData(player);
                this.compStopp?.Flash();
+               await this.AddGameOperation(TOperationType.totStopFatta, player);
             }
          }
       }
@@ -1340,6 +1393,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                player.falliSubiti.set(player.falliSubiti() + 1);
                this.UpdateCommandsData(player);
                this.compFalli?.Flash();
+               await this.AddGameOperation(TOperationType.totFalloSubito, player);
             }
          }
       }
@@ -1355,6 +1409,37 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (oppoRef?.instance.player)
          return oppoRef.instance.player;
       return null;
+   }
+
+
+   IsMyTeamBenchId(id: string): boolean
+   {
+      return this.myBenchRefs.some(ref => ref.instance.componentId === id);
+   }
+
+
+   async AddGameOperation (oper: TOperationType,
+                           player: TMatchPlayer | null,
+                           desc: string = ''): Promise<void>
+   {
+      if (!player || !matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const isMyTeam = this.IsMyTeamBenchId(this.currBench);
+      const op = new TOperation(quarter, time, oper, isMyTeam, player, undefined, desc);
+      await opList.Add(op);
+      this.ScrollOperazioniToBottom();
+   }
+
+
+   ScrollOperazioniToBottom(): void
+   {
+      setTimeout(() =>
+      {
+         this.tableOperazioni?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
+      }, 0);
    }
 
 
@@ -1382,7 +1467,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       }
       if (this.compFalli)
       {
-         this.compStopp.dato1 = player ? player.GetFalliFatti().toString()   : "0";
+         this.compFalli.dato1 = player ? player.GetFalliFatti().toString()   : "0";
          this.compFalli.dato2 = player ? player.falliSubiti().toString()    : "0";
       }
    }
@@ -1560,6 +1645,95 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          }
       }
       */
+   }
+
+
+   async BtnSostit()
+   {
+      if (this.compOppoTeam.isSelected)
+      {
+         const team = matchGlobs.currMatch?.oppTeam();
+         this.sostTeamName = team?.name() ?? '';
+         this.sostPlayers  = team?.Roster ?? [];
+      }
+      else
+      {
+         const team = matchGlobs.currMatch?.myTeam();
+         this.sostTeamName = team?.name() ?? '';
+         this.sostPlayers  = team?.Roster ?? [];
+      }
+      this.sostTempo = this.compTimer?.displayTime ?? '';
+      this.dialogVisible_Sostit = true;
+   }
+
+
+   async onSostituzioneDialogShow()
+   {
+      if (this.sostituzioneComp)
+      {
+         await this.sostituzioneComp.onComponentShow (this.compTimer?.displayTime ?? '');
+      }
+   }
+
+
+   onSostituzioneSave(event: { players: TMatchPlayer[], azione: string }): void
+   {
+      // i flag inGioco sono già stati aggiornati dentro il componente
+      this.dialogVisible_Sostit = false;
+      if (event.azione == "quintetto")
+      {
+
+      }
+      else if (event.azione == "incampo")
+      {
+
+      }
+      else if (event.azione == "sostituzione")
+      {
+
+      }
+   }
+
+
+   onSostituzioneAnnulla(): void
+   {
+      this.dialogVisible_Sostit = false;
+   }
+
+
+   mnuModificaNomiNumery()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Modifica Numeri/Nomi', detail: 'Non ancora implementato' });
+   }
+
+
+   mnuAzioni()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Azioni', detail: 'Non ancora implementato' });
+   }
+
+
+   mnuTempiDiGioco()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Tempi di gioco', detail: 'Non ancora implementato' });
+   }
+
+
+   mnuFalliTotali()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Falli totali', detail: 'Non ancora implementato' });
+   }
+
+
+   mnuAzzeraTempiGioco()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Azzera tempi di gioco', detail: 'Non ancora implementato' });
+   }
+
+
+   mnuAzzeraTutto()
+   {
+      this.msgService.add({ severity: 'info', summary: 'Azzera tutto', detail: 'Non ancora implementato' });
    }
 
 

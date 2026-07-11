@@ -138,7 +138,8 @@
 <!-----------------------------------------------------------------
                DIALOG TIMEOUT
 ------------------------------------------------------------------>
-<p-dialog [modal]="true"
+<p-dialog id="dialog-timeout"
+          [modal]="true"
           [(visible)]="timeoutVisible"
           [closable]="false"
           [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
@@ -147,117 +148,124 @@
             Timeout {{team__Name}}
         </span>
    </ng-template>
-   <div  *ngIf="timeoutVisible"
-         class="flex align-items-center gap-3 mb-3">
-      <div>
-         <div id="divTimeoutPrimoTempo"
-              class="div-timeouts">
-            <span style="font-size: 1.2em; font-weight: bolder;">Primo tempo</span>
-            <div class="form-group">
-               <label for="sb1t1">1°:</label>
-               <p-selectButton
-                  id="sb1t1"
-                  [options]="timeoutOptions"
-                  [ngModel]="GetTOut1T(0)"
-                  optionLabel="label"
-                  optionValue="value"
-                  allowEmpty="false"/>
+   <ng-template pTemplate="content">
+      <div  *ngIf="timeoutVisible"
+            class="flex align-items-center gap-3 mb-3">
+         <div>
+            <div id="divTimeoutPrimoTempo"
+                 class="div-timeouts">
+               <span style="font-size: 1.2em; font-weight: bolder;">Primo tempo</span>
+               <div class="form-group">
+                  <label for="sb1t1">1°:</label>
+                  <p-selectButton
+                     id="sb1t1"
+                     [options]="timeoutOptions"
+                     [(ngModel)]="tmpTimeout1[0]"
+                     optionLabel="label"
+                     optionValue="value"
+                     allowEmpty="false"/>
+               </div>
+               <div class="form-group">
+                  <label for="sb1t2">2°:</label>
+                  <p-selectButton
+                     id="sb1t2"
+                     [options]="timeoutOptions"
+                     [(ngModel)]="tmpTimeout1[1]"
+                     optionLabel="label"
+                     optionValue="value"
+                     allowEmpty="false"/>
+               </div>
             </div>
-            <div class="form-group">
-               <label for="sb1t2">2°:</label>
-               <p-selectButton
-                  id="sb1t2"
-                  [options]="timeoutOptions"
-                  [ngModel]="GetTOut1T(1)"
-                  optionLabel="label"
-                  optionValue="value"
-                  allowEmpty="false"/>
+            <div id="divTimeoutSecondoTempo"
+                 class="div-timeouts">
+               <span style="font-size: 1.2em; font-weight: bolder;">Secondo tempo</span>
+               <div class="form-group">
+                  <label for="sb2t1">1°:</label>
+                  <p-selectButton
+                     id="sb2t1"
+                     [options]="timeoutOptions"
+                     [(ngModel)]="tmpTimeout2[0]"
+                     optionLabel="label"
+                     optionValue="value"
+                     allowEmpty="false"/>
+               </div>
+               <div class="form-group">
+                  <label for="sb2t2">2°:</label>
+                  <p-selectButton
+                     id="sb2t2"
+                     [options]="timeoutOptions"
+                     [(ngModel)]="tmpTimeout2[1]"
+                     optionLabel="label"
+                     optionValue="value"
+                     allowEmpty="false"/>
+               </div>
+               <div class="form-group">
+                  <label for="sb2t3">3°:</label>
+                  <p-selectButton
+                     id="sb2t3"
+                     [options]="timeoutOptions"
+                     [(ngModel)]="tmpTimeout2[2]"
+                     optionLabel="label"
+                     optionValue="value"
+                     allowEmpty="false"/>
+               </div>
             </div>
          </div>
-         <div id="divTimeoutSecondoTempo"
-              class="div-timeouts">
-            <span style="font-size: 1.2em; font-weight: bolder;">Secondo tempo</span>
+         <div id="divTimeoutExtra"
+            class="div-timeouts">
+            <span style="font-size: 1.2em; font-weight: bolder;">Extra time</span>
             <div class="form-group">
-               <label for="sb2t1">1°:</label>
+               <label for="sbextra1">1°:</label>
                <p-selectButton
-                  id="sb2t1"
+                  id="sbextra1"
                   [options]="timeoutOptions"
-                  [ngModel]="GetTOut2T(0)"
+                  [(ngModel)]="tmpTimeoutExtra[0]"
                   optionLabel="label"
                   optionValue="value"
                   allowEmpty="false"/>
             </div>
             <div class="form-group">
-               <label for="sb2t2">2°:</label>
+               <label for="sbextra2">2°:</label>
                <p-selectButton
-                  id="sb2t2"
+                  id="sbextra2"
                   [options]="timeoutOptions"
-                  [ngModel]="GetTOut2T(1)"
+                  [(ngModel)]="tmpTimeoutExtra[1]"
                   optionLabel="label"
                   optionValue="value"
                   allowEmpty="false"/>
             </div>
             <div class="form-group">
-               <label for="sb2t3">3°:</label>
+               <label for="sbextra3">3°:</label>
                <p-selectButton
-                  id="sb2t3"
+                  id="sbextra3"
                   [options]="timeoutOptions"
-                  [ngModel]="GetTOut2T(2)"
+                  [(ngModel)]="tmpTimeoutExtra[2]"
+                  optionLabel="label"
+                  optionValue="value"
+                  allowEmpty="false"/>
+            </div>
+            <div class="form-group">
+               <label for="sbextra4">4°:</label>
+               <p-selectButton
+                  id="sbextra4"
+                  [options]="timeoutOptions"
+                  [(ngModel)]="tmpTimeoutExtra[3]"
                   optionLabel="label"
                   optionValue="value"
                   allowEmpty="false"/>
             </div>
          </div>
       </div>
-      <div id="divTimeoutExtra"
-         class="div-timeouts">
-         <span style="font-size: 1.2em; font-weight: bolder;">Extra time</span>
-         <div class="form-group">
-            <label for="sbextra1">1°:</label>
-            <p-selectButton
-               id="sbextra1"
-               [options]="timeoutOptions"
-               [ngModel]="GetTOutExtra(0)"
-               optionLabel="label"
-               optionValue="value"
-               allowEmpty="false"/>
-         </div>
-         <div class="form-group">
-            <label for="sbextra2">2°:</label>
-            <p-selectButton
-               id="sbextra2"
-               [options]="timeoutOptions"
-               [ngModel]="GetTOutExtra(1)"
-               optionLabel="label"
-               optionValue="value"
-               allowEmpty="false"/>
-         </div>
-         <div class="form-group">
-            <label for="sbextra3">3°:</label>
-            <p-selectButton
-               id="sbextra3"
-               [options]="timeoutOptions"
-               [ngModel]="GetTOutExtra(2)"
-               optionLabel="label"
-               optionValue="value"
-               allowEmpty="false"/>
-         </div>
-         <div class="form-group">
-            <label for="sbextra4">4°:</label>
-            <p-selectButton
-               id="sbextra4"
-               [options]="timeoutOptions"
-               [ngModel]="GetTOutExtra(3)"
-               optionLabel="label"
-               optionValue="value"
-               allowEmpty="false"/>
-         </div>
-      </div>
-   </div>
+   </ng-template>
+   <!--
    <div class="flex align-items-center gap-3 mb-5">
    </div>
-   <div class="flex justify-content-end gap-2">
-      <p-button label="Annulla" severity="secondary" (onClick)="timeoutVisible = false" />
-   </div>
+   -->
+   <ng-template pTemplate="footer">
+      <div class="flex justify-content-end gap-2">
+         <p-button label="Annulla" severity="secondary" (onClick)="timeoutVisible = false" />
+         <p-button label="OK" severity="primary" (onClick)="BtnTimeoutSaveClick()" />
+      </div>
+   </ng-template>
 </p-dialog>
 <!--   FINE DIALOG   -->

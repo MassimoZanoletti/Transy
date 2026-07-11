@@ -1,15 +1,8 @@
-html, body {
-   height: 100%; /* Importante per far funzionare min-height: 100vh */
-   margin: 0;    /* Rimuove margini predefiniti */
-   padding: 0;   /* Rimuove padding predefiniti */
-   overflow: auto; /* IMPORTANTE: Permette lo scroll della pagina */
-   overflow-x: hidden; /* OPZIONALE: Impedisce scroll orizzontale su tutto il body se non desiderato */
-}
-
 .app-container {
    display: flex;
    flex-direction: column;
-   min-height: 100vh;
+   height: 100vh;
+   overflow: hidden;
 }
 
 .content {
@@ -28,10 +21,8 @@ html, body {
    */
    text-align: center;
    padding: 10px;
-   position: fixed;
-   bottom: 0;
-   left: 0;
-   width: 100%;
+   box-sizing: border-box;
+   flex: 0 0 auto;
    height: 60px;
 }
 
@@ -42,7 +33,10 @@ html, body {
 }
 
 .router-container {
-   height: 100% !important;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow-y: auto;
+   overflow-x: hidden;
 }
 
 ::ng-deep .icona-rossa .p-menuitem-icon {

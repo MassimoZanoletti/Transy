@@ -55,6 +55,10 @@ export class TeamCompComponent implements OnInit, OnDestroy
    timeoutVisible: boolean = false;
    timeoutOptions: any[] = [{ label: 'OFF', value: false },{ label: 'ON', value: true }];
 
+   tmpTimeout1: boolean[] = [false, false];
+   tmpTimeout2: boolean[] = [false, false, false];
+   tmpTimeoutExtra: boolean[] = [false, false, false, false];
+
    colorNormal1: string = "";
    colorNormal2: string = "";
    colorSelected1: string = "";
@@ -344,58 +348,61 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    BtnTimeoutClick()
    {
+      this.tmpTimeout1 = [this.GetTOut1T(0), this.GetTOut1T(1)];
+      this.tmpTimeout2 = [this.GetTOut2T(0), this.GetTOut2T(1), this.GetTOut2T(2)];
+      this.tmpTimeoutExtra = [this.GetTOutExtra(0), this.GetTOutExtra(1), this.GetTOutExtra(2), this.GetTOutExtra(3)];
       this.timeoutVisible = true;
    }
 
 
-   async GetTOut1T(quale: number): Promise<boolean>
+   BtnTimeoutSaveClick()
    {
-      if (this.matchTeamData)
-         return this.matchTeamData.GetTimeout1(quale);
-      else
-         return false;
+      this.tmpTimeout1.forEach((valore, quale) => this.SetTOut1T(quale, valore));
+      this.tmpTimeout2.forEach((valore, quale) => this.SetTOut2T(quale, valore));
+      this.tmpTimeoutExtra.forEach((valore, quale) => this.SetTOutExtra(quale, valore));
+      this.timeoutVisible = false;
    }
 
 
-   async SetTOut1T(quale: number,
-                   valore: boolean)
+   GetTOut1T(quale: number): boolean
+   {
+      return this.matchTeamData ? this.matchTeamData.GetTimeout1(quale) : false;
+   }
+
+
+   SetTOut1T(quale: number,
+             valore: boolean)
    {
       if (this.matchTeamData)
          this.matchTeamData.SetTimeout1(quale, valore);
    }
 
 
-   async GetTOut2T(quale: number): Promise<boolean>
+   GetTOut2T(quale: number): boolean
    {
-      if (this.matchTeamData)
-         return this.matchTeamData.GetTimeout2(quale);
-      else
-         return false;
+      return this.matchTeamData ? this.matchTeamData.GetTimeout2(quale) : false;
    }
 
 
-   async SetTOut2T(quale: number,
-                   valore: boolean)
+   SetTOut2T(quale: number,
+             valore: boolean)
    {
       if (this.matchTeamData)
-         await this.matchTeamData.SetTimeout2(quale, valore);
+         this.matchTeamData.SetTimeout2(quale, valore);
    }
 
 
-   async GetTOutExtra(quale: number): Promise<boolean>
+   GetTOutExtra(quale: number): boolean
    {
-      if (this.matchTeamData)
-         return await this.matchTeamData.GetTimeoutExtra(quale);
-      else
-         return false;
+      return this.matchTeamData ? this.matchTeamData.GetTimeoutExtra(quale) : false;
    }
 
 
-   async SetTOutExtra(quale: number,
-                   valore: boolean)
+   SetTOutExtra(quale: number,
+                valore: boolean)
    {
       if (this.matchTeamData)
-         await this.matchTeamData.SetTimeoutExtra(quale, valore);
+         this.matchTeamData.SetTimeoutExtra(quale, valore);
    }
 
 

@@ -154,9 +154,9 @@ export class TOperation
          this.desc2.set(aDesc2);   }
 
 
-   public static CreateFromString (fromStr: string,
-                                   aMyTeam: TMatchTeam,
-                                   aOppTeam: TMatchTeam): TOperation
+   public static async CreateFromString (fromStr: string,
+                                         aMyTeam: TMatchTeam,
+                                         aOppTeam: TMatchTeam): Promise<TOperation>
    {
       const o: TOperation = new TOperation();
       if (fromStr && fromStr.length > 0)
@@ -206,8 +206,8 @@ export class TOperation
                             this.time(),
                             this.oper(),
                             this.myTeam(),
-                            this.player1(),
-                            this.player2(),
+                            this.player1() ?? undefined,
+                            this.player2() ?? undefined,
                             this.desc(),
                             this.iParam(),
                             this.desc2());
@@ -229,6 +229,7 @@ export class TOperation
       }
    });
 
+
    public readonly Player1Str = computed(() =>
    {
       const p1 = this.player1();
@@ -245,6 +246,7 @@ export class TOperation
          default: return result;
       }
    });
+
 
    public readonly Player2Str = computed(() =>
    {
@@ -274,7 +276,7 @@ export class TOperation
          let plr2: TMatchPlayer | null;
          let p1: boolean;
          let p2: boolean;
-         plr1 = this.player1():
+         plr1 = this.player1();
          plr2 = this.player2();
          if ((plr1) && (aOper.player1()))
             p1 = (plr1.playNumber() == aOper.player1()?.playNumber());
@@ -323,7 +325,7 @@ export class TOperation
 
       try
       {
-         if (await this.myTeam())
+         if (this.myTeam())
             tm = "MyTeam  ";
          else
             tm = "OppoTeam";
@@ -438,7 +440,6 @@ export class TOperation
 
 
 
-
 export class TOperationList
 {
    private fList: TOperation[] = [];
@@ -447,8 +448,18 @@ export class TOperationList
    private fCounter: number = 0;
    public OnChanged?: () => void;
 
+   // esposizione reattiva del contenuto della lista, per il binding diretto nei template (es. p-table)
+   public readonly items = signal<TOperation[]>([]);
+
+
    private constructor()
    {
+   }
+
+
+   private SyncItems(): void
+   {
+      this.items.set([...this.fList]);
    }
 
 
@@ -460,6 +471,7 @@ export class TOperationList
       return lst;
    }
 
+
    public async Destroy(): Promise<void>
    {
       for (const op of this.fList)
@@ -470,6 +482,7 @@ export class TOperationList
          }
       }
       this.fList = [];
+      this.SyncItems();
    }
 
 
@@ -521,7 +534,7 @@ export class TOperationList
          for (let i=0;   i<this.fList.length;   i++)
          {
             const itm: TOperation = this.fList[i];
-            if ((await this.Compare(aItem, itm) == 0)
+            if ((await this.Compare(aItem, itm)) == 0)
             {
                result = i;
                break;
@@ -543,6 +556,7 @@ export class TOperationList
       this.fList.push(item);
       await this.Sort();
       this.fModified = true;
+      this.SyncItems();
       if (this.OnChanged)
          this.OnChanged();
    }
@@ -553,6 +567,7 @@ export class TOperationList
       this.fCounter++;
       item.counter.set (this.fCounter);
       this.fList.push(item);
+      this.SyncItems();
    }
 
 
@@ -560,6 +575,7 @@ export class TOperationList
    {
       await this.Sort();
       this.fModified = true;
+      this.SyncItems();
       if (this.OnChanged)
          this.OnChanged();
    }
@@ -611,8 +627,8 @@ export class TOperationList
 
       do
       {
-         while (await this.Compare(I, P) < 0) I++;
-         while (await this.Compare(J, P) > 0) J--;
+         while (await this.CompareByIdx(I, P) < 0) I++;
+         while (await this.CompareByIdx(J, P) > 0) J--;
 
          if (I <= J)
          {
@@ -645,7 +661,7 @@ export class TOperationList
    {
       let result: boolean = false;
       let aItem: TOperation | null = null;
-      let toDelete: boolean;
+      let toDelete: boolean = false;
       let idx: number;
       let ff: TFallo
       let Qrt: TQuarterTeam | null;
@@ -673,7 +689,7 @@ export class TOperationList
                case TOperationType.totQuintetto:
                case TOperationType.totTimeStart:
                case TOperationType.totTimeStop:
-               case TOperationType.totCheckPoint:
+               case TOperationType.totCheckPoint: // tutte queste action possono essere tolte senza fare altre operazioni
                   toDelete = false;
                   break;
                case TOperationType.totTLYes:
@@ -697,13 +713,13 @@ export class TOperationList
                            Qrt = null;
                            if (matchGlobs.currMatch)
                            {
-                              if ((aItem.myTeam ()) && (matchGlobs.currMatch.myTeam))
+                              if ((aItem.myTeam ()) && (matchGlobs.currMatch.myTeam ()))
                               {
-                                 Qrt = matchGlobs.currMatch.myTeam.GetQuarto (ff.fQuarto);
+                                 Qrt = matchGlobs.currMatch.myTeam ()!.GetQuarto (ff.fQuarto);
                               }
-                              else if ((aItem.myTeam () == false) && (matchGlobs.currMatch.oppTeam))
+                              else if ((aItem.myTeam () == false) && (matchGlobs.currMatch.oppTeam ()))
                               {
-                                 Qrt = matchGlobs.currMatch.oppTeam.GetQuarto (ff.fQuarto):
+                                 Qrt = matchGlobs.currMatch.oppTeam ()!.GetQuarto (ff.fQuarto);
                               }
                            }
                            if (Qrt != null)
@@ -823,9 +839,10 @@ export class TOperationList
             if (toDelete == true)
             {
                this.fList.splice (idx, 1);
+               this.SyncItems();
             }
          }//if (idx >= 0)
-         result = true:
+         result = true;
          this.fModified = true;
          if (this.OnChanged)
             this.OnChanged();
@@ -927,6 +944,7 @@ export class TOperationList
             const operazione: TOperation = await TOperation.CreateFromJSON(item);
             this.fList.push(operazione);
          }
+         this.SyncItems();
       }
       catch (e)
       {

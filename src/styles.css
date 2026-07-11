@@ -1,5 +1,16 @@
 /* src/styles.css */
 
+/* html/body devono stare qui (foglio di stile globale) e non nel CSS di AppComponent:
+   Angular applica lo scoping "_ngcontent-xxx" ai selettori dei CSS dei componenti, ma
+   <html> e <body> sono antenati di <app-root>, non discendenti, quindi non ricevono mai
+   quell'attributo e una regola scritta in app.component.css non li raggiungerebbe mai. */
+html, body {
+   height: 100%;
+   margin: 0;
+   padding: 0;
+   overflow: hidden; /* lo scroll della pagina è gestito internamente da .router-container */
+}
+
 /* 1. Stili del tema PrimeNG (obbligatorio per il look-and-feel) */
 /* Scegli uno dei temi dal pacchetto @primeng/themes. Esempio: */
 /* Altri esempi:

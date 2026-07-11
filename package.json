@@ -5,10 +5,12 @@
   "comp_date": "2026-03-08",
   "scripts": {
     "clean": ".bin\\clean.bat",
-    "clean-all": ".bin\\clean-all.bat",
+     "install": "",
+     "clean-all": ".bin\\clean-all.bat",
     "build": ".bin\\build.bat",
     "start": ".bin\\start.bat",
     "production": ".bin\\production.bat",
+    "serve": "ng serve",
     "lint": "ng lint"
   },
   "private": true,

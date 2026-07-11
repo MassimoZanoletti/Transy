@@ -898,6 +898,7 @@ export class TMatchPlayer
          currCronotime: this.currCronotime,
          internalSort: this.internalSort,
          tempoGioco: this.tempoGioco(),
+
          falliSubiti: this.falliSubiti(),
          rimbAttacco: this.rimbAttacco(),
          rimbDifesa: this.rimbDifesa(),
@@ -1388,30 +1389,30 @@ export class TMatchTeam
 
    public GetTimeout1(n: number): boolean
    {
-      if (n > 0 && n < 3)
+      if (n >= 0 && n < 2)
       {
          const tmp: string = this.timeout1();
-         return (tmp[n-1] == 'X');
+         return (tmp[n] == 'X');
       }
       return false;
    }
 
    public GetTimeout2(n: number): boolean
    {
-      if (n > 0 && n < 4)
+      if (n >= 0 && n < 3)
       {
          const tmp: string = this.timeout2();
-         return (tmp[n-1] == 'X');
+         return (tmp[n] == 'X');
       }
       return false;
    }
 
    public GetTimeoutExtra(n: number): boolean
    {
-      if (n > 0 && n < 5)
+      if (n >= 0 && n < 4)
       {
          const tmp: string = this.timeoutExtra();
-         return (tmp[n-1] == 'X');
+         return (tmp[n] == 'X');
       }
       return false;
    }
@@ -1420,14 +1421,10 @@ export class TMatchTeam
    public SetTimeout1(n: number,
                       value: boolean)
    {
-      if (n > 0 && n < 3)
+      if (n >= 0 && n < 2)
       {
-         n--;
          let sss: string = this.timeout1();
-         if (value)
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
-         else
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
+         sss = sss.slice(0, n) + (value ? 'X' : 'O') + sss.slice(n + 1);
          this.timeout1.set(sss);
       }
    }
@@ -1435,30 +1432,22 @@ export class TMatchTeam
    public SetTimeout2(n: number,
                       value: boolean)
    {
-      if (n > 0 && n < 4)
+      if (n >= 0 && n < 3)
       {
-         n--;
          let sss: string = this.timeout2();
-         if (value)
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
-         else
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
-         this.timeout1.set(sss);
+         sss = sss.slice(0, n) + (value ? 'X' : 'O') + sss.slice(n + 1);
+         this.timeout2.set(sss);
       }
    }
 
    public SetTimeoutExtra(n: number,
                           value: boolean)
    {
-      if (n > 0 && n < 5)
+      if (n >= 0 && n < 4)
       {
-         n--;
          let sss: string = this.timeoutExtra();
-         if (value)
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
-         else
-            sss = sss.slice(0, n) + 'X' + sss.slice(n + 1);
-         this.timeout1.set(sss);
+         sss = sss.slice(0, n) + (value ? 'X' : 'O') + sss.slice(n + 1);
+         this.timeoutExtra.set(sss);
       }
    }
 

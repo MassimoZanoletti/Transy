@@ -1,80 +1,82 @@
-<p-toolbar styleClass="p-mb-4">
-   <div class="p-toolbar-group-left">
-      <img src="assets/Transy-ico.png" alt="Transy" style="max-width: 64px; max-height: 64px; margin-right: 8px; vertical-align: middle;" />
-      <span class="p-toolbar-text p-mr-3"
-            style="font-size: 1.5em; font-weight: bold;">TRANSY</span>
+<div class="app-container">
+   <p-toolbar styleClass="p-mb-4">
+      <div class="p-toolbar-group-left">
+         <img src="assets/Transy-ico.png" alt="Transy" style="max-width: 64px; max-height: 64px; margin-right: 8px; vertical-align: middle;" />
+         <span class="p-toolbar-text p-mr-3"
+               style="font-size: 1.5em; font-weight: bold;">TRANSY</span>
+         <ng-container *ngIf="authService.isAuthenticated()">
+            <button pButton
+                    type="button"
+                    label="Dashboard"
+                    class="p-button-text ml-3 mnu-button"
+                    routerLink="/"
+                    style="margin-left: 20px !important;"
+                    [raised]="true">
+            </button>
+
+            <div class="card flex justify-content-center">
+               <p-menu #strumentiMenu
+                       [model]="mnuStrumenti"
+                       [popup]="true">
+               </p-menu>
+               <button pButton
+                       type="button"
+                       label="Strumenti"
+                       class="p-button-text ml-3 mnu-button"
+                       (click)="strumentiMenu.toggle($event)"
+                       [raised]="true">
+               </button>
+            </div>
+
+            <div class="card flex justify-content-center"
+                 style="margin-left: 20px !important; "
+                 *ngIf="MatchAperto()">
+               <button pButton
+                       type="button"
+                       label="MATCH"
+                       class="p-button-text ml-3 mnu-button"
+                       routerLink="match"
+                       icon="pi pi-globe"
+                       style="color: #FFFF00 !important;"
+                       [raised]="true">
+               </button>
+
+               <!--
+               <p-menu #partitaMenu
+                       [style]="{'min-width': '300px'}"
+                       [model]="mnuPartita"
+                       [popup]="true">
+               </p-menu>
+               <button pButton
+                       type="button"
+                       label="Gestione Partita"
+                       class="p-button-text ml-3 mnu-button"
+                       (click)="partitaMenu.toggle($event)"
+                       [raised]="true">
+               </button>
+               -->
+            </div>
+         </ng-container>
+      </div>
       <ng-container *ngIf="authService.isAuthenticated()">
-         <button pButton
-                 type="button"
-                 label="Dashboard"
-                 class="p-button-text ml-3 mnu-button"
-                 routerLink="/"
-                 style="margin-left: 20px !important;"
-                 [raised]="true">
-         </button>
-
-         <div class="card flex justify-content-center">
-            <p-menu #strumentiMenu
-                    [model]="mnuStrumenti"
-                    [popup]="true">
-            </p-menu>
+         <div class="p-toolbar-group-right">
+            <p style="margin-right: 15px;">Utente: {{loggedUser.nome}} ({{loggedUser.ruolo}}) </p>
             <button pButton
-                    type="button"
-                    label="Strumenti"
-                    class="p-button-text ml-3 mnu-button"
-                    (click)="strumentiMenu.toggle($event)"
+                    label="Logout"
+                    icon="pi pi-sign-out"
+                    (click)="logout()"
                     [raised]="true">
             </button>
-         </div>
-
-         <div class="card flex justify-content-center"
-              style="margin-left: 20px !important; "
-              *ngIf="MatchAperto()">
-            <button pButton
-                    type="button"
-                    label="MATCH"
-                    class="p-button-text ml-3 mnu-button"
-                    routerLink="match"
-                    icon="pi pi-globe"
-                    style="color: #FFFF00 !important;"
-                    [raised]="true">
-            </button>
-
-            <!--
-            <p-menu #partitaMenu
-                    [style]="{'min-width': '300px'}"
-                    [model]="mnuPartita"
-                    [popup]="true">
-            </p-menu>
-            <button pButton
-                    type="button"
-                    label="Gestione Partita"
-                    class="p-button-text ml-3 mnu-button"
-                    (click)="partitaMenu.toggle($event)"
-                    [raised]="true">
-            </button>
-            -->
          </div>
       </ng-container>
+   </p-toolbar>
+
+   <div id="router-container"
+        class="router-container">
+      <router-outlet></router-outlet>
    </div>
-   <ng-container *ngIf="authService.isAuthenticated()">
-      <div class="p-toolbar-group-right">
-         <p style="margin-right: 15px;">Utente: {{loggedUser.nome}} ({{loggedUser.ruolo}}) </p>
-         <button pButton
-                 label="Logout"
-                 icon="pi pi-sign-out"
-                 (click)="logout()"
-                 [raised]="true">
-         </button>
-      </div>
-   </ng-container>
-</p-toolbar>
 
-<div id="router-container"
-     class="router-container">
-   <router-outlet></router-outlet>
-</div>
-
-<div class="app-footer">
-   <p style="white-space: pre-wrap !important;">{{globs.appName}} {{globs.appVersion}} {{globs.appDate}} {{separatore}}{{globs.appCopyrights}}</p>
+   <div class="app-footer">
+      <p style="white-space: pre-wrap !important;">{{globs.appName}} {{globs.appVersion}} {{globs.appDate}} {{separatore}}{{globs.appCopyrights}}</p>
+   </div>
 </div>

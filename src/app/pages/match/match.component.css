@@ -1,4 +1,81 @@
 
+::ng-deep #table-operazioni .p-datatable-thead > tr > th {
+   font-size: 0.8rem;
+}
+
+::ng-deep #table-operazioni .p-datatable-tbody > tr > td {
+   font-size: 0.8rem;
+}
+
+.oper-tmcr-my {
+   color: red;
+}
+
+.oper-tmcr-oppo {
+   color: yellow;
+}
+
+::ng-deep #table-operazioni {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   min-height: 0;
+}
+
+/* Vincola l'host del componente (<app-match>, dentro #router-container) a un'altezza
+   definita: senza questo, la percentuale "height: 100%" più sotto nella catena
+   (#tab-match, .p-tabview-panel, ecc.) non ha nulla a cui ancorarsi e torna a "auto",
+   facendo ricomparire lo scroll sulla finestra/sul div principale invece che sulla
+   sola tabella delle operazioni. */
+:host {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   min-height: 0;
+   overflow: hidden;
+}
+
+/* Propaga l'altezza disponibile dal tab "Gioco" fino a #div-gioco-basso,
+   in modo che sia la tabella delle operazioni (scrollHeight="flex") a scrollare
+   internamente invece di far crescere la pagina oltre la finestra. */
+::ng-deep #tab-match {
+   display: flex;
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
+::ng-deep #tab-match > .p-tabview {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   width: 100%;
+}
+
+::ng-deep #tab-match .p-tabview-panels {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+::ng-deep #tab-match .p-tabview-panels > p-tabpanel {
+   display: contents;
+}
+
+::ng-deep #tab-match .p-tabview-panel {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: hidden;
+}
+
+::ng-deep #tab-match .p-tabview-panel[hidden] {
+   display: none !important;
+}
+
 ::ng-deep #tab-match .p-tabview-nav li .p-tabview-nav-link {
    padding: 4px 12px !important;
    height: 40px !important;
@@ -155,6 +232,11 @@
    width: 100%;
    height: 100%;
    justify-content: space-between;
+
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+   overflow: hidden;
 }
 
 .div-gioco-alto {
@@ -165,6 +247,7 @@
    display: flex;
    width: 100%;
    justify-content: space-between;
+   flex: 0 0 auto;
 }
 
 .div-gioco-centro {
@@ -175,6 +258,7 @@
    display: flex;
    width: 100%;
    justify-content: space-between;
+   flex: 0 0 auto;
 }
 
 .div-gioco-basso {
@@ -184,6 +268,10 @@
    display: flex;
    height: 100%;
    justify-content: space-between;
+
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: hidden;
 }
 
 
@@ -237,6 +325,24 @@
 }
 
 
+.div-gioco-sostit {
+   display: flex;
+   flex-direction: column;
+   gap: 40px;
+   /*border: 1px solid fuchsia;*/
+   padding-top: 10px;
+}
+
+
+.btn-gioco-cmd {
+   width: 120px !important;
+   height: 120px !important;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+
 
 
 .div-gioco-mybench {
@@ -255,6 +361,27 @@
    /*width: 100%;*/
    margin-left: auto;
    margin-right: auto;
+}
+
+.div-gioco-operazioni {
+   border: 1px solid green;
+   margin: 1px !important;
+   padding: 1px !important;
+
+   margin-left: auto;
+   margin-right: auto;
+
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   min-height: 0;
+   overflow: hidden;
+}
+
+.div-gioco-mybench,
+.div-gioco-oppobench {
+   overflow-y: auto;
+   max-height: 100%;
 }
 
 .div-gioco-oppobench {

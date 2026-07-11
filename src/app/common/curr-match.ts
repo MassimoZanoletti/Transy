@@ -9,6 +9,7 @@ import {CreateEmptyMatchHeader,
    IDSMatchHeader,
    TFallo,
    TMatchTeam} from "../models/datamod";
+import {TOperationList} from "./operation";
 import {MatchheaderService} from "../services/matchheader.service";
 import {MatchrosterService} from "../services/matchroster.service";
 import {TeamService} from "../services/team.service";
@@ -91,6 +92,7 @@ export class TCurrMatch
    public season = signal<string>("");
    public myTeam = signal<TMatchTeam | null>(null);
    public oppTeam = signal<TMatchTeam | null>(null);
+   public matchOperList = signal<TOperationList | null>(null);
 
 
    public constructor (private servMatchHeader: MatchheaderService,
@@ -104,6 +106,14 @@ export class TCurrMatch
    }
 
 
+   public async EnsureOperationList(): Promise<TOperationList>
+   {
+      if (!this.matchOperList())
+         this.matchOperList.set(await TOperationList.Create());
+      return this.matchOperList()!;
+   }
+
+
    public async SaveToStorage()
    {
       const dataToSave = {
@@ -113,6 +123,7 @@ export class TCurrMatch
          season: this.season(),
          myTeam: this.myTeam() ? this.myTeam()!.SaveToJson() : null,
          oppTeam: this.oppTeam() ? this.oppTeam()!.SaveToJson() : null,
+         operationList: this.matchOperList() ? await this.matchOperList()!.SaveToJsonStr() : null,
          fInternalExcelExportFolder: this.fInternalExcelExportFolder
       };
       utils.SaveToSessionStorage("BBS_CurrMatch", dataToSave);
@@ -146,6 +157,12 @@ export class TCurrMatch
             const team = new TMatchTeam (false);
             team.FromJson (data.oppTeam);
             this.oppTeam.set (team);
+         }
+         if (data.operationList)
+         {
+            const opList = await TOperationList.Create();
+            await opList.LoadFromJsonStr (data.operationList);
+            this.matchOperList.set (opList);
          }
       }
       catch (error)

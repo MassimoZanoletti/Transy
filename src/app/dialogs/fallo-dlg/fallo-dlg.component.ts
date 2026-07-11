@@ -28,7 +28,8 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import {DividerModule} from 'primeng/divider';
-import {utils} from "../../common/utils";
+import { utils,
+   globs } from "../../common/utils";
 
 
 
@@ -64,18 +65,15 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
    public tempoSec: number = 0;
    public tempoStr: string = "";
 
-   @Output() salvaFalli = new EventEmitter<TMatchPlayer | null>();
+   @Output() salvaFalli = new EventEmitter<{player: TMatchPlayer | null, nuovoFallo: boolean}>();
    @Output() annullaFalli = new EventEmitter();
 
 
 
    constructor(private cdr: ChangeDetectorRef)
    {
-      this.falli.push(new TFallo());
-      this.falli.push(new TFallo());
-      this.falli.push(new TFallo());
-      this.falli.push(new TFallo());
-      this.falli.push(new TFallo());
+      for (let i=0;   i<globs.maxPlayerFouls;   i++)
+         this.falli.push(new TFallo());
    }
 
 
@@ -94,6 +92,7 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
                          aTempo: number)
    {
       this.thePlayer = aPlayer;
+      this.falli = aPlayer ? aPlayer.falliFatti().map(f => f.Clone()) : [];
       if ((aQuarto > 0) && (aTempo > 0))
       {
          this.quarto = aQuarto;
@@ -119,7 +118,26 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
 
    Salva()
    {
-     this.salvaFalli.emit(this.thePlayer);
+      if (this.thePlayer)
+      {
+         let totIn: number = 0;
+         let totOut: number = 0;
+         const fi: Array<TFallo> = this.thePlayer.falliFatti();
+         for (let i=0;   i<globs.maxPlayerFouls;   i++)
+         {
+            if (fi[i].fCommesso)
+               totIn++;
+            if (this.falli[i].fCommesso)
+               totOut++;
+            else
+               this.falli[i].Reset();
+         }
+         this.thePlayer.falliFatti.set ([...this.falli]);
+         this.salvaFalli.emit ({
+                                  player: this.thePlayer,
+                                  nuovoFallo: (totOut > totIn)
+         });
+      }
    }
 
 

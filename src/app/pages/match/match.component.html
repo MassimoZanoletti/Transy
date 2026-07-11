@@ -1,5 +1,7 @@
 
 
+<p-toast />
+
 <div class="card flex justify-content-left">
    <p-menu
       #menuPartita
@@ -416,6 +418,26 @@
                </div>
             </div>
 
+            <div id="div-gioco-sostit"
+                 class="div-gioco-sostit">
+               <button pButton
+                       id="btn-sostit"
+                       pTooltip="Sostituzione / Quintetto"
+                       class="btn-gioco-cmd p-button p-button-primary"
+                       (click)="BtnSostit()"
+               >
+                  <img src="assets/Sostituzione.png" style="width:110px;height:110px;" alt="Sss"/>
+               </button>
+
+               <button pButton
+                       id="btn-undo"
+                       pTooltip="Undo"
+                       class="btn-gioco-cmd p-button p-button-primary"
+               >
+                  <img src="assets/command-undo.png" style="width:110px;height:110px;" alt="UNDO"/>
+               </button>
+            </div>
+
             <div id="div-gioco-oppofield"
                  class="div-gioco-oppofield">
                <app-player-comp
@@ -497,9 +519,42 @@
                   <ng-container #mybench3></ng-container>
                </div>
             </div>
-            <div id="div-gioco-commands"
-                 class="div-gioco-commands">
-               <p>COMMANDS</p>
+            <div id="div-gioco-operazioni"
+                 class="div-gioco-operazioni">
+               <p-table
+                  id="table-operazioni"
+                  #tableOperazioni
+                  styleClass="p-datatable-gridlines p-datatable-sm"
+                  [scrollable]="true"
+                  scrollHeight="flex"
+                  [value]="GetOperList()"
+               >
+                  <ng-template pTemplate="header">
+                     <tr>
+                        <th style="width: 40px;">Q</th>
+                        <th style="width: 60px;">Time</th>
+                        <th style="width: 90px;">Oper</th>
+                        <th style="width: 90px;">TmCr</th>
+                        <th>Pl</th>
+                        <th>Dt</th>
+                     </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-op>
+                     <tr>
+                        <td>{{ GetOperQuarterStr(op) }}</td>
+                        <td>{{ GetOperTimeStr(op) }}</td>
+                        <td>{{ TOperationType.Desc(op.oper()) }}</td>
+                        <td [ngClass]="op.myTeam() ? 'oper-tmcr-my' : 'oper-tmcr-oppo'">{{ op.MyTeamStr() }}</td>
+                        <td>{{ GetOperPlayerStr(op) }}</td>
+                        <td>{{ op.desc() }}</td>
+                     </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                     <tr>
+                        <td colspan="6">Nessuna operazione registrata</td>
+                     </tr>
+                  </ng-template>
+               </p-table>
             </div>
             <div id="div-gioco-oppobench"
                  class="div-gioco-oppobench">
@@ -596,3 +651,23 @@
    </div>
 </p-dialog>
 <!--   FINE DIALOG PLAYER-FALLI   --->
+
+
+<!-----------------------------------------------------------------
+               DIALOG SOSTITUZIONE
+------------------------------------------------------------------>
+<p-dialog id="dialog-sostituzione"
+          [modal]="true"
+          [(visible)]="dialogVisible_Sostit"
+          [closable]="false"
+          (onShow)="onSostituzioneDialogShow()"
+          [style]="{ width: '970px', height: '950px', padding: '10px', 'background-color': '#1f2937' }">
+   <app-sostituzione-comp
+      [teamName]="sostTeamName"
+      [tempo]="sostTempo"
+      [players]="sostPlayers"
+      (salva)="onSostituzioneSave($event)"
+      (annulla)="onSostituzioneAnnulla()">
+   </app-sostituzione-comp>
+</p-dialog>
+<!--   FINE DIALOG SOSTITUZIONE   --->
