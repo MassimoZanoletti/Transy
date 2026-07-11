@@ -34,7 +34,7 @@ export class SostituzioneCompComponent implements OnInit
    @Input() tempo: string = '';
    @Input() players: TMatchPlayer[] = [];
 
-   @Output() salva = new EventEmitter<{ players: TMatchPlayer[], azione: string }>();
+   @Output() salva = new EventEmitter<{ players: TMatchPlayer[], azione: string, usciti?: TMatchPlayer[], entrati?: TMatchPlayer[], quintetto?: TMatchPlayer[], tempoSec?: number }>();
    @Output() annulla = new EventEmitter<void>();
 
    public tempoEdit: string = '';
@@ -98,7 +98,9 @@ export class SostituzioneCompComponent implements OnInit
       this.players.forEach(p => p.inGioco.set(selezionati.has(p)));
       console.log(`----players dopo`);
       this.players.forEach(p => console.log(`${p.playName()}:${p.inGioco()}`));
-      this.salva.emit({ players: this.players, azione: "quintetto" });
+      const parts = this.tempoEdit.split(':');
+      const tempoSec = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      this.salva.emit({ players: this.players, azione: "quintetto", quintetto: [...selezionati], tempoSec });
    }
 
 
@@ -117,6 +119,8 @@ export class SostituzioneCompComponent implements OnInit
       }
       const parts = this.tempoEdit.split(':');
       const tempoSec = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      const usciti: TMatchPlayer[] = [];
+      const entrati: TMatchPlayer[] = [];
       this.players.forEach(p =>
       {
          const eraInGioco = p.inGioco();
@@ -126,15 +130,17 @@ export class SostituzioneCompComponent implements OnInit
             // esce
             p.inGioco.set(false);
             p.outTime.set(tempoSec);
+            usciti.push(p);
          }
          else if ((!eraInGioco) && (vaInGioco))
          {
             // entra
             p.inGioco.set(true);
             p.inTime.set(tempoSec);
+            entrati.push(p);
          }
       });
-      this.salva.emit({ players: this.players, azione: "incampo" });
+      this.salva.emit({ players: this.players, azione: "incampo", usciti, entrati });
    }
 
 
@@ -163,6 +169,11 @@ export class SostituzioneCompComponent implements OnInit
          p.inGioco.set(true);
          p.inTime.set(tempoSec);
       });
-      this.salva.emit({ players: this.players, azione: "sostituzione" });
+      this.salva.emit({
+                         players: this.players,
+                         azione:  "sostituzione",
+                         usciti:  [...this.selectedInGioco],
+                         entrati: [...this.selectedInPanchina]
+                      });
    }
 }

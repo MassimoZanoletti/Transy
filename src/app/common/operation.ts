@@ -257,7 +257,7 @@ export class TOperation
      let result = `${p1.PlayNumber2()} (${p1.playName()})`;
      switch (this.oper())
      {
-        case TOperationType.totSostituz: return "Out " + result;
+        case TOperationType.totSostituz: return "In " + result;
         case TOperationType.totTimeStart:
         case TOperationType.totTimeStop:
         case TOperationType.totCheckPoint: return "";

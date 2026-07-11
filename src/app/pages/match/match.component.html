@@ -199,8 +199,8 @@
                   instanceId="comptimer"
                   #compTimer
                   (timeUpdated)="onTimeUpdate($event)"
-                  (started)="onTimerEvent($event)"
-                  (stopped)="onTimerEvent($event)">
+                  (started)="onTimerStarted($event)"
+                  (stopped)="onTimerStopped($event)">
                </app-timer-comp>
             </div>
             <div id="div-gioco-oppoteam"
@@ -544,9 +544,9 @@
                         <td>{{ GetOperQuarterStr(op) }}</td>
                         <td>{{ GetOperTimeStr(op) }}</td>
                         <td>{{ TOperationType.Desc(op.oper()) }}</td>
-                        <td [ngClass]="op.myTeam() ? 'oper-tmcr-my' : 'oper-tmcr-oppo'">{{ op.MyTeamStr() }}</td>
+                        <td [ngClass]="GetOperTmCrClass(op)">{{ op.MyTeamStr() }}</td>
                         <td>{{ GetOperPlayerStr(op) }}</td>
-                        <td>{{ op.desc() }}</td>
+                        <td>{{ GetOperDescStr(op) }}</td>
                      </tr>
                   </ng-template>
                   <ng-template pTemplate="emptymessage">

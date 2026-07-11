@@ -209,6 +209,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public sostTeamName: string = '';
    public sostTempo: string = '';
    public sostPlayers: TMatchPlayer[] = [];
+   public sostIsMyTeam: boolean = true;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -573,9 +574,24 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    GetOperPlayerStr(op: TOperation): string
    {
-      const p1 = op.Player1Str();
-      const p2 = op.Player2Str();
-      return p2 ? `${p1} ${p2}` : p1;
+      return op.Player1Str();
+   }
+
+
+   GetOperDescStr(op: TOperation): string
+   {
+      return op.Player2Str() || op.desc();
+   }
+
+
+   GetOperTmCrClass(op: TOperation): string
+   {
+      switch (op.MyTeamStr().trim())
+      {
+         case 'MyTeam':   return 'oper-tmcr-my';
+         case 'OppoTeam': return 'oper-tmcr-oppo';
+         default:         return 'oper-tmcr-default';
+      }
    }
 
 
@@ -1053,13 +1069,18 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   salvaPlayerFalli(event: {player: TMatchPlayer | null, nuovoFallo: boolean})
+   async salvaPlayerFalli(event: {player: TMatchPlayer | null, nuovoFallo: boolean})
    {
       this.dialogVisible_Falli = false;
       if ((event.player != null) && (this.playerForFalli != null))
       {
          this.playerForFalli.falliFatti.set(event.player.falliFatti());
+         this.UpdateCommandsData(this.playerForFalli);
          this.cdr.detectChanges();
+         if (event.nuovoFallo)
+         {
+            await this.AddGameOperation(TOperationType.totFalloFatto, this.playerForFalli);
+         }
       }
    }
 
@@ -1114,16 +1135,25 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    onTimeUpdate (event: { id: string, time: number })
    {
-      if (event.id === 'cronometro')
+      if (event.id === 'comptimer')
          console.log(`Cronometro ${event.id}: tempo rimanente ${event.time}s`);
    }
 
 
-   onTimerEvent(event: { id: string })
+   async onTimerStarted (event: { id: string })
    {
-      if (event.id === 'cronometro')
+      if (event.id === 'comptimer')
       {
-         console.log(`Il cronometro ${event.id} è stato avviato`);
+         await this.AddTimeOperation (TOperationType.totTimeStart);
+      }
+   }
+
+
+   async onTimerStopped (event: { id: string })
+   {
+      if (event.id === 'comptimer')
+      {
+         await this.AddTimeOperation (TOperationType.totTimeStop);
       }
    }
 
@@ -1434,6 +1464,19 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   async AddTimeOperation (oper: TOperationType): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const op = new TOperation(quarter, time, oper, true);
+      await opList.Add(op);
+      this.ScrollOperazioniToBottom();
+   }
+
+
    ScrollOperazioniToBottom(): void
    {
       setTimeout(() =>
@@ -1655,12 +1698,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          const team = matchGlobs.currMatch?.oppTeam();
          this.sostTeamName = team?.name() ?? '';
          this.sostPlayers  = team?.Roster ?? [];
+         this.sostIsMyTeam = false;
       }
       else
       {
          const team = matchGlobs.currMatch?.myTeam();
          this.sostTeamName = team?.name() ?? '';
          this.sostPlayers  = team?.Roster ?? [];
+         this.sostIsMyTeam = true;
       }
       this.sostTempo = this.compTimer?.displayTime ?? '';
       this.dialogVisible_Sostit = true;
@@ -1676,22 +1721,58 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   onSostituzioneSave(event: { players: TMatchPlayer[], azione: string }): void
+   async onSostituzioneSave(event: { players: TMatchPlayer[], azione: string, usciti?: TMatchPlayer[], entrati?: TMatchPlayer[], quintetto?: TMatchPlayer[], tempoSec?: number }): Promise<void>
    {
       // i flag inGioco sono già stati aggiornati dentro il componente
       this.dialogVisible_Sostit = false;
       if (event.azione == "quintetto")
       {
-
+         await this.AddQuintettoOperations (event.quintetto ?? [], event.tempoSec ?? 0);
       }
       else if (event.azione == "incampo")
       {
-
+         await this.AddSostituzioneOperations (event.usciti ?? [], event.entrati ?? []);
       }
       else if (event.azione == "sostituzione")
       {
-
+         await this.AddSostituzioneOperations (event.usciti ?? [], event.entrati ?? []);
       }
+   }
+
+
+   async AddSostituzioneOperations (usciti: TMatchPlayer[],
+                                    entrati: TMatchPlayer[]): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const count = Math.min (usciti.length, entrati.length);
+      for (let i=0;   i<count;   i++)
+      {
+         const playerOut = usciti[i];
+         const playerIn  = entrati[i];
+         const time = playerOut.outTime();
+         const op = new TOperation(quarter, time, TOperationType.totSostituz, this.sostIsMyTeam, playerOut, playerIn);
+         await opList.Add(op);
+      }
+      this.ScrollOperazioniToBottom();
+   }
+
+
+   async AddQuintettoOperations (players: TMatchPlayer[],
+                                 time: number): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      for (const player of players)
+      {
+         const op = new TOperation(quarter, time, TOperationType.totQuintetto, this.sostIsMyTeam, player);
+         await opList.Add(op);
+      }
+      this.ScrollOperazioniToBottom();
    }
 
 

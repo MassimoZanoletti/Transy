@@ -15,6 +15,10 @@
    color: yellow;
 }
 
+.oper-tmcr-default {
+   color: white;
+}
+
 ::ng-deep #table-operazioni {
    display: flex;
    flex-direction: column;
