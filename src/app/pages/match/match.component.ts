@@ -214,6 +214,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public currPlayer: string = "";
    public currBench: string = "";
    public currSel: any = null;
+   public currSelectedPlayer: TMatchPlayer | null = null;
    public MyFieldPlayers: Array<PlayerCompComponent> = [];
    public OppoFieldPlayers: Array<PlayerCompComponent> = [];
    public itemsMenuPartita: MenuItem[] | undefined;
@@ -501,6 +502,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       }
       await this.compMyTeam.Update();
       await this.compOppoTeam.Update();
+      //
+      this.UpdateFieldPlayers();
       //
       await matchGlobs.currSavedMatch.SaveToStorage();
       //
@@ -1149,15 +1152,51 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async TeamClicked(id: string)
    {
-      this.currTeam = id;
       await this.UpdateSelection("team", id);
+      this.currTeam = id;
    }
 
 
    async PlayerClicked(id: string)
    {
+      const player = this.GetPlayerByFieldId(id);
+      await this.SelectPlayer(player);
       this.currPlayer = id;
-      await this.UpdateSelection("player", id);
+   }
+
+
+   GetPlayerByFieldId(id: string): TMatchPlayer | null
+   {
+      const myIdx = ['pl1', 'pl2', 'pl3', 'pl4', 'pl5'].indexOf(id);
+      if (myIdx >= 0)
+         return this.MyFieldPlayers[myIdx]?.player ?? null;
+      const oppoIdx = ['oppopl1', 'oppopl2', 'oppopl3', 'oppopl4', 'oppopl5'].indexOf(id);
+      if (oppoIdx >= 0)
+         return this.OppoFieldPlayers[oppoIdx]?.player ?? null;
+      return null;
+   }
+
+
+   async SelectPlayer(player: TMatchPlayer | null): Promise<void>
+   {
+      await this.ClearSelection();
+      if (!player)
+         return;
+      this.currSelectedPlayer = player;
+      const isMy = player.isMyTeam();
+      const fieldSlots = isMy ? this.MyFieldPlayers : this.OppoFieldPlayers;
+      const benchRefs = isMy ? this.myBenchRefs : this.oppoBenchRefs;
+      for (const slot of fieldSlots)
+      {
+         if (slot && slot.player === player)
+            slot.isSelected = true;
+      }
+      for (const ref of benchRefs)
+      {
+         if (ref.instance.player === player)
+            ref.instance.isSelected = true;
+      }
+      this.UpdateCommandsData(player);
    }
 
 
@@ -1332,7 +1371,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async AddRimbalzoAttaccoOperation (): Promise<void>
    {
-      const player = this.GetPlayerByBenchId(this.currBench);
+      const player = this.currSelectedPlayer;
       if (!player)
          return;
       player.rimbAttacco.set(player.rimbAttacco() + 1);
@@ -1345,7 +1384,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async RegistraRealizzazione (tipo: TTipoRealizzazione,
                                 fatto: boolean): Promise<void>
    {
-      const player = this.GetPlayerByBenchId(this.currBench);
+      const player = this.currSelectedPlayer;
       if (!player || !matchGlobs.currMatch)
          return;
       let oper: TOperationType;
@@ -1370,7 +1409,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       realizz.rPlr = player;
       player.realizzazioni.set([...player.realizzazioni(), realizz]);
       this.UpdateCommandsData(player);
-      const isMyTeam = this.IsMyTeamBenchId(this.currBench);
+      const isMyTeam = (this.currSelectedPlayer?.isMyTeam() ?? false);
       if (fatto && (realizz.rPunti > 0))
       {
          const team = isMyTeam ? this.GetMyTeamData() : this.GetOppoTeamData();
@@ -1397,7 +1436,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compRimb)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.rimbDifesa.set(player.rimbDifesa() + 1);
@@ -1411,7 +1450,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          (this.compPalle)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.pPerse.set(player.pPerse() + 1);
@@ -1425,7 +1464,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compStopp)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.stoppSubite.set(player.stoppSubite() + 1);
@@ -1439,7 +1478,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compAssist)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.assist.set(player.assist() + 1);
@@ -1453,7 +1492,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compFalli)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                if (this.compTimer)
@@ -1478,7 +1517,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compRimb)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.rimbAttacco.set(player.rimbAttacco() + 1);
@@ -1492,7 +1531,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          (this.compPalle)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.pRecuperate.set(player.pRecuperate() + 1);
@@ -1506,7 +1545,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compStopp)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.stoppFatte.set(player.stoppFatte() + 1);
@@ -1520,7 +1559,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          if (this.compFalli)
          {
-            const player = this.GetPlayerByBenchId(this.currBench);
+            const player = this.currSelectedPlayer;
             if (player)
             {
                player.falliSubiti.set(player.falliSubiti() + 1);
@@ -1545,12 +1584,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   IsMyTeamBenchId(id: string): boolean
-   {
-      return this.myBenchRefs.some(ref => ref.instance.componentId === id);
-   }
-
-
    async AddGameOperation (oper: TOperationType,
                            player: TMatchPlayer | null,
                            desc: string = ''): Promise<void>
@@ -1560,7 +1593,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
       const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
-      const isMyTeam = this.IsMyTeamBenchId(this.currBench);
+      const isMyTeam = (this.currSelectedPlayer?.isMyTeam() ?? false);
       const op = new TOperation(quarter, time, oper, isMyTeam, player, undefined, desc);
       await opList.Add(op);
       this.ScrollOperazioniToBottom();
@@ -1636,24 +1669,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async BenchClicked(id: string)
    {
-      await this.UpdateSelection("bench", id);
-
-      const clickedMyRef = this.myBenchRefs.find(ref => ref.instance.componentId.toString() === id);
-      if (clickedMyRef)
-      {
-         clickedMyRef.instance.isSelected = true;
-      }
-      else
-      {
-         const clickedOppoRef = this.oppoBenchRefs.find(ref => ref.instance.componentId.toString() === id);
-         if (clickedOppoRef)
-         {
-            clickedOppoRef.instance.isSelected = true;
-         }
-      }
-
+      const player = this.GetPlayerByBenchId(id);
+      await this.SelectPlayer(player);
       this.currBench = id;
-      this.UpdateCommandsData(this.GetPlayerByBenchId(id));
    }
 
 
@@ -1674,6 +1692,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async ClearSelection()
    {
       this.currSel = null;
+      this.currSelectedPlayer = null;
       matchGlobs.currSavedMatch.currSelectionId = 0;
       matchGlobs.currSavedMatch.currSelectionType = "";
       this.currBench = "";
@@ -1714,53 +1733,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             this.compOppoTeam.isSelected = true;
          }
-      }
-      else if (senderType == "player")
-      {
-         if (senderId == "pl1")
-         {
-            this.compMyField1.isSelected = true;
-         }
-         else if (senderId == "pl2")
-         {
-            this.compMyField2.isSelected = true;
-         }
-         else if (senderId == "pl3")
-         {
-            this.compMyField3.isSelected = true;
-         }
-         else if (senderId == "pl4")
-         {
-            this.compMyField4.isSelected = true;
-         }
-         else if (senderId == "pl5")
-         {
-            this.compMyField5.isSelected = true;
-         }
-         else if (senderId == "oppopl1")
-         {
-            this.compOppoField1.isSelected = true;
-         }
-         else if (senderId == "oppopl2")
-         {
-            this.compOppoField2.isSelected = true;
-         }
-         else if (senderId == "oppopl3")
-         {
-            this.compOppoField3.isSelected = true;
-         }
-         else if (senderId == "oppopl4")
-         {
-            this.compOppoField4.isSelected = true;
-         }
-         else if (senderId == "oppopl5")
-         {
-            this.compOppoField5.isSelected = true;
-         }
-      }
-      else if (senderType == "bench")
-      {
-
       }
       /*
       {
@@ -1854,6 +1826,48 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       else if (event.azione == "sostituzione")
       {
          await this.AddSostituzioneOperations (event.usciti ?? [], event.entrati ?? []);
+      }
+      this.UpdateFieldPlayers();
+      await this.TeamClicked(this.sostIsMyTeam ? 'compmyteam' : 'compoppoteam');
+   }
+
+
+   OrdinaPlayersByNumero (a: TMatchPlayer,
+                          b: TMatchPlayer): number
+   {
+      const numA = a.playNumber();
+      const numB = b.playNumber();
+
+      if (numA === "0")
+         return numB === "0" ? 0 : -1;
+      if (numB === "0")
+         return 1;
+
+      if (numA === "00")
+         return numB === "00" ? 0 : -1;
+      if (numB === "00")
+         return 1;
+
+      return parseInt(numA, 10) - parseInt(numB, 10);
+   }
+
+
+   UpdateFieldPlayers(): void
+   {
+      this.UpdateTeamFieldPlayers(matchGlobs.currMatch?.myTeam() ?? null, this.MyFieldPlayers);
+      this.UpdateTeamFieldPlayers(matchGlobs.currMatch?.oppTeam() ?? null, this.OppoFieldPlayers);
+      this.cdr.detectChanges();
+   }
+
+
+   UpdateTeamFieldPlayers (team: TMatchTeam | null,
+                           slots: Array<PlayerCompComponent>): void
+   {
+      const inCampo = (team?.Roster ?? []).filter(p => p.inGioco()).sort((a, b) => this.OrdinaPlayersByNumero(a, b));
+      for (let iii=0;   iii<slots.length;   iii++)
+      {
+         if (slots[iii])
+            slots[iii].player = inCampo[iii] ?? null;
       }
    }
 

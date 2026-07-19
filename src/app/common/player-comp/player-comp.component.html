@@ -7,11 +7,11 @@
         class="flex div-riga1">
       <div id="div-pc-number"
            class="div-number">
-         {{playerNumber}}
+         {{GetPlayerNum()}}
       </div>
       <div id="div-pc-name"
            class="div-name">
-         {{playerName}}
+         {{GetPlayerName()}}
       </div>
    </div>
    <div id="div-pc-riga2"
@@ -20,15 +20,15 @@
             class="div-falli"
            [style.background-color]="GetFoulsBackgroundColor()"
            [style.color]="GetFoulsTextColor()">
-         {{playerFouls}}
+         {{GetFalli()}}
       </div>
       <div id="div-pc-minutes"
            class="div-minutes">
-         Min.: <span style="font-size: 1.2em; font-weight: 700; color: white;">{{playerMinutes}}</span>
+         Min.: <span style="font-size: 1.2em; font-weight: 700; color: white;">{{GetMinuti()}}</span>
       </div>
       <div id="div-pc-points"
            class="div-points">
-         {{playerPoints}}
+         {{GetPunti()}}
       </div>
    </div>
 </div>

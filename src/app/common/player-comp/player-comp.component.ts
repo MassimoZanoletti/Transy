@@ -13,7 +13,7 @@ import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
 import { globs } from "../utils";
-import {CreateEmptyPlayer, TDSPlayer} from "../../models/datamod";
+import {CreateEmptyPlayer, TDSPlayer, TMatchPlayer} from "../../models/datamod";
 
 
 
@@ -40,6 +40,7 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    @Input() playerMinutes: string = "";
    @Input() playerPoints: number = 0;
    @Input() playerRef: TDSPlayer = CreateEmptyPlayer();
+   @Input() player: TMatchPlayer | null = null;
    @Input() colorNormal: string = globs.colorNotSelected
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
@@ -88,23 +89,62 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    }
 
 
+   GetPlayerNum(): string
+   {
+      return this.player ? this.player.playNumber() : this.playerNumber;
+   }
+
+
+   GetPlayerName(): string
+   {
+      return this.player ? this.player.playName() : this.playerName;
+   }
+
+
+   GetMinuti(): string
+   {
+      if (this.player)
+      {
+         const secs = this.player.tempoGioco();
+         const m = Math.floor(secs / 60);
+         const s = secs % 60;
+         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+      return this.playerMinutes;
+   }
+
+
+   GetPunti(): number
+   {
+      return this.player ? this.player.CalcolaPunti() : this.playerPoints;
+   }
+
+
+   GetFalli(): number
+   {
+      return this.player ? this.player.GetFalliFatti() : this.playerFouls;
+   }
+
+
    GetFoulsBackgroundColor(): string
    {
-      if (this.playerFouls <= 0)
-         this.playerFouls = 0;
-      if (this.playerFouls > 5)
-         this.playerFouls = 5;
-      return globs.bckColorFalli[this.playerFouls];
+      let falli = this.GetFalli();
+      if (falli <= 0)
+         falli = 0;
+      if (falli > 5)
+         falli = 5;
+      return globs.bckColorFalli[falli];
    }
 
 
    GetFoulsTextColor(): string
    {
-      if (this.playerFouls <= 0)
-         this.playerFouls = 0;
-      if (this.playerFouls > 5)
-         this.playerFouls = 5;
-      return globs.txtColorFalli[this.playerFouls];
+      let falli = this.GetFalli();
+      if (falli <= 0)
+         falli = 0;
+      if (falli > 5)
+         falli = 5;
+      return globs.txtColorFalli[falli];
    }
 
 }
