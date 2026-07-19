@@ -892,7 +892,7 @@ export class TOperationList
             pl = aOper.player1();
             if (pl != null)
             {
-               for (let yyy=0;   yyy<(pl.realizzazioni.length);   yyy++)
+               for (let yyy=0;   yyy<(pl.realizzazioni().length);   yyy++)
                {
                   tmp = pl.realizzazioni()[yyy];
                   if ((tmp.rTipo == tr) && (tmp.rTempo == (aOper.time())) && (tmp.rQuarto == (aOper.quarter())))
@@ -902,9 +902,25 @@ export class TOperationList
                   }
                }
             }
-            if (idx >= 0)
+            if ((idx >= 0) && (pl != null))
             {
-               (aOper.player1())?.realizzazioni().slice(idx, 1);
+               tmp = pl.realizzazioni()[idx];
+               if (tmp.rPunti > 0)
+               {
+                  Qrt = null;
+                  if (matchGlobs.currMatch)
+                  {
+                     if ((aOper.myTeam()) && (matchGlobs.currMatch.myTeam()))
+                        Qrt = matchGlobs.currMatch.myTeam()!.GetQuarto(tmp.rQuarto - 1);
+                     else if ((aOper.myTeam() == false) && (matchGlobs.currMatch.oppTeam()))
+                        Qrt = matchGlobs.currMatch.oppTeam()!.GetQuarto(tmp.rQuarto - 1);
+                  }
+                  if (Qrt != null)
+                     Qrt.punti = Math.max(0, Qrt.punti - tmp.rPunti);
+               }
+               const arr = pl.realizzazioni().slice();
+               arr.splice(idx, 1);
+               pl.realizzazioni.set(arr);
                result = true;
             }
          }

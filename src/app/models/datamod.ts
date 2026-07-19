@@ -1208,6 +1208,7 @@ export class TMatchTeam
    public abbrev = signal<string>("");
    public color = signal<string>("#FFFFFF");
    public falliTeam = signal<TFallo[]>([]);
+   private rosterTick = signal<number>(0);
 
    public IsMyTeam: boolean = false;
    public TeamRecID: number = 0;
@@ -1379,7 +1380,7 @@ export class TMatchTeam
 
    public GetQuarto(n: number): TQuarterTeam | null
    {
-      if ((this.quarti.length > 0) && (n >= 0) && (n < this.quarti.length))
+      if ((this.quarti().length > 0) && (n >= 0) && (n < this.quarti().length))
       {
          return this.quarti()[n];
       }
@@ -1511,6 +1512,12 @@ export class TMatchTeam
          return this.Roster[aIdx];
       }
       return null;
+   }
+
+
+   public NotifyRosterChanged(): void
+   {
+      this.rosterTick.set(this.rosterTick() + 1);
    }
 
    public async ReadFromDB(aTeamID?: number, aMatchID?: number): Promise<void>
@@ -1690,6 +1697,7 @@ export class TMatchTeam
 
    public CalcPunti: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = 0;
       for (let xxx = 0; xxx < this.Roster.length; xxx++)
       {
@@ -1724,6 +1732,7 @@ export class TMatchTeam
 
    public CalcTLRealizz: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = 0;
       try
       {
@@ -1744,6 +1753,7 @@ export class TMatchTeam
 
    public CalcTLTentati: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = 0;
       try
       {
@@ -1764,6 +1774,7 @@ export class TMatchTeam
 
    public CalcRimbalzi: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = (this.rimbAttacco()) + (this.rimbDifesa());
       for (let xxx=0;   xxx<this.Roster.length;   xxx++)
       {
@@ -1777,6 +1788,7 @@ export class TMatchTeam
 
    public CalcPIR: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = 0;
       for (let xxx=0;   xxx<this.Roster.length;   xxx++)
       {
@@ -1790,6 +1802,7 @@ export class TMatchTeam
 
    public CalcAssist: Signal<number> = computed(() =>
    {
+      this.rosterTick();
       let result = 0;
       for (let xxx=0;   xxx<this.Roster.length;   xxx++)
       {

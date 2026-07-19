@@ -306,13 +306,21 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    GetStatPPer(): string
    {
-      return this.matchTeamData ? `${this.matchTeamData.pPerse()}` : "";
+      if (!this.matchTeamData) return "";
+      let total = 0;
+      for (const pl of this.matchTeamData.Roster)
+         total += pl.pPerse();
+      return `${total}`;
    }
 
 
    GetStatPRec(): string
    {
-      return this.matchTeamData ? `${this.matchTeamData.pRecuperate()}` : "";
+      if (!this.matchTeamData) return "";
+      let total = 0;
+      for (const pl of this.matchTeamData.Roster)
+         total += pl.pRecuperate();
+      return `${total}`;
    }
 
 
@@ -339,10 +347,13 @@ export class TeamCompComponent implements OnInit, OnDestroy
    GetStatRimb(): string
    {
       if (!this.matchTeamData) return "";
-      const d = this.matchTeamData.rimbDifesa();
-      const a = this.matchTeamData.rimbAttacco();
-      const tot = this.matchTeamData.CalcRimbalzi();
-      return `${d}<->${a} [${tot}]`;
+      let d = 0, a = 0;
+      for (const pl of this.matchTeamData.Roster)
+      {
+         d += pl.rimbDifesa();
+         a += pl.rimbAttacco();
+      }
+      return `${d}<->${a} [${d + a}]`;
    }
 
 

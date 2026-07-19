@@ -50,6 +50,8 @@ export class PointsCompComponent implements OnInit, OnDestroy
    @Input() btn1Label: string = "";
    @Input() btn2Label: string = "";
    @Input() isSelected: boolean = false;
+   @Input() dato1: string = "00/00";
+   @Input() dato: string = "0";
 
    @Output() compBtnMinus1Clicked = new EventEmitter<string>();
    @Output() compBtnPlus1Clicked = new EventEmitter<string>();

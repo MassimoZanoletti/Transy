@@ -44,7 +44,7 @@ import {
    TDSMatchRoster,
    TDSCoach,
    TDSPlayer,
-   TMatchTeam, TMatchPlayer, TFallo
+   TMatchTeam, TMatchPlayer, TFallo, TRealizzazione, TTipoRealizzazione
 } from "../../models/datamod";
 import {BlockUIModule} from "primeng/blockui";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
@@ -665,6 +665,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                      plr.rosterRecID = myList[iii].id;
                      mt.Roster.push (plr);
                   }
+                  mt.NotifyRosterChanged();
                }
             }
             //
@@ -692,6 +693,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                      plr.rosterRecID = oppoList[iii].id;
                      ot.Roster.push (plr);
                   }
+                  ot.NotifyRosterChanged();
                }
             }
          }
@@ -1191,6 +1193,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compTL)
          {
             this.compTL.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trTL, false);
          }
       }
       else if (id == "t2")
@@ -1198,6 +1201,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT2)
          {
             this.compT2.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, false);
          }
       }
       else if (id == "t3")
@@ -1205,6 +1209,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT3)
          {
             this.compT3.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT3, false);
          }
       }
    }
@@ -1217,6 +1222,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compTL)
          {
             this.compTL.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trTL, true);
          }
       }
       else if (id == "t2")
@@ -1224,6 +1230,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT2)
          {
             this.compT2.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, true);
          }
       }
       else if (id == "t3")
@@ -1231,6 +1238,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT3)
          {
             this.compT3.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT3, true);
          }
       }
    }
@@ -1243,6 +1251,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compTL)
          {
             this.compTL.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trTL, false);
          }
       }
       else if (id == "t2")
@@ -1250,6 +1259,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT2)
          {
             this.compT2.Flash();
+            await this.AddRimbalzoAttaccoOperation();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, false);
          }
       }
       else if (id == "t3")
@@ -1257,6 +1268,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT3)
          {
             this.compT3.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT3, false);
          }
       }
    }
@@ -1269,6 +1281,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compTL)
          {
             this.compTL.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trTL, true);
          }
       }
       else if (id == "t2")
@@ -1276,6 +1289,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT2)
          {
             this.compT2.Flash();
+            await this.AddRimbalzoAttaccoOperation();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, true);
          }
       }
       else if (id == "t3")
@@ -1283,8 +1298,70 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT3)
          {
             this.compT3.Flash();
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT3, true);
          }
       }
+   }
+
+
+   async AddRimbalzoAttaccoOperation (): Promise<void>
+   {
+      const player = this.GetPlayerByBenchId(this.currBench);
+      if (!player)
+         return;
+      player.rimbAttacco.set(player.rimbAttacco() + 1);
+      this.UpdateCommandsData(player);
+      this.compRimb?.Flash();
+      await this.AddGameOperation(TOperationType.totRimbAttacco, player);
+   }
+
+
+   async RegistraRealizzazione (tipo: TTipoRealizzazione,
+                                fatto: boolean): Promise<void>
+   {
+      const player = this.GetPlayerByBenchId(this.currBench);
+      if (!player || !matchGlobs.currMatch)
+         return;
+      let oper: TOperationType;
+      switch (tipo)
+      {
+         case TTipoRealizzazione.trTL:
+            oper = fatto ? TOperationType.totTLYes : TOperationType.totTLNo;
+            break;
+         case TTipoRealizzazione.trT2:
+            oper = fatto ? TOperationType.totT2Yes : TOperationType.totT2No;
+            break;
+         case TTipoRealizzazione.trT3:
+            oper = fatto ? TOperationType.totT3Yes : TOperationType.totT3No;
+            break;
+         default:
+            return;
+      }
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const realizz = new TRealizzazione();
+      await realizz.Add(tipo, quarter, time, fatto, 0, 0);
+      realizz.rPlr = player;
+      player.realizzazioni.set([...player.realizzazioni(), realizz]);
+      this.UpdateCommandsData(player);
+      const isMyTeam = this.IsMyTeamBenchId(this.currBench);
+      if (fatto && (realizz.rPunti > 0))
+      {
+         const team = isMyTeam ? this.GetMyTeamData() : this.GetOppoTeamData();
+         if (team)
+         {
+            team.currQuarter.set(quarter - 1);
+            const qrt = team.GetQuarto(quarter - 1);
+            if (qrt)
+               qrt.punti = qrt.punti + realizz.rPunti;
+         }
+      }
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const op = new TOperation(quarter, time, oper, isMyTeam, player);
+      await opList.Add(op);
+      this.ScrollOperazioniToBottom();
    }
 
 
@@ -1512,6 +1589,21 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          this.compFalli.dato1 = player ? player.GetFalliFatti().toString()   : "0";
          this.compFalli.dato2 = player ? player.falliSubiti().toString()    : "0";
+      }
+      if (this.compTL)
+      {
+         this.compTL.dato1 = player ? `${player.CalcTLRealizz()}/${player.CalcTLTentati()}` : "00/00";
+         this.compTL.dato  = player ? player.CalcTLPunti().toString() : "0";
+      }
+      if (this.compT2)
+      {
+         this.compT2.dato1 = player ? `${player.CalcT2Realizz()}/${player.CalcT2Tentati()}` : "00/00";
+         this.compT2.dato  = player ? player.CalcT2Punti().toString() : "0";
+      }
+      if (this.compT3)
+      {
+         this.compT3.dato1 = player ? `${player.CalcT3Realizz()}/${player.CalcT3Tentati()}` : "00/00";
+         this.compT3.dato  = player ? player.CalcT3Punti().toString() : "0";
       }
    }
 
