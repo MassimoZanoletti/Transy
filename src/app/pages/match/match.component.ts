@@ -580,7 +580,33 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    GetOperDescStr(op: TOperation): string
    {
-      return op.Player2Str() || op.desc();
+      const p2 = op.Player2Str();
+      const d = op.desc();
+      if (p2 && d)
+         return `${p2} ${d}`;
+      return p2 || d;
+   }
+
+
+   GetOperBgClass(op: TOperation): string
+   {
+      switch (op.oper())
+      {
+         case TOperationType.totTLYes:
+         case TOperationType.totT2Yes:
+         case TOperationType.totT3Yes:
+            return 'oper-bg-made';
+         case TOperationType.totTLNo:
+         case TOperationType.totT2No:
+         case TOperationType.totT3No:
+            return 'oper-bg-missed';
+         case TOperationType.totSostituz:
+            return 'oper-bg-sostituz';
+         case TOperationType.totQuintetto:
+            return 'oper-bg-quintetto';
+         default:
+            return '';
+      }
    }
 
 

@@ -12,11 +12,27 @@
 }
 
 .oper-tmcr-oppo {
-   color: yellow;
+   color: #ab7a39;
 }
 
 .oper-tmcr-default {
    color: white;
+}
+
+.oper-bg-made {
+   background-color: #344d34;
+}
+
+.oper-bg-missed {
+   background-color: #523737;
+}
+
+.oper-bg-sostituz {
+   background-color: #003970;
+}
+
+.oper-bg-quintetto {
+   background-color: #007070;
 }
 
 ::ng-deep #table-operazioni {

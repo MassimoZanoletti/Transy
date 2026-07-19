@@ -553,12 +553,23 @@ export class TOperationList
    {
       this.fCounter++;
       item.counter.set (this.fCounter);
+      this.AppendPunteggioToDesc(item);
       this.fList.push(item);
       await this.Sort();
       this.fModified = true;
       this.SyncItems();
       if (this.OnChanged)
          this.OnChanged();
+   }
+
+
+   private AppendPunteggioToDesc(item: TOperation): void
+   {
+      const myPts: number = matchGlobs.currMatch?.myTeam()?.CalcPunti() ?? 0;
+      const oppoPts: number = matchGlobs.currMatch?.oppTeam()?.CalcPunti() ?? 0;
+      const punteggio: string = `${myPts}-${oppoPts}`;
+      const existing: string = item.desc();
+      item.desc.set(existing ? `${existing} ${punteggio}` : punteggio);
    }
 
 

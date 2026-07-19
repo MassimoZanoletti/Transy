@@ -543,7 +543,7 @@
                      <tr>
                         <td>{{ GetOperQuarterStr(op) }}</td>
                         <td>{{ GetOperTimeStr(op) }}</td>
-                        <td>{{ TOperationType.Desc(op.oper()) }}</td>
+                        <td [ngClass]="GetOperBgClass(op)">{{ TOperationType.Desc(op.oper()) }}</td>
                         <td [ngClass]="GetOperTmCrClass(op)">{{ op.MyTeamStr() }}</td>
                         <td>{{ GetOperPlayerStr(op) }}</td>
                         <td>{{ GetOperDescStr(op) }}</td>
