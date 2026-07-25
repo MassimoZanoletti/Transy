@@ -128,7 +128,14 @@ export class FalloDlgComponent  implements OnInit, OnDestroy
             if (fi[i].fCommesso)
                totIn++;
             if (this.falli[i].fCommesso)
+            {
                totOut++;
+               if (!fi[i].fCommesso)
+               {
+                  this.falli[i].fQuarto = this.quarto;
+                  this.falli[i].fTempo = this.tempoSec;
+               }
+            }
             else
                this.falli[i].Reset();
          }
