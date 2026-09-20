@@ -32,11 +32,15 @@ export class TimerCompComponent implements OnInit, OnDestroy
    @Input () initialMinutes: number = 10;
    @Input () instanceId: string = 'default';
    @Input () currQuarter: string = "1q";
+   @Input () matchNotStarted: boolean = false;
 
    // Output per la comunicazione con il componente padre
    @Output () timeUpdated = new EventEmitter<{ id: string, time: number }> ();
    @Output () started = new EventEmitter<{ id: string }> ();
    @Output () stopped = new EventEmitter<{ id: string }> ();
+   // Emesso al click su "Start", prima che il countdown parta davvero: permette al padre
+   // di mostrare eventuali conferme senza far scorrere il tempo nel frattempo (vedi OnStartClick()).
+   @Output () startRequested = new EventEmitter<{ id: string }> ();
 
    // Variabili interne
    private timerInterval: any;
@@ -69,6 +73,13 @@ export class TimerCompComponent implements OnInit, OnDestroy
 
    ngOnInit (): void
    {
+      // Match non ancora iniziato: ignora qualunque stato residuo in localStorage
+      // (condiviso fra le partite tramite instanceId fisso) e riparte da 1° quarto/tempo pieno.
+      if (this.matchNotStarted)
+      {
+         this.ResetToMatchStart ();
+         return;
+      }
       const savedPausedTime = localStorage.getItem (this.pausedTimeKey);
       const savedStartTime = localStorage.getItem (this.startTimeKey);
 
@@ -93,6 +104,12 @@ export class TimerCompComponent implements OnInit, OnDestroy
       }
       this.updateDisplay ();
       this.deltaTime = 0;
+   }
+
+
+   OnStartClick (): void
+   {
+      this.startRequested.emit ({id: this.instanceId});
    }
 
 
@@ -305,6 +322,19 @@ export class TimerCompComponent implements OnInit, OnDestroy
    {
       this.currQuarter = quarto;
       this.quartiVisible = false;
+   }
+
+
+   public ResetToMatchStart (): void
+   {
+      if (this.isRunning)
+         this.stop ();
+      this.currQuarter = "1q";
+      this.quartiVisible = false;
+      this.clearLocalStorage ();
+      this.totalSeconds = this.initialMinutes * 60;
+      this.pausedTime = this.totalSeconds;
+      this.updateDisplay (this.totalSeconds);
    }
 
 

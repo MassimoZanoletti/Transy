@@ -207,9 +207,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public dialogVisible_Roster: boolean = false;
    public dialogVisible_Sostit: boolean = false;
    public sostTeamName: string = '';
+   public sostTeamColor: string = '#FFFFFF';
    public sostTempo: string = '';
    public sostPlayers: TMatchPlayer[] = [];
    public sostIsMyTeam: boolean = true;
+   public dialogVisible_Azioni: boolean = false;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -436,6 +438,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await this.LoadTeams(this.matchHeader.champId_lk);
       await this.LoadSeason(this.currSeason?this.currSeason.id:0);
       await this.LoadPhase(this.currPhase?this.currPhase.id:0);
+      //
+      // Se il tab "Gioco" (e quindi il timer) è già stato visitato in questa sessione, il
+      // relativo binding [matchNotStarted] non forza un nuovo ngOnInit: resettalo esplicitamente.
+      if ((this.MatchNotStarted()) && (this.compTimer))
+         this.compTimer.ResetToMatchStart();
       //
       if (this.matchHeader.atHome)
       {
@@ -996,6 +1003,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   MatchNotStarted(): boolean
+   {
+      return (this.matchHeader.matchStatus != matchStatusType.playing.code) &&
+             (this.matchHeader.matchStatus != matchStatusType.terminated.code);
+   }
+
+
    StatoMAtchStr(): string
    {
       if (this.matchHeader.matchStatus == matchStatusType.playing.code)
@@ -1204,6 +1218,38 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       if (event.id === 'comptimer')
          console.log(`Cronometro ${event.id}: tempo rimanente ${event.time}s`);
+   }
+
+
+   QuintettoSelezionato(): boolean
+   {
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 1;
+      const myOk  = matchGlobs.currMatch?.myTeam()?.QuintettoQuarto[quarter - 1]  ?? false;
+      const oppOk = matchGlobs.currMatch?.oppTeam()?.QuintettoQuarto[quarter - 1] ?? false;
+      return myOk && oppOk;
+   }
+
+
+   async onStartRequested (event: { id: string })
+   {
+      if (event.id !== 'comptimer')
+         return;
+      if (!this.QuintettoSelezionato())
+      {
+         const dlgData: MessDlgData = {
+            title:               'Quintetto non selezionato',
+            subtitle:            '',
+            message:             `Il quintetto di una o entrambe le squadre non è ancora stato selezionato per questo quarto.<br>Vuoi continuare comunque?`,
+            messtype:            'warning',
+            btncaption:          'No, annulla',
+            showCancelButton:    true,
+            cancelButtonCaption: 'Sì, continua'
+         };
+         const result = await firstValueFrom (this.messageDialogService.showMessage (dlgData, '', true));
+         if (result !== 'secondary')
+            return; // l'utente ha annullato: il cronometro non viene nemmeno avviato
+      }
+      this.compTimer?.start();
    }
 
 
@@ -1613,6 +1659,36 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   async BtnUndoClick (): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const count = await opList.GetCount();
+      if (count > 0)
+      {
+         await opList.RemoveAction(count - 1);
+         await this.compMyTeam?.Update();
+         await this.compOppoTeam?.Update();
+         this.UpdateCommandsData(this.currSelectedPlayer);
+         this.cdr.detectChanges();
+      }
+   }
+
+
+   async BtnCheckPointClick (): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const op = new TOperation(quarter, time, TOperationType.totCheckPoint, true, undefined, undefined, 'CheckPoint');
+      await opList.Add(op);
+      this.ScrollOperazioniToBottom();
+   }
+
+
    ScrollOperazioniToBottom(): void
    {
       setTimeout(() =>
@@ -1786,16 +1862,18 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (this.compOppoTeam.isSelected)
       {
          const team = matchGlobs.currMatch?.oppTeam();
-         this.sostTeamName = team?.name() ?? '';
-         this.sostPlayers  = team?.Roster ?? [];
-         this.sostIsMyTeam = false;
+         this.sostTeamName  = team?.name() ?? '';
+         this.sostTeamColor = this.matchHeader.oppoTeamColor || '#FFFFFF';
+         this.sostPlayers   = team?.Roster ?? [];
+         this.sostIsMyTeam  = false;
       }
       else
       {
          const team = matchGlobs.currMatch?.myTeam();
-         this.sostTeamName = team?.name() ?? '';
-         this.sostPlayers  = team?.Roster ?? [];
-         this.sostIsMyTeam = true;
+         this.sostTeamName  = team?.name() ?? '';
+         this.sostTeamColor = this.matchHeader.myTeamColor || '#FFFFFF';
+         this.sostPlayers   = team?.Roster ?? [];
+         this.sostIsMyTeam  = true;
       }
       this.sostTempo = this.compTimer?.displayTime ?? '';
       this.dialogVisible_Sostit = true;
@@ -1817,6 +1895,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       this.dialogVisible_Sostit = false;
       if (event.azione == "quintetto")
       {
+         // Il flag "titolare" (InQuintetto) vale solo per il 1° quarto (porting da FaiQuintetto, BSDEvo.Dlg.Sostituzione.pas:564,574)
+         const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+         if (quarter === 1)
+         {
+            const selezionati = new Set<TMatchPlayer>(event.quintetto ?? []);
+            event.players.forEach(p => p.inQuintetto.set(selezionati.has(p)));
+         }
          await this.AddQuintettoOperations (event.quintetto ?? [], event.tempoSec ?? 0);
       }
       else if (event.azione == "incampo")
@@ -1880,6 +1965,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
       const count = Math.min (usciti.length, entrati.length);
+      // Diff calcolato una sola volta per l'intera sostituzione (porting da FaiSostituzione, BSDEvo.Dlg.Sostituzione.pas:629)
+      const diff = (matchGlobs.currMatch.myTeam()?.CalcPunti() ?? 0) - (matchGlobs.currMatch.oppTeam()?.CalcPunti() ?? 0);
       for (let i=0;   i<count;   i++)
       {
          const playerOut = usciti[i];
@@ -1887,6 +1974,12 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          const time = playerOut.outTime();
          const op = new TOperation(quarter, time, TOperationType.totSostituz, this.sostIsMyTeam, playerOut, playerIn);
          await opList.Add(op);
+         // Plus/Minus e tempo di gioco (porting da FaiSostituzione, BSDEvo.Dlg.Sostituzione.pas:652-659)
+         playerOut.tempoGioco.set(playerOut.tempoGioco() + (playerOut.inTime() - playerOut.outTime()));
+         playerOut.plusMinus.set(playerOut.plusMinus() + (diff - playerOut.fPMIn));
+         playerIn.outTime.set(playerIn.inTime());
+         playerIn.currCronotime = playerIn.inTime();
+         playerIn.fPMIn = diff;
       }
       this.ScrollOperazioniToBottom();
    }
@@ -1899,8 +1992,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          return;
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      // Tempo massimo del quarto corrente, usato come riferimento iniziale (porting da FaiQuintetto, BSDEvo.Dlg.Sostituzione.pas:477-480, 508-510)
+      const maxTime = (quarter <= globs.MaxRegQuarters) ? globs.DurationRegulTime : globs.DurationExtraTime;
       for (const player of players)
       {
+         player.inTime.set(maxTime);
+         player.outTime.set(maxTime);
+         player.currCronotime = maxTime;
          const op = new TOperation(quarter, time, TOperationType.totQuintetto, this.sostIsMyTeam, player);
          await opList.Add(op);
       }
@@ -1922,7 +2020,22 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuAzioni()
    {
-      this.msgService.add({ severity: 'info', summary: 'Azioni', detail: 'Non ancora implementato' });
+      this.dialogVisible_Azioni = true;
+   }
+
+
+   async BtnEliminaAzione (op: TOperation): Promise<void>
+   {
+      if (!confirm(`Eliminare l'azione "${op.toString()}" ?`))
+         return;
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      await opList.RemoveAction(op);
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      this.UpdateCommandsData(this.currSelectedPlayer);
+      this.cdr.detectChanges();
    }
 
 
@@ -1944,9 +2057,37 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   mnuAzzeraTutto()
+   async mnuAzzeraTutto()
    {
-      this.msgService.add({ severity: 'info', summary: 'Azzera tutto', detail: 'Non ancora implementato' });
+      const dlgData: MessDlgData = {
+         title:               'Azzera tutta la partita',
+         subtitle:            '',
+         message:             `Verranno eliminate tutte le azioni, i tempi di gioco e i quintetti registrati finora, come se la partita non fosse mai iniziata.<br>Resteranno solo i convocati con i relativi numeri di maglia e i capitani.<br>Vuoi davvero procedere?`,
+         messtype:            'warning',
+         btncaption:          'No, annulla',
+         showCancelButton:    true,
+         cancelButtonCaption: 'Sì, azzera tutto'
+      };
+      const result = await firstValueFrom (this.messageDialogService.showMessage (dlgData, '', true));
+      if (result !== 'secondary')
+         return;
+      //
+      if (matchGlobs.currMatch)
+      {
+         const opList = await matchGlobs.currMatch.EnsureOperationList();
+         await opList.Destroy();
+         matchGlobs.currMatch.myTeam()?.ResetMatchState();
+         matchGlobs.currMatch.oppTeam()?.ResetMatchState();
+      }
+      //
+      await this.ClearSelection();
+      this.compTimer?.ResetToMatchStart();
+      this.UpdateFieldPlayers();
+      await this.compMyTeam.Update();
+      await this.compOppoTeam.Update();
+      await matchGlobs.currSavedMatch.SaveToStorage();
+      this.cdr.detectChanges();
+      this.msgService.add({ severity: 'success', summary: 'Azzera tutto', detail: 'La partita è stata azzerata' });
    }
 
 

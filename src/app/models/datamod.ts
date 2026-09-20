@@ -858,6 +858,35 @@ export class TMatchPlayer
    }
 
 
+   // Come reset(), ma preserva l'identità del convocato (playerRecID/rosterRecID/playName/
+   // playNumber/captain/isMyTeam) — usato da "Azzera tutta la partita" per riportare le
+   // statistiche di gioco a zero senza perdere la distinta dei convocati.
+   public ResetMatchStats(): void
+   {
+      this._simulation = false;
+      this._fakeFouls = 0;
+      this.fPMIn = 0;
+      this.currCronotime = 0;
+      this.internalSort = 0;
+      this.inQuintetto.set(false);
+      this.inGioco.set(false);
+      this.realizzazioni.set([]);
+      this.tempoGioco.set(0);
+      this.falliSubiti.set(0);
+      this.rimbAttacco.set(0);
+      this.rimbDifesa.set(0);
+      this.pPerse.set(0);
+      this.pRecuperate.set(0);
+      this.stoppSubite.set(0);
+      this.stoppFatte.set(0);
+      this.assist.set(0);
+      this.plusMinus.set(0);
+      this.inTime.set(0);
+      this.outTime.set(0);
+      this.falliFatti().forEach(f => f.Reset?.());
+   }
+
+
    public Clone(): TMatchPlayer
    {
       const copia: TMatchPlayer = new TMatchPlayer();
@@ -1266,6 +1295,26 @@ export class TMatchTeam
       {
          console.error(JSON.stringify(e));
       }
+   }
+
+
+   // Riporta la squadra allo stato "partita mai iniziata": azzera quarti, quintetti, timeout,
+   // falli e le statistiche di gioco di ogni giocatore, ma preserva il Roster (convocati con
+   // numero di maglia e capitano) — usato da "Azzera tutta la partita".
+   public ResetMatchState(): void
+   {
+      this.timeout1.set("OO");
+      this.timeout2.set("OOO");
+      this.timeoutExtra.set("OOOO");
+      this.currQuarter.set(0);
+      this.rimbAttacco.set(0);
+      this.rimbDifesa.set(0);
+      this.pPerse.set(0);
+      this.pRecuperate.set(0);
+      this.falliTeam.set([]);
+      this.QuintettoQuarto.fill(false);
+      this.quarti().forEach(q => q.Reset());
+      this.Roster.forEach(p => p.ResetMatchStats());
    }
 
 

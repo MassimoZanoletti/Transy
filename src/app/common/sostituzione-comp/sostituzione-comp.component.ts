@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import {TFallo, TMatchPlayer} from '../../models/datamod';
 import {globs, utils} from "../utils";
+import {matchGlobs} from "../curr-match";
 
 
 @Component({
@@ -31,8 +32,11 @@ import {globs, utils} from "../utils";
 export class SostituzioneCompComponent implements OnInit
 {
    @Input() teamName: string = '';
+   @Input() teamColor: string = '#FFFFFF';
    @Input() tempo: string = '';
    @Input() players: TMatchPlayer[] = [];
+   @Input() quarter: number = 1;
+   @Input() isMyTeam: boolean = true;
 
    @Output() salva = new EventEmitter<{ players: TMatchPlayer[], azione: string, usciti?: TMatchPlayer[], entrati?: TMatchPlayer[], quintetto?: TMatchPlayer[], tempoSec?: number }>();
    @Output() annulla = new EventEmitter<void>();
@@ -59,6 +63,20 @@ export class SostituzioneCompComponent implements OnInit
       this.selectedInGioco = [];
       this.selectedInPanchina = [];
       this.cdr.detectChanges();
+   }
+
+
+   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra, in base alla sua luminosità (formula YIQ)
+   get teamNameTextColor(): string
+   {
+      const hex = (this.teamColor || '#FFFFFF').replace('#', '');
+      if (hex.length !== 6)
+         return '#000000';
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      return yiq >= 128 ? '#000000' : '#ffffff';
    }
 
 
@@ -93,6 +111,17 @@ export class SostituzioneCompComponent implements OnInit
          this.messageService.add({ severity: 'warn', summary: 'Attenzione', detail: 'Seleziona esattamente 5 giocatori' });
          return;
       }
+      // Conferma se il quintetto per questo quarto è già stato assegnato (porting da BtnQuintettoClick, BSDEvo.Dlg.Sostituzione.pas:426-441)
+      const team = this.isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+      const already = team?.QuintettoQuarto[this.quarter - 1] ?? false;
+      if (already)
+      {
+         const ok = confirm(`ATTENZIONE\n\nIl quintetto per il ${this.quarter}° quarto è già stato assegnato.\nSicuro di volerlo riassegnare?`);
+         if (!ok)
+            return;
+      }
+      if (team)
+         team.QuintettoQuarto[this.quarter - 1] = true;
       console.log(`----players prima`);
       this.players.forEach(p => console.log(`${p.playName()}:${p.inGioco()}`));
       this.players.forEach(p => p.inGioco.set(selezionati.has(p)));

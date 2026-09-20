@@ -198,7 +198,9 @@
                <app-timer-comp
                   instanceId="comptimer"
                   #compTimer
+                  [matchNotStarted]="MatchNotStarted()"
                   (timeUpdated)="onTimeUpdate($event)"
+                  (startRequested)="onStartRequested($event)"
                   (started)="onTimerStarted($event)"
                   (stopped)="onTimerStopped($event)">
                </app-timer-comp>
@@ -403,8 +405,18 @@
                        id="btn-undo"
                        pTooltip="Undo"
                        class="btn-gioco-cmd p-button p-button-primary"
+                       (click)="BtnUndoClick()"
                >
                   <img src="assets/command-undo.png" style="width:110px;height:110px;" alt="UNDO"/>
+               </button>
+
+               <button pButton
+                       id="btn-checkpoint"
+                       pTooltip="Checkpoint"
+                       class="btn-gioco-cmd p-button p-button-primary"
+                       (click)="BtnCheckPointClick()"
+               >
+                  <i class="pi pi-flag-fill" style="font-size:60px;"></i>
                </button>
             </div>
 
@@ -601,13 +613,69 @@
           [(visible)]="dialogVisible_Sostit"
           [closable]="false"
           (onShow)="onSostituzioneDialogShow()"
-          [style]="{ width: '970px', height: '950px', padding: '10px', 'background-color': '#1f2937' }">
+          [style]="{ width: '900px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
    <app-sostituzione-comp
       [teamName]="sostTeamName"
+      [teamColor]="sostTeamColor"
       [tempo]="sostTempo"
       [players]="sostPlayers"
+      [quarter]="compTimer ? compTimer.GetQuarterNumber() : 1"
+      [isMyTeam]="sostIsMyTeam"
       (salva)="onSostituzioneSave($event)"
       (annulla)="onSostituzioneAnnulla()">
    </app-sostituzione-comp>
 </p-dialog>
 <!--   FINE DIALOG SOSTITUZIONE   --->
+
+
+<!-----------------------------------------------------------------
+               DIALOG AZIONI
+------------------------------------------------------------------>
+<p-dialog id="dialog-azioni"
+          [modal]="true"
+          [(visible)]="dialogVisible_Azioni"
+          [closable]="true"
+          [style]="{ width: '900px', height: '650px', padding: '10px', 'background-color': '#1f2937' }">
+   <p-table
+      id="table-azioni"
+      styleClass="p-datatable-gridlines p-datatable-sm"
+      [scrollable]="true"
+      scrollHeight="520px"
+      [value]="GetOperList()"
+   >
+      <ng-template pTemplate="header">
+         <tr>
+            <th style="width: 40px;">Q</th>
+            <th style="width: 60px;">Time</th>
+            <th style="width: 90px;">Oper</th>
+            <th style="width: 90px;">TmCr</th>
+            <th>Pl</th>
+            <th>Dt</th>
+            <th style="width: 50px;"></th>
+         </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-op>
+         <tr>
+            <td>{{ GetOperQuarterStr(op) }}</td>
+            <td>{{ GetOperTimeStr(op) }}</td>
+            <td [ngClass]="GetOperBgClass(op)">{{ TOperationType.Desc(op.oper()) }}</td>
+            <td [ngClass]="GetOperTmCrClass(op)">{{ op.MyTeamStr() }}</td>
+            <td>{{ GetOperPlayerStr(op) }}</td>
+            <td>{{ GetOperDescStr(op) }}</td>
+            <td>
+               <p-button icon="pi pi-trash"
+                         severity="danger"
+                         styleClass="p-button-text"
+                         (onClick)="BtnEliminaAzione(op)">
+               </p-button>
+            </td>
+         </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+         <tr>
+            <td colspan="7">Nessuna operazione registrata</td>
+         </tr>
+      </ng-template>
+   </p-table>
+</p-dialog>
+<!--   FINE DIALOG AZIONI   -->

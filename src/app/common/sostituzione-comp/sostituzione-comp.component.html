@@ -6,8 +6,10 @@
 <div class="sostit-container">
 
    <div class="sostit-header">
-      <span class="sostit-teamname">{{ teamName }}</span>
+      <span class="sostit-teamname"
+            [ngStyle]="{ 'background-color': teamColor, 'color': teamNameTextColor }">{{ teamName }}</span>
       <p-inputMask class="sostit-tempo"
+                   [style]="{ width: '100px' }"
                    [(ngModel)]="tempoEdit"
                    mask="99:99"
                    placeholder="mm:ss">

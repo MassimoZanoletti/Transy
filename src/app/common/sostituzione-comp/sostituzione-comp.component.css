@@ -1,7 +1,9 @@
 :host {
    display: block;
    width: 100%;
+   height: 100%;
    box-sizing: border-box;
+   overflow: hidden;
 }
 
 
@@ -37,20 +39,25 @@
    gap: 8px;
    padding: 12px;
    box-sizing: border-box;
-   width: 810px !important;
-   height: 880px;
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
 }
 
 .sostit-header {
    display: flex;
    align-items: center;
    gap: 16px;
+   flex: 0 0 auto;
 }
 
 .sostit-teamname {
    font-size: 1.3rem;
    font-weight: bold;
    flex: 1;
+   padding: 6px 14px;
+   border-radius: 8px;
+   box-sizing: border-box;
 }
 
 .sostit-tempo {
@@ -62,16 +69,21 @@
    display: flex;
    flex-direction: row;
    gap: 0;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: hidden;
 }
 
 .sostit-lista {
    flex: 1;
    min-width: 0;
+   min-height: 0;
    display: flex;
    flex-direction: column;
    gap: 4px;
    padding: 0 12px;
    box-sizing: border-box;
+   overflow-y: auto;
 }
 
 .sostit-separator {
@@ -86,6 +98,7 @@
    color: #aaa;
    margin-bottom: 8px;
    text-align: center;
+   flex: 0 0 auto;
 }
 
 .sostit-lista-item {
@@ -113,4 +126,5 @@
    display: flex;
    justify-content: flex-end;
    gap: 24px;
+   flex: 0 0 auto;
 }

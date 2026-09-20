@@ -701,7 +701,7 @@ export class TOperationList
                case TOperationType.totTimeStart:
                case TOperationType.totTimeStop:
                case TOperationType.totCheckPoint: // tutte queste action possono essere tolte senza fare altre operazioni
-                  toDelete = false;
+                  toDelete = true;
                   break;
                case TOperationType.totTLYes:
                case TOperationType.totT2Yes:
