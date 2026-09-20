@@ -2039,6 +2039,21 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   BtnModificaAzione (op: TOperation): void
+   {
+      this.msgService.add({ severity: 'info', summary: 'Modifica azione', detail: 'Non ancora implementato' });
+   }
+
+
+   async BtnEliminaTutteAzioni (): Promise<void>
+   {
+      // Riusa la stessa logica/conferma di "Azzera tutta la partita" (menu Gestione partita):
+      // la tabella delle azioni si aggiorna da sola (mostrando "Nessuna operazione registrata")
+      // dato che è collegata reattivamente a GetOperList().
+      await this.mnuAzzeraTutto();
+   }
+
+
    mnuTempiDiGioco()
    {
       this.msgService.add({ severity: 'info', summary: 'Tempi di gioco', detail: 'Non ancora implementato' });
