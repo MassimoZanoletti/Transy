@@ -144,7 +144,8 @@
           [closable]="false"
           [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
    <ng-template pTemplate="header">
-        <span style="font-size: 2rem; color: #fbbf24; font-weight: bold; padding-bottom: 30px;">
+        <span style="font-size: 2rem; font-weight: bold; padding: 6px 14px; margin-bottom: 24px; border-radius: 8px; display: inline-block;"
+              [ngStyle]="{ 'background-color': teamColor, 'color': GetTimeoutTitleColor() }">
             Timeout {{team__Name}}
         </span>
    </ng-template>

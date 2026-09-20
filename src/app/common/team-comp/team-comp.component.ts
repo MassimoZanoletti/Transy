@@ -241,6 +241,21 @@ export class TeamCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Colore leggibile per il titolo "Timeout <squadra>": resta comunque una sfumatura di
+   // giallo/ambra, ma chiara sopra uno sfondo scuro e scura sopra uno sfondo chiaro (formula YIQ).
+   GetTimeoutTitleColor(): string
+   {
+      const hex = (this.teamColor || '#ffffff').replace('#', '');
+      if (hex.length !== 6)
+         return '#fbbf24';
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      return yiq >= 128 ? '#78350f' : '#fbbf24';
+   }
+
+
    async GetStatTL(): Promise<string>
    {
       if (!this.matchTeamData) return "";
