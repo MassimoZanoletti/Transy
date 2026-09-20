@@ -63,6 +63,7 @@ import {DataCompComponent} from "../../common/data-comp/data-comp.component";
 import {MatchheaderCompComponent} from "../../common/matchheader-comp/matchheader-comp.component";
 import {MenuModule} from "primeng/menu";
 import {InputTextModule} from "primeng/inputtext";
+import {InputNumberModule} from "primeng/inputnumber";
 import {PlayersCompComponent} from "../../common/players-comp/players-comp.component";
 import {RosterCompComponent} from "../../common/roster-comp/roster-comp.component";
 import {ActivatedRoute} from "@angular/router";
@@ -118,6 +119,7 @@ import { TOperation, TOperationType } from "../../common/operation";
                  MenuModule,
                  RouterLink,
                  InputTextModule,
+                 InputNumberModule,
                  CalendarModule,
                  PlayersCompComponent,
                  RosterCompComponent,
@@ -212,6 +214,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public sostPlayers: TMatchPlayer[] = [];
    public sostIsMyTeam: boolean = true;
    public dialogVisible_Azioni: boolean = false;
+   public dialogVisible_TempiGioco: boolean = false;
+   public tempiGiocoTeamName: string = '';
+   public tempiGiocoTeamColor: string = '#FFFFFF';
+   public tempiGiocoRows: Array<{ player: TMatchPlayer, seconds: number }> = [];
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -2056,7 +2062,63 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuTempiDiGioco()
    {
-      this.msgService.add({ severity: 'info', summary: 'Tempi di gioco', detail: 'Non ancora implementato' });
+      const isOppo = this.compOppoTeam?.isSelected ?? false;
+      const team = isOppo ? matchGlobs.currMatch?.oppTeam() : matchGlobs.currMatch?.myTeam();
+      this.tempiGiocoTeamName  = team?.name() ?? '';
+      this.tempiGiocoTeamColor = (isOppo ? this.matchHeader.oppoTeamColor : this.matchHeader.myTeamColor) || '#FFFFFF';
+      this.tempiGiocoRows = (team?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }));
+      this.dialogVisible_TempiGioco = true;
+   }
+
+
+   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra (formula YIQ),
+   // stessa logica usata per le dialog Sostituzione/Timeout.
+   GetContrastTextColor (bgColor: string): string
+   {
+      const hex = (bgColor || '#FFFFFF').replace('#', '');
+      if (hex.length !== 6)
+         return '#000000';
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      return yiq >= 128 ? '#000000' : '#ffffff';
+   }
+
+
+   GetTempiGiocoTimeStr (seconds: number): string
+   {
+      const sec = Math.max(0, Math.trunc(seconds || 0));
+      const mm = Math.trunc(sec / 60);
+      const ss = sec % 60;
+      return `${utils.Dlt_PadDigits(mm, 2)}:${utils.Dlt_PadDigits(ss, 2)}`;
+   }
+
+
+   GetTempiGiocoTotaleStr (): string
+   {
+      const tot = this.tempiGiocoRows.reduce((acc, r) => acc + (r.seconds || 0), 0);
+      return this.GetTempiGiocoTimeStr(tot);
+   }
+
+
+   async BtnTempiGiocoOk ()
+   {
+      for (const row of this.tempiGiocoRows)
+      {
+         row.player.tempoGioco.set(Math.max(0, Math.trunc(row.seconds || 0)));
+      }
+      this.dialogVisible_TempiGioco = false;
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      await matchGlobs.currSavedMatch.SaveToStorage();
+      this.cdr.detectChanges();
+   }
+
+
+   BtnTempiGiocoAnnulla ()
+   {
+      this.dialogVisible_TempiGioco = false;
    }
 
 

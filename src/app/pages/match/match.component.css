@@ -45,6 +45,79 @@
    margin-top: 10px;
 }
 
+.div-tempigioco-content {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   gap: 10px;
+}
+
+.div-tempigioco-title {
+   font-size: 1.3rem;
+   font-weight: bold;
+   text-align: center;
+   flex: 0 0 auto;
+   padding: 6px 14px;
+   border-radius: 8px;
+}
+
+.div-tempigioco-lista {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow-y: auto;
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+   padding: 4px 8px;
+}
+
+.div-tempigioco-item {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+}
+
+.tempigioco-playname {
+   flex: 1;
+   font-size: 1.05rem;
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.tempigioco-playtime {
+   width: 56px;
+   text-align: right;
+   font-size: 1rem;
+   color: #9ca3af;
+}
+
+::ng-deep .div-tempigioco-item p-inputnumber {
+   width: 110px;
+   flex: 0 0 auto;
+}
+
+::ng-deep .div-tempigioco-item .tempigioco-spin-input {
+   width: 100%;
+   box-sizing: border-box;
+}
+
+.div-tempigioco-totale {
+   flex: 0 0 auto;
+   text-align: center;
+   font-size: 1.3rem;
+   font-weight: bold;
+}
+
+.div-tempigioco-footer {
+   flex: 0 0 auto;
+   display: flex;
+   justify-content: flex-end;
+   gap: 16px;
+   margin-top: 0;
+}
+
 .oper-tmcr-my {
    color: red;
 }

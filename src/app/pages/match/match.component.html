@@ -699,3 +699,45 @@
    </div>
 </p-dialog>
 <!--   FINE DIALOG AZIONI   -->
+
+
+<!-----------------------------------------------------------------
+               DIALOG TEMPI DI GIOCO
+------------------------------------------------------------------>
+<p-dialog id="dialog-tempigioco"
+          [modal]="true"
+          [(visible)]="dialogVisible_TempiGioco"
+          [closable]="false"
+          [style]="{ width: '500px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="div-tempigioco-content">
+      <div class="div-tempigioco-title"
+           [ngStyle]="{ 'background-color': tempiGiocoTeamColor, 'color': GetContrastTextColor(tempiGiocoTeamColor) }">{{ tempiGiocoTeamName }}</div>
+      <div class="div-tempigioco-lista">
+         <div class="div-tempigioco-item"
+              *ngFor="let row of tempiGiocoRows">
+            <span class="tempigioco-playname">{{ row.player.playNumber() }} {{ row.player.playName() }}</span>
+            <p-inputNumber [(ngModel)]="row.seconds"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="9999"
+                            inputStyleClass="tempigioco-spin-input">
+            </p-inputNumber>
+            <span class="tempigioco-playtime">{{ GetTempiGiocoTimeStr(row.seconds) }}</span>
+         </div>
+      </div>
+      <div class="div-tempigioco-totale">{{ GetTempiGiocoTotaleStr() }}</div>
+      <div class="div-tempigioco-footer">
+         <p-button label="Annulla"
+                   icon="pi pi-times"
+                   severity="secondary"
+                   (onClick)="BtnTempiGiocoAnnulla()">
+         </p-button>
+         <p-button label="Ok"
+                   icon="pi pi-check"
+                   severity="success"
+                   (onClick)="BtnTempiGiocoOk()">
+         </p-button>
+      </div>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG TEMPI DI GIOCO   -->
