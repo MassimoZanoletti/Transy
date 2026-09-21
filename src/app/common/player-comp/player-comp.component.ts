@@ -44,6 +44,10 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    @Input() colorNormal: string = globs.colorNotSelected
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
+   // Funzione fornita dal componente padre per leggere il tempo corrente del cronometro (secondi rimanenti
+   // nel quarto), usata per mostrare il tempo giocato "live" (accumulato + stint in corso) anche prima
+   // dell'eventuale sostituzione, che è il solo momento in cui player.tempoGioco viene aggiornato.
+   @Input() getCurrentTime: () => number = () => 0;
 
    @Output() componentClicked = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
@@ -101,16 +105,34 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    }
 
 
-   GetMinuti(): string
+   // Un giocatore in campo (unico caso in cui player-comp viene usato) ha due tempi distinti: quello
+   // "precedente" già consolidato dalle entrate/uscite passate (tempoGioco, invariato finché non esce di
+   // nuovo dal campo) e quello dello stint "in campo" corrente. Vanno mostrati separati, non sommati,
+   // perché l'allenatore spesso chiede da quanto tempo un giocatore è in campo senza contare gli stint precedenti.
+   GetMinutiPrecedente(): string
+   {
+      if (this.player)
+         return this.FormatMinSec(this.player.tempoGioco());
+      return this.playerMinutes;
+   }
+
+
+   GetMinutiInCampo(): string
    {
       if (this.player)
       {
-         const secs = this.player.tempoGioco();
-         const m = Math.floor(secs / 60);
-         const s = secs % 60;
-         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+         const secs = this.player.inGioco() ? Math.max(0, this.player.inTime() - this.getCurrentTime()) : 0;
+         return this.FormatMinSec(secs);
       }
-      return this.playerMinutes;
+      return "00:00";
+   }
+
+
+   private FormatMinSec (secs: number): string
+   {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
    }
 
 

@@ -8,6 +8,7 @@ import {TooltipModule} from "primeng/tooltip";
 import {InputMaskModule} from "primeng/inputmask";
 import {FormsModule} from "@angular/forms";
 import { DialogModule } from 'primeng/dialog';
+import { globs } from "../utils";
 
 
 
@@ -41,6 +42,10 @@ export class TimerCompComponent implements OnInit, OnDestroy
    // Emesso al click su "Start", prima che il countdown parta davvero: permette al padre
    // di mostrare eventuali conferme senza far scorrere il tempo nel frattempo (vedi OnStartClick()).
    @Output () startRequested = new EventEmitter<{ id: string }> ();
+   // Emesso quando si cambia quarto (SelezionaQuarto): "oldTime" è l'ultimo tempo rimanente del quarto
+   // abbandonato, il riferimento corretto per consolidare chi era ancora in campo in quel quarto — usare il
+   // tempo del quarto NUOVO per questo darebbe risultati sbagliati (vedi onQuarterChanged in match.component.ts).
+   @Output () quarterChanged = new EventEmitter<{ oldQuarto: string, oldTime: number, newQuarto: string }> ();
 
    // Variabili interne
    private timerInterval: any;
@@ -56,6 +61,10 @@ export class TimerCompComponent implements OnInit, OnDestroy
    inEditing: boolean = false;
    newTimeValue: string = "";
    quartiVisible: boolean = false;
+   // Ultimo tempo rimanente registrato per ciascun quarto (chiave = currQuarter, es. "2q"/"1et"), aggiornato
+   // ad ogni stop(): permette a SelezionaQuarto() di distinguere un quarto mai iniziato (parte dal massimo)
+   // da uno già giocato in precedenza (riprende da dove era rimasto).
+   private quarterTimes: Record<string, number> = {};
 
 
    // Chiavi dinamiche per localStorage
@@ -92,7 +101,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
       // Se il timer era in esecuzione prima del refresh, riprende
       else if (savedStartTime)
       {
-         this.totalSeconds = this.initialMinutes * 60;
+         this.totalSeconds = this.GetMaxTimeForQuarter (this.currQuarter);
          this.startTime = parseInt (savedStartTime, 10);
          this.isRunning = true;
          this.startCountdown ();
@@ -131,7 +140,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
          else
          {
             // Altrimenti, parte dall'inizio
-            this.totalSeconds = this.initialMinutes * 60;
+            this.totalSeconds = this.GetMaxTimeForQuarter (this.currQuarter);
          }
 
          this.startTime = Date.now ();
@@ -146,9 +155,10 @@ export class TimerCompComponent implements OnInit, OnDestroy
    stop (): void
    {
       this.colSfondo = this.colSfondoStop;
-      if (this.timerInterval)
+      if (this.isRunning)
       {
          clearInterval (this.timerInterval);
+         this.timerInterval = undefined;
          this.isRunning = false;
 
          // Calcola il tempo rimanente e lo salva nel localStorage
@@ -157,6 +167,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
          this.pausedTime = timeLeft > 0 ? timeLeft : 0;
          localStorage.setItem (this.pausedTimeKey, this.pausedTime.toString ());
          localStorage.removeItem (this.startTimeKey);
+         this.quarterTimes[this.currQuarter] = this.pausedTime;
 
          this.stopped.emit ({id: this.instanceId});
          this.updateDisplay (this.pausedTime);
@@ -188,11 +199,20 @@ export class TimerCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Durata massima del quarto indicato: quarti supplementari ("Xet") più brevi dei quarti regolari ("Xq"),
+   // stessi valori (globs.DurationRegulTime/DurationExtraTime) usati per il tempo di gioco dei giocatori
+   // (AddQuintettoOperations in match.component.ts), per evitare di avere due fonti scollegate come in passato.
+   private GetMaxTimeForQuarter (quarto: string): number
+   {
+      return quarto.includes ('et') ? globs.DurationExtraTime : globs.DurationRegulTime;
+   }
+
+
    resetTimer (): void
    {
       if (this.isRunning == false)
       {
-         this.totalSeconds = this.initialMinutes * 60;
+         this.totalSeconds = this.GetMaxTimeForQuarter (this.currQuarter);
          this.startTime = Date.now ();
          this.clearLocalStorage ();
       }
@@ -320,7 +340,30 @@ export class TimerCompComponent implements OnInit, OnDestroy
 
    SelezionaQuarto (quarto: string)
    {
-      this.currQuarter = quarto;
+      if (quarto !== this.currQuarter)
+      {
+         // stop() (se in corsa) registra da solo il tempo del quarto abbandonato in quarterTimes; se era già
+         // fermo, il valore corrente è comunque quello registrato dall'ultimo stop() per quel quarto.
+         if (this.isRunning)
+            this.stop ();
+         else
+            this.quarterTimes[this.currQuarter] = this.pausedTime;
+
+         const oldQuarto = this.currQuarter;
+         const oldTime = this.pausedTime;
+         this.currQuarter = quarto;
+         // Quarto mai giocato prima: riparte dal tempo massimo. Quarto già iniziato in precedenza (anche
+         // il quarto corrente, se si torna indietro): riprende dall'ultimo valore registrato.
+         this.pausedTime = Object.prototype.hasOwnProperty.call (this.quarterTimes, quarto)
+            ? this.quarterTimes[quarto]
+            : this.GetMaxTimeForQuarter (quarto);
+         this.totalSeconds = this.pausedTime;
+         this.deltaTime = 0;
+         localStorage.setItem (this.pausedTimeKey, this.pausedTime.toString ());
+         localStorage.removeItem (this.startTimeKey);
+         this.updateDisplay (this.pausedTime);
+         this.quarterChanged.emit ({ oldQuarto, oldTime, newQuarto: quarto });
+      }
       this.quartiVisible = false;
    }
 
@@ -331,8 +374,9 @@ export class TimerCompComponent implements OnInit, OnDestroy
          this.stop ();
       this.currQuarter = "1q";
       this.quartiVisible = false;
+      this.quarterTimes = {};
       this.clearLocalStorage ();
-      this.totalSeconds = this.initialMinutes * 60;
+      this.totalSeconds = this.GetMaxTimeForQuarter (this.currQuarter);
       this.pausedTime = this.totalSeconds;
       this.updateDisplay (this.totalSeconds);
    }

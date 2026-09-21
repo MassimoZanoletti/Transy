@@ -63,7 +63,7 @@ import {DataCompComponent} from "../../common/data-comp/data-comp.component";
 import {MatchheaderCompComponent} from "../../common/matchheader-comp/matchheader-comp.component";
 import {MenuModule} from "primeng/menu";
 import {InputTextModule} from "primeng/inputtext";
-import {InputNumberModule} from "primeng/inputnumber";
+import {InputMaskModule} from "primeng/inputmask";
 import {PlayersCompComponent} from "../../common/players-comp/players-comp.component";
 import {RosterCompComponent} from "../../common/roster-comp/roster-comp.component";
 import {ActivatedRoute} from "@angular/router";
@@ -119,7 +119,7 @@ import { TOperation, TOperationType } from "../../common/operation";
                  MenuModule,
                  RouterLink,
                  InputTextModule,
-                 InputNumberModule,
+                 InputMaskModule,
                  CalendarModule,
                  PlayersCompComponent,
                  RosterCompComponent,
@@ -213,9 +213,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public sostTempo: string = '';
    public sostPlayers: TMatchPlayer[] = [];
    public sostIsMyTeam: boolean = true;
+   // Chi era in campo (per la squadra del pulsante appena premuto) prima di aprire la dialog: serve per
+   // capire, se viene assegnato un nuovo quintetto, chi ne resta fuori e va quindi consolidato come "uscito"
+   // (vedi onSostituzioneSave/ConsolidateOutgoingPlayers).
+   private prevOnCourtSost: TMatchPlayer[] = [];
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_TempiGioco: boolean = false;
-   public tempiGiocoTeams: Array<{ teamName: string, teamColor: string, rows: Array<{ player: TMatchPlayer, seconds: number }> }> = [];
+   public tempiGiocoTeams: Array<{ teamName: string, teamColor: string, rows: Array<{ player: TMatchPlayer, seconds: number, timeStr: string }> }> = [];
+   private tempiGiocoOpenClockSec: number = 0;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -355,6 +360,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async ngAfterViewInit()
    {
       matchGlobs.currSavedMatch.compTimer = this.compTimer;
+      this.RefreshFrozenClock();
       this.routeSubscription = this.route.queryParamMap.subscribe(params =>
                                                                   {
                                                                      this.route.queryParamMap.subscribe (params =>
@@ -862,6 +868,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                const benchRef = this.contMyBench1.createComponent(BenchCompComponent);
                benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
                benchRef.instance.player = mt.Roster[iii];
+               benchRef.instance.getCurrentTime = this.GetCurrClock;
                benchRef.instance.isSelected = false;
                benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -878,6 +885,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   const benchRef = this.contMyBench2.createComponent(BenchCompComponent);
                   benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
                   benchRef.instance.player = mt.Roster[iii];
+                  benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                   benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -895,6 +903,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   const benchRef = this.contMyBench3.createComponent(BenchCompComponent);
                   benchRef.instance.componentId = mt.Roster[iii].playerRecID.toString();
                   benchRef.instance.player = mt.Roster[iii];
+                  benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                   benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -919,6 +928,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
                benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
                benchRef.instance.player = ot.Roster[iii];
+               benchRef.instance.getCurrentTime = this.GetCurrClock;
                benchRef.instance.isSelected = false;
                benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -935,6 +945,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
                   benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
                   benchRef.instance.player = ot.Roster[iii];
+                  benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                   benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -952,6 +963,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
                   benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
                   benchRef.instance.player = ot.Roster[iii];
+                  benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
                   benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
@@ -1225,6 +1237,26 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // "Congelato": aggiornato solo quando il cronometro si ferma (RefreshFrozenClock), non ad ogni tick.
+   // I componenti giocatore/panchina non devono aggiornarsi in continuazione mentre il cronometro corre.
+   private frozenClockSeconds: number = 0;
+
+
+   RefreshFrozenClock ()
+   {
+      this.frozenClockSeconds = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+   }
+
+
+   // Passato ai componenti giocatore/panchina (come arrow function, per mantenere il "this" corretto anche
+   // se chiamato dal loro template) perché possano mostrare il tempo giocato "congelato" all'ultimo stop
+   // (vedi TMatchPlayer.GetTempoGiocoLiveStr/RefreshFrozenClock).
+   GetCurrClock = (): number =>
+   {
+      return this.frozenClockSeconds;
+   }
+
+
    QuintettoSelezionato(): boolean
    {
       const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 1;
@@ -1271,6 +1303,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (event.id === 'comptimer')
       {
          await this.AddTimeOperation (TOperationType.totTimeStop);
+         this.RefreshFrozenClock();
       }
    }
 
@@ -1879,6 +1912,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          this.sostPlayers   = team?.Roster ?? [];
          this.sostIsMyTeam  = true;
       }
+      this.prevOnCourtSost = this.sostPlayers.filter(p => p.inGioco());
       this.sostTempo = this.compTimer?.displayTime ?? '';
       this.dialogVisible_Sostit = true;
    }
@@ -1906,6 +1940,16 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const selezionati = new Set<TMatchPlayer>(event.quintetto ?? []);
             event.players.forEach(p => p.inQuintetto.set(selezionati.has(p)));
          }
+         // Chi era in campo prima (es. quintetto del quarto precedente) e non fa parte del nuovo quintetto è
+         // stato appena messo inGioco=false dalla dialog, ma senza mai passare da AddSostituzioneOperations:
+         // va quindi consolidato qui, altrimenti il suo tempo resta a zero (vedi ConsolidateOutgoingPlayers).
+         // Usiamo il tempo "congelato" (ultimo stop reale) e non event.tempoSec: se si cambia quarto, quello è
+         // il cronometro del quarto NUOVO (appena resettato al massimo), non quello a cui questi giocatori
+         // hanno smesso di giocare nel quarto precedente — il congelato resta invece corretto in entrambi i
+         // casi, dato che non viene toccato finché il nuovo quarto non viene effettivamente avviato.
+         const nuovoSet = new Set<TMatchPlayer>(event.quintetto ?? []);
+         const uscentiPerCambioQuintetto = this.prevOnCourtSost.filter(p => !nuovoSet.has(p));
+         this.ConsolidateOutgoingPlayers (uscentiPerCambioQuintetto, this.frozenClockSeconds);
          await this.AddQuintettoOperations (event.quintetto ?? [], event.tempoSec ?? 0);
       }
       else if (event.azione == "incampo")
@@ -1916,6 +1960,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          await this.AddSostituzioneOperations (event.usciti ?? [], event.entrati ?? []);
       }
+      // Il nuovo/aggiornato "in campo" va misurato da adesso: se il cronometro era già fermo (caso normale
+      // per una sostituzione) non scatterebbe altrimenti onTimerStopped a rinfrescare il valore congelato.
+      this.RefreshFrozenClock();
       this.UpdateFieldPlayers();
       await this.TeamClicked(this.sostIsMyTeam ? 'compmyteam' : 'compoppoteam');
    }
@@ -1986,6 +2033,80 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          playerIn.fPMIn = diff;
       }
       this.ScrollOperazioniToBottom();
+   }
+
+
+   // Consolida (tempoGioco, plusMinus, outTime) e toglie dal campo (inGioco=false) i giocatori indicati —
+   // stessa logica di AddSostituzioneOperations lato "usciti", ma senza bisogno di un pari numero di
+   // "entrati" (usata per il cambio quarto: vedi onQuarterChanged).
+   ConsolidateOutgoingPlayers (players: TMatchPlayer[],
+                               atTime: number): void
+   {
+      if ((players.length === 0) || (!matchGlobs.currMatch))
+         return;
+      const diff = (matchGlobs.currMatch.myTeam()?.CalcPunti() ?? 0) - (matchGlobs.currMatch.oppTeam()?.CalcPunti() ?? 0);
+      for (const p of players)
+      {
+         p.tempoGioco.set(p.tempoGioco() + (p.inTime() - atTime));
+         p.plusMinus.set(p.plusMinus() + (diff - p.fPMIn));
+         p.outTime.set(atTime);
+         p.inGioco.set(false);
+      }
+   }
+
+
+   // Per ogni quarto lasciato con qualcuno ancora in campo, lo snapshot esatto (chi c'era, il loro
+   // inTime/outTime/currCronotime di quel momento, e quanto è stato aggiunto a tempoGioco/plusMinus dal
+   // consolidamento) — permette di far tornare in campo esattamente le stesse persone, annullando con
+   // precisione quel consolidamento, se si torna su quel quarto in seguito (vedi onQuarterChanged).
+   private quarterOnCourtSnapshots: Record<string, Array<{
+      player: TMatchPlayer, inTime: number, outTime: number, currCronotime: number,
+      tempoGiocoDelta: number, plusMinusDelta: number
+   }>> = {};
+
+
+   // Un cambio di quarto (SelezionaQuarto nel timer) chiude implicitamente lo stint di chiunque sia ancora in
+   // campo dal quarto abbandonato: va consolidato subito, usando il suo ultimo tempo rimanente ("oldTime" —
+   // NON quello del quarto nuovo, appena resettato al massimo, che darebbe un calcolo completamente sbagliato).
+   // In questo modo, qualunque azione si usi poi (Quintetto/Così in campo/Sostituisci) per impostare i
+   // titolari del quarto nuovo parte già da una situazione pulita, senza giocatori "fantasma" del quarto prima.
+   // Se invece si torna su un quarto già lasciato in precedenza, chi c'era rientra in campo esattamente come
+   // era rimasto (vedi quarterOnCourtSnapshots).
+   onQuarterChanged (event: { oldQuarto: string, oldTime: number, newQuarto: string })
+   {
+      const onCourt = [
+         ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []).filter(p => p.inGioco()),
+         ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? []).filter(p => p.inGioco())
+      ];
+      if (onCourt.length > 0)
+      {
+         const diff = (matchGlobs.currMatch?.myTeam()?.CalcPunti() ?? 0) - (matchGlobs.currMatch?.oppTeam()?.CalcPunti() ?? 0);
+         this.quarterOnCourtSnapshots[event.oldQuarto] = onCourt.map(p => ({
+            player:           p,
+            inTime:           p.inTime(),
+            outTime:          p.outTime(),
+            currCronotime:    p.currCronotime,
+            tempoGiocoDelta:  p.inTime() - event.oldTime,
+            plusMinusDelta:   diff - p.fPMIn
+         }));
+         this.ConsolidateOutgoingPlayers (onCourt, event.oldTime);
+      }
+      const snapshot = this.quarterOnCourtSnapshots[event.newQuarto];
+      if (snapshot)
+      {
+         for (const s of snapshot)
+         {
+            s.player.tempoGioco.set(s.player.tempoGioco() - s.tempoGiocoDelta);
+            s.player.plusMinus.set(s.player.plusMinus() - s.plusMinusDelta);
+            s.player.inTime.set(s.inTime);
+            s.player.outTime.set(s.outTime);
+            s.player.currCronotime = s.currCronotime;
+            s.player.inGioco.set(true);
+         }
+         delete this.quarterOnCourtSnapshots[event.newQuarto];
+      }
+      this.RefreshFrozenClock();
+      this.UpdateFieldPlayers();
    }
 
 
@@ -2062,16 +2183,29 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       const myTeam = matchGlobs.currMatch?.myTeam();
       const oppTeam = matchGlobs.currMatch?.oppTeam();
+      // Qui serve il tempo davvero corrente (non quello "congelato" di GetCurrClock, usato invece per i
+      // componenti giocatore/panchina): questa finestra deve sempre mostrare il totale reale, anche se aperta
+      // a cronometro in corsa. Lo teniamo anche per BtnTempiGiocoOk, così il salvataggio è l'esatto inverso
+      // di questo calcolo (stesso istante di riferimento), invece di rileggere un tempo eventualmente diverso.
+      this.tempiGiocoOpenClockSec = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const nowSec = this.tempiGiocoOpenClockSec;
+      // Include anche lo stint in corso per chi è attualmente in campo (vedi TMatchPlayer.GetTempoGiocoLive).
+      const buildRow = (p: TMatchPlayer) =>
+      {
+         const liveExtra = p.inGioco() ? Math.max(0, p.inTime() - nowSec) : 0;
+         const seconds = p.tempoGioco() + liveExtra;
+         return { player: p, seconds, timeStr: this.GetTempiGiocoTimeStr(seconds) };
+      };
       this.tempiGiocoTeams = [
          {
             teamName:  myTeam?.name() ?? '',
             teamColor: this.matchHeader.myTeamColor || '#FFFFFF',
-            rows:      (myTeam?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }))
+            rows:      (myTeam?.Roster ?? []).map(buildRow)
          },
          {
             teamName:  oppTeam?.name() ?? '',
             teamColor: this.matchHeader.oppoTeamColor || '#FFFFFF',
-            rows:      (oppTeam?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }))
+            rows:      (oppTeam?.Roster ?? []).map(buildRow)
          }
       ];
       this.dialogVisible_TempiGioco = true;
@@ -2102,10 +2236,23 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   GetTempiGiocoTotaleStr (rows: Array<{ player: TMatchPlayer, seconds: number }>): string
+   GetTempiGiocoTotaleStr (rows: Array<{ player: TMatchPlayer, seconds: number, timeStr: string }>): string
    {
       const tot = rows.reduce((acc, r) => acc + (r.seconds || 0), 0);
       return this.GetTempiGiocoTimeStr(tot);
+   }
+
+
+   // Richiamato quando l'utente completa/lascia il campo mm:ss di una riga: interpreta il testo digitato,
+   // limita i secondi a 0-59 (i minuti sono già limitati a 0-99 dalla mask), riallinea "seconds" e
+   // riformatta il testo mostrato in modo che l'eventuale correzione sia visibile.
+   OnTempiGiocoTimeChange (row: { player: TMatchPlayer, seconds: number, timeStr: string })
+   {
+      const parts = (row.timeStr || '').split(':');
+      const mm = parseInt(parts[0], 10) || 0;
+      const ss = Math.min(59, parseInt(parts[1], 10) || 0);
+      row.seconds = mm * 60 + ss;
+      row.timeStr = this.GetTempiGiocoTimeStr(row.seconds);
    }
 
 
@@ -2115,10 +2262,27 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          for (const row of team.rows)
          {
-            row.player.tempoGioco.set(Math.max(0, Math.trunc(row.seconds || 0)));
+            const newTotal = Math.max(0, Math.trunc(row.seconds || 0));
+            if (row.player.inGioco())
+            {
+               // Il giocatore è ancora in campo: il "precedente" (tempoGioco) resta invariato, è storia già
+               // consolidata. Tutta la differenza va sullo stint in corso, spostando "inTime" in modo che
+               // (inTime - tempo al momento dell'apertura) riproduca esattamente il nuovo totale — permette
+               // di correggere il totale anche sotto lo stint già trascorso, cosa che sottrarlo da tempoGioco
+               // non può fare (andrebbe negativo e verrebbe perso).
+               const newInCampo = Math.max(0, newTotal - row.player.tempoGioco());
+               row.player.inTime.set(this.tempiGiocoOpenClockSec + newInCampo);
+            }
+            else
+            {
+               row.player.tempoGioco.set(newTotal);
+            }
          }
       }
       this.dialogVisible_TempiGioco = false;
+      // Il tempo "in campo" mostrato nei componenti giocatore va rinfrescato subito: è un'azione esplicita
+      // dell'utente, non va aspettato il prossimo stop del cronometro (vedi RefreshFrozenClock).
+      this.RefreshFrozenClock();
       await this.compMyTeam?.Update();
       await this.compOppoTeam?.Update();
       await matchGlobs.currSavedMatch.SaveToStorage();

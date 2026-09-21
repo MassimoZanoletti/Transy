@@ -52,6 +52,13 @@
    gap: 10px;
 }
 
+/* Il tema PrimeNG assegna a .p-dialog-content un padding-bottom fisso di 2rem, che qui è spazio
+   sprecato sotto i bottoni Annulla/Ok (non usiamo il vero footer di p-dialog): lo riduciamo per
+   recuperare quei pixel a favore della lista giocatori, senza toccare l'altezza totale della dialog. */
+::ng-deep #dialog-tempigioco .p-dialog-content {
+   padding-bottom: 0.5rem;
+}
+
 .div-tempigioco-columns {
    flex: 1 1 auto;
    min-height: 0;
@@ -90,11 +97,11 @@
 .div-tempigioco-item {
    display: flex;
    align-items: center;
-   gap: 14px;
+   gap: 8px;
 }
 
 .tempigioco-playname {
-   flex: 1;
+   flex: 0 0 150px;
    font-size: 1.05rem;
    min-width: 0;
    overflow: hidden;
@@ -102,20 +109,11 @@
    white-space: nowrap;
 }
 
-.tempigioco-playtime {
-   width: 56px;
-   text-align: right;
-   font-size: 1rem;
-   color: #9ca3af;
-}
-
-::ng-deep .div-tempigioco-item p-inputnumber {
-   width: 110px;
+::ng-deep .div-tempigioco-item .tempigioco-time-input {
+   width: 80px;
    flex: 0 0 auto;
-}
-
-::ng-deep .div-tempigioco-item .tempigioco-spin-input {
-   width: 100%;
+   font-size: 1.05rem;
+   text-align: center;
    box-sizing: border-box;
 }
 

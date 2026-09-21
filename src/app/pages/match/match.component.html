@@ -202,7 +202,8 @@
                   (timeUpdated)="onTimeUpdate($event)"
                   (startRequested)="onStartRequested($event)"
                   (started)="onTimerStarted($event)"
-                  (stopped)="onTimerStopped($event)">
+                  (stopped)="onTimerStopped($event)"
+                  (quarterChanged)="onQuarterChanged($event)">
                </app-timer-comp>
             </div>
             <div id="div-gioco-oppoteam"
@@ -226,30 +227,35 @@
                   componentId="pl1"
                   #compMyField1
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl2"
                   #compMyField2
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl3"
                   #compMyField3
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl4"
                   #compMyField4
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl5"
                   #compMyField5
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
             </div>
@@ -426,30 +432,35 @@
                   componentId="oppopl1"
                   #compOppoField1
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl2"
                   #compOppoField2
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl3"
                   #compOppoField3
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl4"
                   #compOppoField4
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl5"
                   #compOppoField5
                   colorSelected="#007700"
+                  [getCurrentTime]="GetCurrClock"
                   (componentClicked)="PlayerClicked($event)">
                </app-player-comp>
             </div>
@@ -719,13 +730,13 @@
                <div class="div-tempigioco-item"
                     *ngFor="let row of team.rows">
                   <span class="tempigioco-playname">{{ row.player.playNumber() }} {{ row.player.playName() }}</span>
-                  <p-inputNumber [(ngModel)]="row.seconds"
-                                  [showButtons]="true"
-                                  [min]="0"
-                                  [max]="9999"
-                                  inputStyleClass="tempigioco-spin-input">
-                  </p-inputNumber>
-                  <span class="tempigioco-playtime">{{ GetTempiGiocoTimeStr(row.seconds) }}</span>
+                  <p-inputMask styleClass="tempigioco-time-input"
+                               [(ngModel)]="row.timeStr"
+                               mask="99:99"
+                               placeholder="mm:ss"
+                               (onComplete)="OnTempiGiocoTimeChange(row)"
+                               (onBlur)="OnTempiGiocoTimeChange(row)">
+                  </p-inputMask>
                </div>
             </div>
             <div class="div-tempigioco-totale">{{ GetTempiGiocoTotaleStr(team.rows) }}</div>

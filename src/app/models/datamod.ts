@@ -1147,6 +1147,25 @@ export class TMatchPlayer
    }
 
 
+   // Tempo di gioco "live": somma degli stint già conclusi (tempoGioco, aggiornato solo alle sostituzioni)
+   // più lo stint in corso se il giocatore è attualmente in campo, calcolato dal cronometro reale passato
+   // come parametro (currTime = secondi rimanenti mostrati dal cronometro), non dal global MainWind (inutilizzato/rotto).
+   public GetTempoGiocoLive (currTime: number): number
+   {
+      let res = this.tempoGioco();
+      if (this.inGioco())
+         res += Math.max(0, this.inTime() - currTime);
+      return res;
+   }
+
+
+   public GetTempoGiocoLiveStr (currTime: number): string
+   {
+      const sec = this.GetTempoGiocoLive(currTime);
+      return `${Math.floor(sec / 60).toString().padStart(2, '0')}:${(sec % 60).toString().padStart(2, '0')}`;
+   }
+
+
    public TotalPlayingTimeStr: Signal<string> = computed(() =>
    {
       const tm = this.TempoGiocoTot(true);

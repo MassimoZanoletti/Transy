@@ -36,7 +36,7 @@ export namespace globs
    export const MaxRegQuarters: number = 4;
    export const MaxExtraQuarters: number = 4;
    export const FalliPerBonus: number = 4;
-   export const DurationRegulTime = 500;  // in secondi
+   export const DurationRegulTime = 600;  // in secondi
    export const DurationExtraTime = 300;  // in secondi
 };
 

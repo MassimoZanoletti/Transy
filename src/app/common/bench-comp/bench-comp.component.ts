@@ -35,6 +35,8 @@ export class BenchCompComponent implements OnInit, OnDestroy
    @Input() colorNormal: string = globs.colorNotSelected
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
+   // Vedi player-comp.component.ts: stessa funzione fornita dal padre per il tempo giocato "live".
+   @Input() getCurrentTime: () => number = () => 0;
 
    @Output() componentClicked: EventEmitter<string> = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
@@ -141,12 +143,7 @@ export class BenchCompComponent implements OnInit, OnDestroy
    GetMinuti(): string
    {
       if (this.player)
-      {
-         const secs = this.player.tempoGioco();
-         const m = Math.floor(secs / 60);
-         const s = secs % 60;
-         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-      }
+         return this.player.GetTempoGiocoLiveStr(this.getCurrentTime());
       return "00:00";
    }
 
