@@ -86,6 +86,8 @@ import {
 import {PlayerEditCompComponent} from "../../common/player-edit-comp/player-edit-comp.component";
 import { FalloDlgComponent } from "../../dialogs/fallo-dlg/fallo-dlg.component";
 import { SostituzioneCompComponent } from "../../common/sostituzione-comp/sostituzione-comp.component";
+import { AzioniDlgComponent } from "../../dialogs/azioni-dlg/azioni-dlg.component";
+import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioco-dlg.component";
 import { TOperation, TOperationType } from "../../common/operation";
 
 
@@ -127,6 +129,8 @@ import { TOperation, TOperationType } from "../../common/operation";
                  PlayerEditCompComponent,
                  FalloDlgComponent,
                  SostituzioneCompComponent,
+                 AzioniDlgComponent,
+                 TempiGiocoDlgComponent,
                  ToastModule
               ],
   providers: [
@@ -143,6 +147,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(PlayersCompComponent) playersComp!: PlayersCompComponent;
    @ViewChild(FalloDlgComponent) playerFalliComp!: FalloDlgComponent;
    @ViewChild(SostituzioneCompComponent) sostituzioneComp!: SostituzioneCompComponent;
+   @ViewChild(TempiGiocoDlgComponent) tempiGiocoComp!: TempiGiocoDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -219,8 +224,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    private prevOnCourtSost: TMatchPlayer[] = [];
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_TempiGioco: boolean = false;
-   public tempiGiocoTeams: Array<{ teamName: string, teamColor: string, rows: Array<{ player: TMatchPlayer, seconds: number, timeStr: string }> }> = [];
-   private tempiGiocoOpenClockSec: number = 0;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -2151,8 +2154,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async BtnEliminaAzione (op: TOperation): Promise<void>
    {
-      if (!confirm(`Eliminare l'azione "${op.toString()}" ?`))
-         return;
+      // La conferma è già stata chiesta dentro app-azioni-dlg prima di emettere l'evento.
       if (!matchGlobs.currMatch)
          return;
       const opList = await matchGlobs.currMatch.EnsureOperationList();
@@ -2181,104 +2183,25 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuTempiDiGioco()
    {
-      const myTeam = matchGlobs.currMatch?.myTeam();
-      const oppTeam = matchGlobs.currMatch?.oppTeam();
-      // Qui serve il tempo davvero corrente (non quello "congelato" di GetCurrClock, usato invece per i
-      // componenti giocatore/panchina): questa finestra deve sempre mostrare il totale reale, anche se aperta
-      // a cronometro in corsa. Lo teniamo anche per BtnTempiGiocoOk, così il salvataggio è l'esatto inverso
-      // di questo calcolo (stesso istante di riferimento), invece di rileggere un tempo eventualmente diverso.
-      this.tempiGiocoOpenClockSec = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
-      const nowSec = this.tempiGiocoOpenClockSec;
-      // Include anche lo stint in corso per chi è attualmente in campo (vedi TMatchPlayer.GetTempoGiocoLive).
-      const buildRow = (p: TMatchPlayer) =>
-      {
-         const liveExtra = p.inGioco() ? Math.max(0, p.inTime() - nowSec) : 0;
-         const seconds = p.tempoGioco() + liveExtra;
-         return { player: p, seconds, timeStr: this.GetTempiGiocoTimeStr(seconds) };
-      };
-      this.tempiGiocoTeams = [
-         {
-            teamName:  myTeam?.name() ?? '',
-            teamColor: this.matchHeader.myTeamColor || '#FFFFFF',
-            rows:      (myTeam?.Roster ?? []).map(buildRow)
-         },
-         {
-            teamName:  oppTeam?.name() ?? '',
-            teamColor: this.matchHeader.oppoTeamColor || '#FFFFFF',
-            rows:      (oppTeam?.Roster ?? []).map(buildRow)
-         }
-      ];
       this.dialogVisible_TempiGioco = true;
    }
 
 
-   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra (formula YIQ),
-   // stessa logica usata per le dialog Sostituzione/Timeout.
-   GetContrastTextColor (bgColor: string): string
+   async onTempiGiocoDialogShow()
    {
-      const hex = (bgColor || '#FFFFFF').replace('#', '');
-      if (hex.length !== 6)
-         return '#000000';
-      const r = parseInt(hex.substring(0, 2), 16);
-      const g = parseInt(hex.substring(2, 4), 16);
-      const b = parseInt(hex.substring(4, 6), 16);
-      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-      return yiq >= 128 ? '#000000' : '#ffffff';
-   }
-
-
-   GetTempiGiocoTimeStr (seconds: number): string
-   {
-      const sec = Math.max(0, Math.trunc(seconds || 0));
-      const mm = Math.trunc(sec / 60);
-      const ss = sec % 60;
-      return `${utils.Dlt_PadDigits(mm, 2)}:${utils.Dlt_PadDigits(ss, 2)}`;
-   }
-
-
-   GetTempiGiocoTotaleStr (rows: Array<{ player: TMatchPlayer, seconds: number, timeStr: string }>): string
-   {
-      const tot = rows.reduce((acc, r) => acc + (r.seconds || 0), 0);
-      return this.GetTempiGiocoTimeStr(tot);
-   }
-
-
-   // Richiamato quando l'utente completa/lascia il campo mm:ss di una riga: interpreta il testo digitato,
-   // limita i secondi a 0-59 (i minuti sono già limitati a 0-99 dalla mask), riallinea "seconds" e
-   // riformatta il testo mostrato in modo che l'eventuale correzione sia visibile.
-   OnTempiGiocoTimeChange (row: { player: TMatchPlayer, seconds: number, timeStr: string })
-   {
-      const parts = (row.timeStr || '').split(':');
-      const mm = parseInt(parts[0], 10) || 0;
-      const ss = Math.min(59, parseInt(parts[1], 10) || 0);
-      row.seconds = mm * 60 + ss;
-      row.timeStr = this.GetTempiGiocoTimeStr(row.seconds);
-   }
-
-
-   async BtnTempiGiocoOk ()
-   {
-      for (const team of this.tempiGiocoTeams)
+      if (this.tempiGiocoComp)
       {
-         for (const row of team.rows)
-         {
-            const newTotal = Math.max(0, Math.trunc(row.seconds || 0));
-            if (row.player.inGioco())
-            {
-               // Il giocatore è ancora in campo: il "precedente" (tempoGioco) resta invariato, è storia già
-               // consolidata. Tutta la differenza va sullo stint in corso, spostando "inTime" in modo che
-               // (inTime - tempo al momento dell'apertura) riproduca esattamente il nuovo totale — permette
-               // di correggere il totale anche sotto lo stint già trascorso, cosa che sottrarlo da tempoGioco
-               // non può fare (andrebbe negativo e verrebbe perso).
-               const newInCampo = Math.max(0, newTotal - row.player.tempoGioco());
-               row.player.inTime.set(this.tempiGiocoOpenClockSec + newInCampo);
-            }
-            else
-            {
-               row.player.tempoGioco.set(newTotal);
-            }
-         }
+         const nowSec = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+         await this.tempiGiocoComp.onComponentShow(
+            this.matchHeader.myTeamColor || '#FFFFFF',
+            this.matchHeader.oppoTeamColor || '#FFFFFF',
+            nowSec);
       }
+   }
+
+
+   async onTempiGiocoOk ()
+   {
       this.dialogVisible_TempiGioco = false;
       // Il tempo "in campo" mostrato nei componenti giocatore va rinfrescato subito: è un'azione esplicita
       // dell'utente, non va aspettato il prossimo stop del cronometro (vedi RefreshFrozenClock).
@@ -2287,12 +2210,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await this.compOppoTeam?.Update();
       await matchGlobs.currSavedMatch.SaveToStorage();
       this.cdr.detectChanges();
-   }
-
-
-   BtnTempiGiocoAnnulla ()
-   {
-      this.dialogVisible_TempiGioco = false;
    }
 
 

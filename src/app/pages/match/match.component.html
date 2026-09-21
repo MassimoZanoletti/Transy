@@ -647,67 +647,12 @@
           [(visible)]="dialogVisible_Azioni"
           [closable]="false"
           [style]="{ width: '1010px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
-   <div class="div-azioni-content">
-   <p-table
-      id="table-azioni"
-      class="table-azioni-flex"
-      styleClass="p-datatable-gridlines p-datatable-sm"
-      [scrollable]="true"
-      scrollHeight="flex"
-      [value]="GetOperList()"
-   >
-      <ng-template pTemplate="header">
-         <tr>
-            <th style="width: 40px;">Q</th>
-            <th style="width: 60px;">Time</th>
-            <th style="width: 90px;">Oper</th>
-            <th style="width: 90px;">TmCr</th>
-            <th>Pl</th>
-            <th>Dt</th>
-            <th style="width: 90px;"></th>
-         </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-op>
-         <tr>
-            <td>{{ GetOperQuarterStr(op) }}</td>
-            <td>{{ GetOperTimeStr(op) }}</td>
-            <td [ngClass]="GetOperBgClass(op)">{{ TOperationType.Desc(op.oper()) }}</td>
-            <td [ngClass]="GetOperTmCrClass(op)">{{ op.MyTeamStr() }}</td>
-            <td>{{ GetOperPlayerStr(op) }}</td>
-            <td>{{ GetOperDescStr(op) }}</td>
-            <td>
-               <p-button icon="pi pi-pencil"
-                         severity="secondary"
-                         styleClass="p-button-text"
-                         (onClick)="BtnModificaAzione(op)">
-               </p-button>
-               <p-button icon="pi pi-trash"
-                         severity="danger"
-                         styleClass="p-button-text"
-                         (onClick)="BtnEliminaAzione(op)">
-               </p-button>
-            </td>
-         </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-         <tr>
-            <td colspan="7">Nessuna operazione registrata</td>
-         </tr>
-      </ng-template>
-   </p-table>
-   <div class="div-azioni-footer">
-      <p-button label="Elimina tutto"
-                icon="pi pi-times"
-                severity="danger"
-                (onClick)="BtnEliminaTutteAzioni()">
-      </p-button>
-      <p-button label="Chiudi"
-                icon="pi pi-check"
-                severity="secondary"
-                (onClick)="dialogVisible_Azioni = false">
-      </p-button>
-   </div>
-   </div>
+   <app-azioni-dlg
+      (modificaAzione)="BtnModificaAzione($event)"
+      (eliminaAzione)="BtnEliminaAzione($event)"
+      (eliminaTutte)="BtnEliminaTutteAzioni()"
+      (chiudi)="dialogVisible_Azioni = false">
+   </app-azioni-dlg>
 </p-dialog>
 <!--   FINE DIALOG AZIONI   -->
 
@@ -719,41 +664,11 @@
           [modal]="true"
           [(visible)]="dialogVisible_TempiGioco"
           [closable]="false"
+          (onShow)="onTempiGiocoDialogShow()"
           [style]="{ width: '1000px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
-   <div class="div-tempigioco-content">
-      <div class="div-tempigioco-columns">
-         <div class="div-tempigioco-column"
-              *ngFor="let team of tempiGiocoTeams">
-            <div class="div-tempigioco-title"
-                 [ngStyle]="{ 'background-color': team.teamColor, 'color': GetContrastTextColor(team.teamColor) }">{{ team.teamName }}</div>
-            <div class="div-tempigioco-lista">
-               <div class="div-tempigioco-item"
-                    *ngFor="let row of team.rows">
-                  <span class="tempigioco-playname">{{ row.player.playNumber() }} {{ row.player.playName() }}</span>
-                  <p-inputMask styleClass="tempigioco-time-input"
-                               [(ngModel)]="row.timeStr"
-                               mask="99:99"
-                               placeholder="mm:ss"
-                               (onComplete)="OnTempiGiocoTimeChange(row)"
-                               (onBlur)="OnTempiGiocoTimeChange(row)">
-                  </p-inputMask>
-               </div>
-            </div>
-            <div class="div-tempigioco-totale">{{ GetTempiGiocoTotaleStr(team.rows) }}</div>
-         </div>
-      </div>
-      <div class="div-tempigioco-footer">
-         <p-button label="Annulla"
-                   icon="pi pi-times"
-                   severity="secondary"
-                   (onClick)="BtnTempiGiocoAnnulla()">
-         </p-button>
-         <p-button label="Ok"
-                   icon="pi pi-check"
-                   severity="success"
-                   (onClick)="BtnTempiGiocoOk()">
-         </p-button>
-      </div>
-   </div>
+   <app-tempi-gioco-dlg
+      (ok)="onTempiGiocoOk()"
+      (annulla)="dialogVisible_TempiGioco = false">
+   </app-tempi-gioco-dlg>
 </p-dialog>
 <!--   FINE DIALOG TEMPI DI GIOCO   -->
