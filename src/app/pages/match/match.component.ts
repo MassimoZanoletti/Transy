@@ -88,6 +88,7 @@ import { FalloDlgComponent } from "../../dialogs/fallo-dlg/fallo-dlg.component";
 import { SostituzioneCompComponent } from "../../common/sostituzione-comp/sostituzione-comp.component";
 import { AzioniDlgComponent } from "../../dialogs/azioni-dlg/azioni-dlg.component";
 import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioco-dlg.component";
+import { FalliTotaliDlgComponent } from "../../dialogs/falli-totali-dlg/falli-totali-dlg.component";
 import { TOperation, TOperationType } from "../../common/operation";
 
 
@@ -131,6 +132,7 @@ import { TOperation, TOperationType } from "../../common/operation";
                  SostituzioneCompComponent,
                  AzioniDlgComponent,
                  TempiGiocoDlgComponent,
+                 FalliTotaliDlgComponent,
                  ToastModule
               ],
   providers: [
@@ -148,6 +150,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(FalloDlgComponent) playerFalliComp!: FalloDlgComponent;
    @ViewChild(SostituzioneCompComponent) sostituzioneComp!: SostituzioneCompComponent;
    @ViewChild(TempiGiocoDlgComponent) tempiGiocoComp!: TempiGiocoDlgComponent;
+   @ViewChild(FalliTotaliDlgComponent) falliTotaliComp!: FalliTotaliDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -224,6 +227,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    private prevOnCourtSost: TMatchPlayer[] = [];
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_TempiGioco: boolean = false;
+   public dialogVisible_FalliTotali: boolean = false;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -2215,7 +2219,23 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuFalliTotali()
    {
-      this.msgService.add({ severity: 'info', summary: 'Falli totali', detail: 'Non ancora implementato' });
+      this.dialogVisible_FalliTotali = true;
+   }
+
+
+   onFalliTotaliDialogShow()
+   {
+      this.falliTotaliComp?.onComponentShow();
+   }
+
+
+   async onFalliTotaliOk ()
+   {
+      this.dialogVisible_FalliTotali = false;
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      await matchGlobs.currSavedMatch.SaveToStorage();
+      this.cdr.detectChanges();
    }
 
 

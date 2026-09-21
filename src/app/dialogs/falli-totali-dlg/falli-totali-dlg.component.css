@@ -1,0 +1,111 @@
+
+.div-fallitotali-content {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   gap: 10px;
+}
+
+::ng-deep .fallitotali-tabview {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
+/* PrimeNG inserisce un <div class="p-tabview p-component"> fra l'host <p-tabview> e .p-tabview-panels:
+   senza vincolarlo esplicitamente alla catena flex, cresce fino al contenuto (righe espanse comprese) e
+   trabocca, spingendo il footer fuori posizione invece di far scrollare solo la tabella. */
+::ng-deep .fallitotali-tabview > .p-tabview {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   width: 100%;
+}
+
+::ng-deep .fallitotali-tabview .p-tabview-panels {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+::ng-deep .fallitotali-tabview .p-tabview-panels > p-tabpanel {
+   display: contents;
+}
+
+::ng-deep .fallitotali-tabview .p-tabview-panel:not([hidden]) {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: hidden;
+}
+
+::ng-deep .fallitotali-tabview .p-tabview-panel[hidden] {
+   display: none;
+}
+
+::ng-deep .fallitotali-table {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
+/* Il pulsante rotondo di PrimeNG per pRowToggler è 3rem (48px) di default: è lui, non il testo, a
+   determinare l'altezza della riga. Selettore con le stesse 3 classi del tema (+ la nostra) per avere
+   specificità sicuramente maggiore della regola .p-button.p-button-icon-only.p-button-rounded del tema. */
+::ng-deep .p-button.p-button-icon-only.p-button-rounded.fallitotali-toggler {
+   width: 2rem;
+   height: 2rem;
+}
+
+/* players-comp/roster-comp.component.css definiscono una regola ::ng-deep
+   ".p-datatable .p-datatable-tbody > tr > td { font-size: 2em; line-height: 1.5; ... }" senza scoping,
+   quindi globale a tutte le tabelle PrimeNG dell'app — anche alla cella del bottone di espansione (colonna
+   1), che pur non avendo testo visibile riserva comunque 2em*1.5=48px di line-height, ed è quello a
+   dettare l'altezza della riga (non il font-size delle altre due celle). !important necessario perché a
+   parità di specificità vincerebbe l'ordine di caricamento dei bundle, non affidabile. */
+::ng-deep .fallitotali-table .p-datatable-tbody > tr > td {
+   font-size: 26px !important;
+   line-height: normal !important;
+}
+
+.div-fallitotali-footer {
+   flex: 0 0 auto;
+   display: flex;
+   justify-content: flex-end;
+   gap: 16px;
+}
+
+::ng-deep .fallitotali-subtable {
+   margin: 6px 0 6px 2.5rem;
+}
+
+.fallo-quarto-input {
+   width: 50px;
+}
+
+::ng-deep .fallo-tempo-input {
+   width: 70px;
+}
+
+.liberi-btn {
+   width: 1.8rem;
+   height: 1.8rem;
+   padding: 0;
+   justify-content: center;
+   background-color: #444;
+   border-color: #666;
+   color: #ccc;
+   margin-right: 3px;
+}
+
+.liberi-btn-active {
+   background-color: #1976d2;
+   border-color: #1976d2;
+   color: white;
+}

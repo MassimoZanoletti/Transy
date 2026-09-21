@@ -672,3 +672,20 @@
    </app-tempi-gioco-dlg>
 </p-dialog>
 <!--   FINE DIALOG TEMPI DI GIOCO   -->
+
+
+<!-----------------------------------------------------------------
+               DIALOG FALLI TOTALI
+------------------------------------------------------------------>
+<p-dialog id="dialog-fallitotali"
+          [modal]="true"
+          [(visible)]="dialogVisible_FalliTotali"
+          [closable]="false"
+          (onShow)="onFalliTotaliDialogShow()"
+          [style]="{ width: '1010px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
+   <app-falli-totali-dlg
+      (ok)="onFalliTotaliOk()"
+      (annulla)="dialogVisible_FalliTotali = false">
+   </app-falli-totali-dlg>
+</p-dialog>
+<!--   FINE DIALOG FALLI TOTALI   -->

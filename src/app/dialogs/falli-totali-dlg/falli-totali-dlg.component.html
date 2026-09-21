@@ -1,0 +1,126 @@
+
+<div class="div-fallitotali-content">
+   <p-tabView class="fallitotali-tabview">
+      <p-tabPanel *ngFor="let team of teams"
+                  [header]="team.teamName">
+         <p-table [value]="team.rows"
+                  dataKey="player.playerRecID"
+                  class="fallitotali-table"
+                  styleClass="p-datatable-gridlines p-datatable-sm"
+                  [scrollable]="true"
+                  scrollHeight="flex">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th style="width: 3rem;"></th>
+                  <th>Giocatore</th>
+                  <th style="width: 140px;">Falli commessi</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body"
+                         let-row
+                         let-expanded="expanded">
+               <tr>
+                  <td>
+                     <button type="button"
+                             pButton
+                             [pRowToggler]="row"
+                             class="p-button-text p-button-rounded p-button-plain fallitotali-toggler"
+                             [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+                     </button>
+                  </td>
+                  <td>{{ row.player.playNumber() }} {{ row.player.playName() }}</td>
+                  <td>{{ TotFalliRow(row) }}</td>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="rowexpansion"
+                         let-row>
+               <tr>
+                  <td colspan="3">
+                     <p-table [value]="row.falliRows"
+                              styleClass="p-datatable-gridlines p-datatable-sm fallitotali-subtable">
+                        <ng-template pTemplate="header">
+                           <tr>
+                              <th style="width: 40px;">#</th>
+                              <th style="width: 70px;">Quarto</th>
+                              <th style="width: 90px;">Tempo</th>
+                              <th style="width: 90px;">Commesso</th>
+                              <th style="width: 220px;">Liberi</th>
+                              <th style="width: 80px;">Tecnico</th>
+                              <th style="width: 80px;">Antisp.</th>
+                              <th style="width: 80px;">Espulso</th>
+                           </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body"
+                                     let-fr
+                                     let-i="rowIndex">
+                           <tr>
+                              <td>{{ i + 1 }}</td>
+                              <td>
+                                 <input pInputText
+                                        type="number"
+                                        class="fallo-quarto-input"
+                                        min="0"
+                                        [(ngModel)]="fr.fallo.fQuarto" />
+                              </td>
+                              <td>
+                                 <p-inputMask class="fallo-tempo-input"
+                                              [(ngModel)]="fr.tempoStr"
+                                              mask="99:99"
+                                              placeholder="mm:ss"
+                                              (onComplete)="OnTempoChange(fr)"
+                                              (onBlur)="OnTempoChange(fr)">
+                                 </p-inputMask>
+                              </td>
+                              <td>
+                                 <p-checkbox [(ngModel)]="fr.fallo.fCommesso"
+                                             [binary]="true">
+                                 </p-checkbox>
+                              </td>
+                              <td>
+                                 <button pButton label="0" class="liberi-btn" [class.liberi-btn-active]="fr.fallo.numLiberi === 0" (click)="fr.fallo.numLiberi = 0"></button>
+                                 <button pButton label="1" class="liberi-btn" [class.liberi-btn-active]="fr.fallo.numLiberi === 1" (click)="fr.fallo.numLiberi = 1"></button>
+                                 <button pButton label="2" class="liberi-btn" [class.liberi-btn-active]="fr.fallo.numLiberi === 2" (click)="fr.fallo.numLiberi = 2"></button>
+                                 <button pButton label="3" class="liberi-btn" [class.liberi-btn-active]="fr.fallo.numLiberi === 3" (click)="fr.fallo.numLiberi = 3"></button>
+                              </td>
+                              <td>
+                                 <p-checkbox [(ngModel)]="fr.fallo.fTecnico"
+                                             [binary]="true">
+                                 </p-checkbox>
+                              </td>
+                              <td>
+                                 <p-checkbox [(ngModel)]="fr.fallo.fAntisportivo"
+                                             [binary]="true">
+                                 </p-checkbox>
+                              </td>
+                              <td>
+                                 <p-checkbox [(ngModel)]="fr.fallo.fEspulsione"
+                                             [binary]="true">
+                                 </p-checkbox>
+                              </td>
+                           </tr>
+                        </ng-template>
+                     </p-table>
+                  </td>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+               <tr>
+                  <td colspan="3">Nessun giocatore</td>
+               </tr>
+            </ng-template>
+         </p-table>
+      </p-tabPanel>
+   </p-tabView>
+   <div class="div-fallitotali-footer">
+      <p-button label="Annulla"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="BtnAnnulla()">
+      </p-button>
+      <p-button label="Ok"
+                icon="pi pi-check"
+                severity="success"
+                (onClick)="BtnOk()">
+      </p-button>
+   </div>
+</div>
