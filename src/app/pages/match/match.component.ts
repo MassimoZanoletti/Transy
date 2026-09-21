@@ -215,9 +215,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public sostIsMyTeam: boolean = true;
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_TempiGioco: boolean = false;
-   public tempiGiocoTeamName: string = '';
-   public tempiGiocoTeamColor: string = '#FFFFFF';
-   public tempiGiocoRows: Array<{ player: TMatchPlayer, seconds: number }> = [];
+   public tempiGiocoTeams: Array<{ teamName: string, teamColor: string, rows: Array<{ player: TMatchPlayer, seconds: number }> }> = [];
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -2062,11 +2060,20 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuTempiDiGioco()
    {
-      const isOppo = this.compOppoTeam?.isSelected ?? false;
-      const team = isOppo ? matchGlobs.currMatch?.oppTeam() : matchGlobs.currMatch?.myTeam();
-      this.tempiGiocoTeamName  = team?.name() ?? '';
-      this.tempiGiocoTeamColor = (isOppo ? this.matchHeader.oppoTeamColor : this.matchHeader.myTeamColor) || '#FFFFFF';
-      this.tempiGiocoRows = (team?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }));
+      const myTeam = matchGlobs.currMatch?.myTeam();
+      const oppTeam = matchGlobs.currMatch?.oppTeam();
+      this.tempiGiocoTeams = [
+         {
+            teamName:  myTeam?.name() ?? '',
+            teamColor: this.matchHeader.myTeamColor || '#FFFFFF',
+            rows:      (myTeam?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }))
+         },
+         {
+            teamName:  oppTeam?.name() ?? '',
+            teamColor: this.matchHeader.oppoTeamColor || '#FFFFFF',
+            rows:      (oppTeam?.Roster ?? []).map(p => ({ player: p, seconds: p.tempoGioco() }))
+         }
+      ];
       this.dialogVisible_TempiGioco = true;
    }
 
@@ -2095,18 +2102,21 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   GetTempiGiocoTotaleStr (): string
+   GetTempiGiocoTotaleStr (rows: Array<{ player: TMatchPlayer, seconds: number }>): string
    {
-      const tot = this.tempiGiocoRows.reduce((acc, r) => acc + (r.seconds || 0), 0);
+      const tot = rows.reduce((acc, r) => acc + (r.seconds || 0), 0);
       return this.GetTempiGiocoTimeStr(tot);
    }
 
 
    async BtnTempiGiocoOk ()
    {
-      for (const row of this.tempiGiocoRows)
+      for (const team of this.tempiGiocoTeams)
       {
-         row.player.tempoGioco.set(Math.max(0, Math.trunc(row.seconds || 0)));
+         for (const row of team.rows)
+         {
+            row.player.tempoGioco.set(Math.max(0, Math.trunc(row.seconds || 0)));
+         }
       }
       this.dialogVisible_TempiGioco = false;
       await this.compMyTeam?.Update();
