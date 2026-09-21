@@ -8,7 +8,8 @@
                   class="fallitotali-table"
                   styleClass="p-datatable-gridlines p-datatable-sm"
                   [scrollable]="true"
-                  scrollHeight="flex">
+                  scrollHeight="flex"
+                  (onRowExpand)="OnRowExpand($event)">
             <ng-template pTemplate="header">
                <tr>
                   <th style="width: 3rem;"></th>
@@ -19,7 +20,7 @@
             <ng-template pTemplate="body"
                          let-row
                          let-expanded="expanded">
-               <tr>
+               <tr [attr.data-player-key]="row.player.playerRecID">
                   <td>
                      <button type="button"
                              pButton

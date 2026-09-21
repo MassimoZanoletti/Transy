@@ -1,5 +1,5 @@
 
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TableModule} from 'primeng/table';
@@ -43,6 +43,11 @@ export class FalliTotaliDlgComponent
 
    @Output() ok = new EventEmitter<void>();
    @Output() annulla = new EventEmitter<void>();
+
+
+   constructor (private elRef: ElementRef<HTMLElement>)
+   {
+   }
 
 
    onComponentShow ()
@@ -92,6 +97,21 @@ export class FalliTotaliDlgComponent
    TotFalliRow (row: TPlayerFalliRow): number
    {
       return row.falliRows.filter(fr => fr.fallo.fCommesso).length;
+   }
+
+
+   // Quando si espande un giocatore in fondo alla lista, le 5 righe dei suoi falli possono restare in
+   // parte fuori dall'area visibile: scrolla automaticamente in modo che siano tutte visibili. Rimandato
+   // a dopo il render (setTimeout) perché al momento dell'evento la riga espansa non esiste ancora nel DOM.
+   OnRowExpand (event: { data: TPlayerFalliRow })
+   {
+      const key = event.data.player.playerRecID;
+      setTimeout(() =>
+      {
+         const togglerRow = this.elRef.nativeElement.querySelector(`tr[data-player-key="${key}"]`);
+         const expansionRow = togglerRow?.nextElementSibling as HTMLElement | null;
+         expansionRow?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      });
    }
 
 
