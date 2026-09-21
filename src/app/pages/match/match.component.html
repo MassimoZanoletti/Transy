@@ -689,3 +689,20 @@
    </app-falli-totali-dlg>
 </p-dialog>
 <!--   FINE DIALOG FALLI TOTALI   -->
+
+
+<!-----------------------------------------------------------------
+               DIALOG MODIFICA NUMERI/NOMI
+------------------------------------------------------------------>
+<p-dialog id="dialog-numerinomi"
+          [modal]="true"
+          [(visible)]="dialogVisible_NumeriNomi"
+          [closable]="false"
+          (onShow)="onNumeriNomiDialogShow()"
+          [style]="{ width: '700px', height: '800px', padding: '10px', 'background-color': '#1f2937' }">
+   <app-numeri-nomi-dlg
+      (ok)="onNumeriNomiOk()"
+      (annulla)="dialogVisible_NumeriNomi = false">
+   </app-numeri-nomi-dlg>
+</p-dialog>
+<!--   FINE DIALOG MODIFICA NUMERI/NOMI   -->

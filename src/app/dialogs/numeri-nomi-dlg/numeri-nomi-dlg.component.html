@@ -1,0 +1,57 @@
+
+<div class="div-numerinomi-content">
+   <p-tabView class="numerinomi-tabview">
+      <p-tabPanel *ngFor="let team of teams"
+                  [header]="team.teamName">
+         <p-table [value]="team.rows"
+                  dataKey="player.playerRecID"
+                  class="numerinomi-table"
+                  styleClass="p-datatable-gridlines p-datatable-sm"
+                  [scrollable]="true"
+                  scrollHeight="flex">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th style="width: 110px;">Numero</th>
+                  <th>Nome</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body"
+                         let-row>
+               <tr>
+                  <td>
+                     <input pInputText
+                            type="text"
+                            class="numerinomi-numero-input"
+                            [(ngModel)]="row.numeroEdit" />
+                  </td>
+                  <td>
+                     <input pInputText
+                            type="text"
+                            class="numerinomi-nome-input"
+                            [(ngModel)]="row.nomeEdit" />
+                  </td>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+               <tr>
+                  <td colspan="2">Nessun giocatore</td>
+               </tr>
+            </ng-template>
+         </p-table>
+      </p-tabPanel>
+   </p-tabView>
+   <div class="div-numerinomi-footer">
+      <p-button label="Annulla"
+                icon="pi pi-times"
+                severity="secondary"
+                [disabled]="salvando"
+                (onClick)="BtnAnnulla()">
+      </p-button>
+      <p-button label="Ok"
+                icon="pi pi-check"
+                severity="success"
+                [loading]="salvando"
+                (onClick)="BtnOk()">
+      </p-button>
+   </div>
+</div>

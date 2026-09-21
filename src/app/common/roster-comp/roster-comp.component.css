@@ -109,7 +109,7 @@
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
    line-height: 1.5;
-   font-size: 2em;
+   font-size: 28px;
 }
 
 
@@ -120,27 +120,32 @@
 }
 
 
-.p-icon-20px-local {
-   /* Il componente p-button renderà un div che contiene il button */
-   /* Qui stai stilizzando il div container (se styleClass è usato in questo modo) */
-   width: 20px !important;
-   min-width: 20px !important;
-}
-
-/* Miriamo al pulsante effettivo .p-button che è figlio del container generato */
-.p-icon-20px-local > .p-button {
-   /* Forziamo gli stili principali */
-   width: 20px !important;
-   min-width: 20px !important;
-   height: 20px !important;
-   min-height: 20px !important;
+/* Due problemi distinti su queste regole (nessuno dei due c'entrava col font-size):
+   1) "styleClass" di p-button viene applicato direttamente sull'elemento <button> reale (non su un div
+      wrapper come assumeva il commento originale): la vecchia regola ".p-icon-20px-local > .p-button"
+      presupponeva un rapporto padre>figlio inesistente, quindi non ha mai avuto effetto.
+   2) Senza "::ng-deep" la regola non attraversa il confine verso il template interno di p-button (un
+      componente figlio), quindi non veniva applicata affatto — a vincere era invece l'altra regola, già
+      presente e già scoped con ::ng-deep, ".custom-header-table .p-button { min-height: 2rem; ... }" (più
+      un'analoga da 2.5rem che arriva da players-comp.component.css, stesso problema di scoping globale già
+      visto altrove: nessuna delle due è però "!important", quindi la nostra ora vince comunque). */
+/* Altezza legata a quella reale della cella (100%, non un px fisso indovinato) e larghezza uguale
+   all'altezza risolta (aspect-ratio), così il bottone riempie la riga invece di restare un piccolo
+   quadrato disallineato rispetto ai bordi della cella. */
+::ng-deep .p-icon-20px-local {
+   width: auto !important;
+   min-width: 0 !important;
+   height: 100% !important;
+   min-height: 0 !important;
+   aspect-ratio: 1 / 1;
+   box-sizing: border-box !important;
    padding: 0 !important;
    display: flex !important;
    align-items: center !important;
    justify-content: center !important;
 }
 
-.p-icon-20px-local > .p-button .p-button-icon {
+::ng-deep .p-icon-20px-local .p-button-icon {
    margin: 0 !important;
 }
 

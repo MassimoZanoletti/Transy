@@ -1,0 +1,81 @@
+
+.div-numerinomi-content {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   gap: 10px;
+}
+
+::ng-deep .numerinomi-tabview {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
+/* PrimeNG inserisce un <div class="p-tabview p-component"> fra l'host <p-tabview> e .p-tabview-panels:
+   senza vincolarlo esplicitamente alla catena flex, cresce fino al contenuto e trabocca (vedi lo stesso
+   problema, già risolto, in falli-totali-dlg.component.css). */
+::ng-deep .numerinomi-tabview > .p-tabview {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   width: 100%;
+}
+
+::ng-deep .numerinomi-tabview .p-tabview-panels {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+::ng-deep .numerinomi-tabview .p-tabview-panels > p-tabpanel {
+   display: contents;
+}
+
+::ng-deep .numerinomi-tabview .p-tabview-panel:not([hidden]) {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: hidden;
+}
+
+::ng-deep .numerinomi-tabview .p-tabview-panel[hidden] {
+   display: none;
+}
+
+::ng-deep .numerinomi-table {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
+/* players-comp/roster-comp.component.css definiscono una regola ::ng-deep
+   ".p-datatable .p-datatable-tbody > tr > td { font-size: 2em; line-height: 1.5; ... }" senza scoping,
+   quindi globale a tutte le tabelle PrimeNG dell'app (vedi la stessa nota in falli-totali-dlg.component.css
+   — stesso font-size scelto lì, 26px, per coerenza fra le due dialog). */
+::ng-deep .numerinomi-table .p-datatable-tbody > tr > td {
+   font-size: 26px !important;
+   line-height: normal !important;
+}
+
+.numerinomi-numero-input {
+   width: 80px;
+}
+
+.numerinomi-nome-input {
+   width: 100%;
+   box-sizing: border-box;
+}
+
+.div-numerinomi-footer {
+   flex: 0 0 auto;
+   display: flex;
+   justify-content: flex-end;
+   gap: 16px;
+}

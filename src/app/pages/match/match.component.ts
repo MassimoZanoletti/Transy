@@ -89,6 +89,7 @@ import { SostituzioneCompComponent } from "../../common/sostituzione-comp/sostit
 import { AzioniDlgComponent } from "../../dialogs/azioni-dlg/azioni-dlg.component";
 import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioco-dlg.component";
 import { FalliTotaliDlgComponent } from "../../dialogs/falli-totali-dlg/falli-totali-dlg.component";
+import { NumeriNomiDlgComponent } from "../../dialogs/numeri-nomi-dlg/numeri-nomi-dlg.component";
 import { TOperation, TOperationType } from "../../common/operation";
 
 
@@ -133,6 +134,7 @@ import { TOperation, TOperationType } from "../../common/operation";
                  AzioniDlgComponent,
                  TempiGiocoDlgComponent,
                  FalliTotaliDlgComponent,
+                 NumeriNomiDlgComponent,
                  ToastModule
               ],
   providers: [
@@ -151,6 +153,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(SostituzioneCompComponent) sostituzioneComp!: SostituzioneCompComponent;
    @ViewChild(TempiGiocoDlgComponent) tempiGiocoComp!: TempiGiocoDlgComponent;
    @ViewChild(FalliTotaliDlgComponent) falliTotaliComp!: FalliTotaliDlgComponent;
+   @ViewChild(NumeriNomiDlgComponent) numeriNomiComp!: NumeriNomiDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -228,6 +231,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_TempiGioco: boolean = false;
    public dialogVisible_FalliTotali: boolean = false;
+   public dialogVisible_NumeriNomi: boolean = false;
    public currTeam: string = "";
    public currPlayer: string = "";
    public currBench: string = "";
@@ -502,6 +506,35 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          this.coloreOspite = this.matchHeader.myTeamColor;
          this.homeTeamName = this.matchHeader.oppoTeamNome_lk;
          this.awayTeamName = this.matchHeader.myTeamNome_lk;
+         // Partita in trasferta: "myTeam" è la squadra ospite e "oppoTeam" quella di casa, quindi i
+         // riferimenti agli allenatori vanno invertiti rispetto al ramo "in casa" sopra (che altrimenti
+         // resterebbero vuoti: era il bug, questo blocco mancava del tutto).
+         this.awayCoach1 = String(this.matchHeader.myCoach1Id_link);
+         this.awayCoach2 = String(this.matchHeader.myCoach2Id_link);
+         if (this.matchHeader.myCoach1Id_link > 0)
+         {
+            const ch: TDSCoach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach1Id_link) == cc.id) as TDSCoach);
+            if (ch)
+               this.awayCoach1 = `${ch.nome}`;
+         }
+         if (this.matchHeader.myCoach2Id_link > 0)
+         {
+            const ch: TDSCoach = (this.listaMyCoach.find (cc => Number(this.matchHeader.myCoach2Id_link) == cc.id) as TDSCoach);
+            if (ch)
+               this.awayCoach2 = `${ch.nome}`;
+         }
+         if (this.matchHeader.oppoCoach1Id_link > 0)
+         {
+            const ch: TDSCoach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach1Id_link) == cc.id) as TDSCoach);
+            if (ch)
+               this.homeCoach1 = `${ch.nome}`;
+         }
+         if (this.matchHeader.oppoCoach2Id_link > 0)
+         {
+            const ch: TDSCoach = (this.listaOppoCoach.find (cc => Number(this.matchHeader.oppoCoach2Id_link) == cc.id) as TDSCoach);
+            if (ch)
+               this.homeCoach2 = `${ch.nome}`;
+         }
       }
       //
       await this.CreateBenchComponents();
@@ -751,6 +784,30 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             }
          }
          //
+      }
+   }
+
+
+   // listaRosterCasa/listaRosterFuori (usate solo dal tab Anagrafica) sono un elenco statico caricato una
+   // volta in LoadMatchRoster: a differenza del resto dell'app, non leggono i signal reattivi di
+   // TMatchPlayer, quindi non si aggiornano da sole quando si modifica numero/nome da "Modifica
+   // Numeri/Nomi" (o da qualunque altro punto che tocchi TMatchPlayer.playNumber/playName). Le
+   // risincronizziamo esplicitamente dopo un salvataggio, per playerId_link/playerRecID.
+   SyncRosterListsFromMatchPlayers (): void
+   {
+      const allPlayers = [
+         ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+      ];
+      const byId = new Map(allPlayers.map(p => [p.playerRecID, p]));
+      for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
+      {
+         const plr = byId.get(entry.playerId_link);
+         if (plr)
+         {
+            entry.playNumber = plr.playNumber();
+            entry.playerName_lk = plr.playName();
+         }
       }
    }
 
@@ -2146,7 +2203,24 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    mnuModificaNomiNumery()
    {
-      this.msgService.add({ severity: 'info', summary: 'Modifica Numeri/Nomi', detail: 'Non ancora implementato' });
+      this.dialogVisible_NumeriNomi = true;
+   }
+
+
+   onNumeriNomiDialogShow()
+   {
+      this.numeriNomiComp?.onComponentShow();
+   }
+
+
+   async onNumeriNomiOk ()
+   {
+      this.dialogVisible_NumeriNomi = false;
+      this.SyncRosterListsFromMatchPlayers();
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      await matchGlobs.currSavedMatch.SaveToStorage();
+      this.cdr.detectChanges();
    }
 
 

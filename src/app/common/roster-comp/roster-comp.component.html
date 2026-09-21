@@ -55,16 +55,18 @@
                            </div>
                         </td>
                         <td>{{ myroster.playNumber }}</td>
-                        <td  style="padding: 1px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
-                           <p-button
-                              class="p-button-table"
-                              styleClass="p-icon-20px-local"
-                              icon="pi pi-pencil"
-                              severity="primary"
-                              pTooltip="Modifica numero"
-                              tooltipPosition="top"
-                              (click)="BtnMyPlayerEditNumberClick(myroster)"
-                           ></p-button>
+                        <td style="padding: 1px;">
+                           <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
+                              <p-button
+                                 class="p-button-table"
+                                 styleClass="p-icon-20px-local"
+                                 icon="pi pi-pencil"
+                                 severity="primary"
+                                 pTooltip="Modifica numero"
+                                 tooltipPosition="top"
+                                 (click)="BtnMyPlayerEditNumberClick(myroster)"
+                              ></p-button>
+                           </div>
                         </td>
                         <td>{{ myroster.playerName_lk }}</td>
                      </tr>
@@ -180,16 +182,18 @@
                            </div>
                         </td>
                         <td>{{ opporoster.playNumber }}</td>
-                        <td  style="padding: 1px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
-                           <p-button
-                              class="p-button-table"
-                              styleClass="p-icon-20px-local"
-                              icon="pi pi-pencil"
-                              severity="primary"
-                              pTooltip="Modifica numero"
-                              tooltipPosition="top"
-                              (click)="BtnOppoPlayerEditNumberClick(opporoster)"
-                           ></p-button>
+                        <td style="padding: 1px;">
+                           <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; ">
+                              <p-button
+                                 class="p-button-table"
+                                 styleClass="p-icon-20px-local"
+                                 icon="pi pi-pencil"
+                                 severity="primary"
+                                 pTooltip="Modifica numero"
+                                 tooltipPosition="top"
+                                 (click)="BtnOppoPlayerEditNumberClick(opporoster)"
+                              ></p-button>
+                           </div>
                         </td>
                         <td>{{ opporoster.playerName_lk }}</td>
                      </tr>
