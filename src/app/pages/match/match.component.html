@@ -189,6 +189,7 @@
                   team__Name="{{matchHeader.myTeamNome_lk}}"
                   teamColor="{{matchHeader.myTeamColor}}"
                   [matchTeamData]="GetMyTeamData()"
+                  (timeoutsChanged)="onTimeoutsChanged(true, $event)"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compmyteam' == currTeam"
                ></app-team-comp>
@@ -214,6 +215,7 @@
                   team__Name="{{matchHeader.oppoTeamNome_lk}}"
                   teamColor="{{matchHeader.oppoTeamColor}}"
                   [matchTeamData]="GetOppoTeamData()"
+                  (timeoutsChanged)="onTimeoutsChanged(false, $event)"
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compoppoteam' == currTeam"
                ></app-team-comp>
@@ -424,6 +426,27 @@
                >
                   <i class="pi pi-flag-fill" style="font-size:60px;"></i>
                </button>
+
+               <!-- Stato del salvataggio remoto (MatchSyncService) -->
+               <div class="sync-badge"
+                    [class.sync-ok]="matchSync.pendingCount() === 0 && !matchSync.lastError()"
+                    [class.sync-pending]="matchSync.pendingCount() > 0 && matchSync.online() && !matchSync.lastError()"
+                    [class.sync-offline]="!matchSync.online()"
+                    [class.sync-error]="matchSync.online() && !!matchSync.lastError()"
+                    [pTooltip]="matchSync.lastError() || (matchSync.online() ? 'Salvataggio sul server' : 'Offline: le azioni sono salvate in locale e verranno inviate al ritorno della connessione')"
+                    (click)="matchSync.ScheduleFlush(0)">
+                  <i class="pi"
+                     [class.pi-cloud]="matchSync.online()"
+                     [class.pi-wifi]="!matchSync.online()"></i>
+                  @if (matchSync.pendingCount() === 0)
+                  {
+                     <span>Salvato</span>
+                  }
+                  @else
+                  {
+                     <span>{{ matchSync.pendingCount() }} da inviare</span>
+                  }
+               </div>
             </div>
 
             <div id="div-gioco-oppofield"

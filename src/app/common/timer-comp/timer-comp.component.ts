@@ -405,6 +405,33 @@ export class TimerCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Ripristina il cronometro (fermo) dallo stato ricostruito dagli eventi della partita: quarto corrente e
+   // ultimo tempo rimanente registrato per ciascun quarto giocato
+   public RestoreState (currQuarter: string,
+                        quarterTimes: Record<string, number>): void
+   {
+      if (this.isRunning)
+      {
+         clearInterval (this.timerInterval);
+         this.timerInterval = undefined;
+         this.isRunning = false;
+      }
+      this.colSfondo = this.colSfondoStop;
+      this.quartiVisible = false;
+      this.currQuarter = currQuarter;
+      this.quarterTimes = { ...quarterTimes };
+      this.pausedTime = Object.prototype.hasOwnProperty.call (this.quarterTimes, currQuarter)
+         ? this.quarterTimes[currQuarter]
+         : this.GetMaxTimeForQuarter (currQuarter);
+      this.totalSeconds = this.pausedTime;
+      this.deltaTime = 0;
+      localStorage.setItem (this.pausedTimeKey, this.pausedTime.toString ());
+      localStorage.removeItem (this.startTimeKey);
+      this.SaveQuarterState ();
+      this.updateDisplay (this.pausedTime);
+   }
+
+
    public ResetToMatchStart (): void
    {
       if (this.isRunning)

@@ -54,7 +54,10 @@ export class TSavedMatch
 
    async SaveToStorage()
    {
-      utils.SaveToSessionStorage("BBS_SavedMatch", this);
+      // Solo i dati: compTimer è il componente del cronometro (riferimenti circolari), con cui JSON.stringify
+      // fallirebbe e SaveToSessionStorage non salverebbe nulla (errore ignorato), perdendo ad es. il tab attivo
+      const { compTimer, ...dati } = this;
+      utils.SaveToSessionStorage("BBS_SavedMatch", dati);
    }
 
 

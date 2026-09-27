@@ -51,6 +51,9 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    @Output() componentClicked = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
+   // OK nella dialog timeout con almeno una modifica: fotografie dei timeout prima e dopo (vedi
+   // TMatchTeam.GetTimeoutSnapshot). Li applica la pagina della partita, registrando l'operazione.
+   @Output() timeoutsChanged = new EventEmitter<{ prima: string, dopo: string }>();
 
    timeoutVisible: boolean = false;
    timeoutOptions: any[] = [{ label: 'OFF', value: false },{ label: 'ON', value: true }];
@@ -372,10 +375,14 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    BtnTimeoutSaveClick()
    {
-      this.tmpTimeout1.forEach((valore, quale) => this.SetTOut1T(quale, valore));
-      this.tmpTimeout2.forEach((valore, quale) => this.SetTOut2T(quale, valore));
-      this.tmpTimeoutExtra.forEach((valore, quale) => this.SetTOutExtra(quale, valore));
       this.timeoutVisible = false;
+      if (!this.matchTeamData)
+         return;
+      const toStr = (arr: boolean[]) => arr.map(v => v ? 'X' : 'O').join('');
+      const prima = this.matchTeamData.GetTimeoutSnapshot();
+      const dopo = `${toStr(this.tmpTimeout1)}|${toStr(this.tmpTimeout2)}|${toStr(this.tmpTimeoutExtra)}`;
+      if (dopo !== prima)
+         this.timeoutsChanged.emit({ prima, dopo });
    }
 
 

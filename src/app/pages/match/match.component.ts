@@ -90,7 +90,8 @@ import { AzioniDlgComponent } from "../../dialogs/azioni-dlg/azioni-dlg.componen
 import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioco-dlg.component";
 import { FalliTotaliDlgComponent } from "../../dialogs/falli-totali-dlg/falli-totali-dlg.component";
 import { NumeriNomiDlgComponent } from "../../dialogs/numeri-nomi-dlg/numeri-nomi-dlg.component";
-import { TOperation, TOperationType } from "../../common/operation";
+import { TOperation, TOperationList, TOperationType } from "../../common/operation";
+import { MatchSyncService } from "../../services/match-sync.service";
 
 
 
@@ -257,7 +258,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                private matchHeaderServ: MatchheaderService,
                private zone: NgZone,
                public fltrDialogService: DialogService,
-               public msgService: MessageService)
+               public msgService: MessageService,
+               public matchSync: MatchSyncService)
 
                /*
                            private seasonServ: SeasonsService,
@@ -432,18 +434,19 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       */
       if (matchGlobs.currSavedMatch == null)
          matchGlobs.currSavedMatch = new TSavedMatch();
-      if (await matchGlobs.currSavedMatch.LoadFromStorage())
+      // Tab attivo: dopo un F5 sulla stessa partita si torna su quello selezionato prima; per una partita
+      // diversa (o se non c'è nulla di salvato) si parte dal primo, registrando la partita come "ultima"
+      const saved = await matchGlobs.currSavedMatch.LoadFromStorage();
+      if (saved && (matchGlobs.currSavedMatch.lastMatchId == globs.openedMatchHeaderId) && (matchGlobs.currSavedMatch.lastTabIndex >= 0))
       {
-         if (matchGlobs.currSavedMatch.lastMatchId == globs.openedMatchHeaderId)
-         {
-            await this.SelezionaTab(matchGlobs.currSavedMatch.lastTabIndex);
-         }
-         else
-         {
-            await this.SelezionaTab(0);
-            matchGlobs.currSavedMatch.lastTabIndex = 0;
-            matchGlobs.currSavedMatch.lastMatchId = globs.openedMatchHeaderId;
-         }
+         await this.SelezionaTab(matchGlobs.currSavedMatch.lastTabIndex);
+      }
+      else
+      {
+         await this.SelezionaTab(0);
+         matchGlobs.currSavedMatch.lastTabIndex = 0;
+         matchGlobs.currSavedMatch.lastMatchId = globs.openedMatchHeaderId;
+         await matchGlobs.currSavedMatch.SaveToStorage();
       }
       //
       if (matchGlobs.currMatch == null)
@@ -451,7 +454,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          matchGlobs.currMatch = new TCurrMatch(this.servMatchHeader, this.servMatchRoster, this.servTeam);
       }
       //
-      await matchGlobs.currMatch.EnsureOperationList();
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      // Salvataggio remoto: ogni operazione aggiunta/tolta finisce nella coda di sincronizzazione
+      opList.OnItemAdded   = op => { this.matchSync.EnqueueAddEvent(op, this.matchHeader.id); };
+      opList.OnItemRemoved = op => { this.matchSync.EnqueueDeleteEvent(op, this.matchHeader.id); };
       //
       await this.LoadMatchHeader(globs.openedMatchHeaderId);
       await this.LoadMatchRoster(globs.openedMatchHeaderId);
@@ -460,14 +466,20 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await this.LoadSeason(this.currSeason?this.currSeason.id:0);
       await this.LoadPhase(this.currPhase?this.currPhase.id:0);
       //
-      // Se il tab "Gioco" (e quindi il timer) è già stato visitato in questa sessione, il
-      // relativo binding [matchNotStarted] non forza un nuovo ngOnInit: resettalo esplicitamente.
-      if ((this.MatchNotStarted()) && (this.compTimer))
-         this.compTimer.ResetToMatchStart();
-      //
-      // In campo la situazione dell'ultimo momento di gioco del quarto selezionato nel cronometro
-      // (che riprende il quarto in corso se si esce e si rientra nella partita)
-      this.ApplyLineupForQuarter (this.compTimer ? this.compTimer.currQuarter : '1q');
+      // La partita viene ricostruita rigiocando gli eventi salvati (server + azioni locali non ancora inviate):
+      // statistiche, punteggi, falli, giocatori in campo, tempi di gioco e cronometro.
+      const replayed = await this.LoadMatchFromEvents();
+      if (!replayed)
+      {
+         // Nessun evento: partita da iniziare. Se il tab "Gioco" (e quindi il timer) è già stato visitato in
+         // questa sessione, il relativo binding [matchNotStarted] non forza un nuovo ngOnInit: resettalo esplicitamente.
+         if ((this.MatchNotStarted()) && (this.compTimer))
+            this.compTimer.ResetToMatchStart();
+         //
+         // In campo la situazione dell'ultimo momento di gioco del quarto selezionato nel cronometro
+         this.ApplyLineupForQuarter (this.compTimer ? this.compTimer.currQuarter : '1q');
+      }
+      this.RefreshFrozenClock();
       //
       if (this.matchHeader.atHome)
       {
@@ -1239,6 +1251,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                console.log (`${i + 1}) ${ff[i].fCommesso}`);
             }
          }
+         this.SnapshotFalli (this.playerForFalli ? [this.playerForFalli] : []);
          await this.playerFalliComp.onComponentShow (this.playerForFalli, this.quartoForFalli, this.tempoForFalli);
       }
    }
@@ -1250,12 +1263,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if ((event.player != null) && (this.playerForFalli != null))
       {
          this.playerForFalli.falliFatti.set(event.player.falliFatti());
+         // falli nuovi, tolti o corretti -> eventi "Fallo fatto" (vedi RegistraModificheFalli)
+         await this.RegistraModificheFalli();
          this.UpdateCommandsData(this.playerForFalli);
          this.cdr.detectChanges();
-         if (event.nuovoFallo)
-         {
-            await this.AddGameOperation(TOperationType.totFalloFatto, this.playerForFalli);
-         }
       }
    }
 
@@ -1453,6 +1464,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (event.id === 'comptimer')
       {
          await this.AddTimeOperation (TOperationType.totTimeStart);
+         this.SaveQuarterState (this.compTimer?.currQuarter ?? '1q');
       }
    }
 
@@ -1463,7 +1475,27 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          await this.AddTimeOperation (TOperationType.totTimeStop);
          this.RefreshFrozenClock();
+         this.SaveQuarterState (this.compTimer?.currQuarter ?? '1q');
       }
+   }
+
+
+   // Accoda il salvataggio su bbs_quarter dello stato del quarto indicato (tempo rimanente, stato, punti, falli)
+   SaveQuarterState (quarto: string,
+                     timeRemaining?: number): void
+   {
+      if (!this.compTimer)
+         return;
+      const time = timeRemaining ?? ((this.compTimer.currQuarter === quarto) ? this.compTimer.GetTimeSeconds() : 0);
+      const status = (time <= 0) ? 'PLAYED' : (this.compTimer.IsQuarterStarted(quarto) ? 'PLAYING' : 'NOTPLAYED');
+      this.matchSync.EnqueueQuarterState({
+         matchHeaderId: this.matchHeader.id,
+         num:           this.QuarterKeyToNumber(quarto),
+         status,
+         timeRemaining: time,
+         myTeam:        matchGlobs.currMatch?.myTeam() ?? null,
+         oppTeam:       matchGlobs.currMatch?.oppTeam() ?? null
+      });
    }
 
 
@@ -1616,7 +1648,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       const player = this.currSelectedPlayer;
       if (!player)
          return;
-      player.rimbAttacco.set(player.rimbAttacco() + 1);
       this.UpdateCommandsData(player);
       this.compRimb?.Flash();
       await this.AddGameOperation(TOperationType.totRimbAttacco, player);
@@ -1646,27 +1677,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       }
       const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
       const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
-      const realizz = new TRealizzazione();
-      await realizz.Add(tipo, quarter, time, fatto, 0, 0);
-      realizz.rPlr = player;
-      player.realizzazioni.set([...player.realizzazioni(), realizz]);
-      this.UpdateCommandsData(player);
       const isMyTeam = (this.currSelectedPlayer?.isMyTeam() ?? false);
-      if (fatto && (realizz.rPunti > 0))
-      {
-         const team = isMyTeam ? this.GetMyTeamData() : this.GetOppoTeamData();
-         if (team)
-         {
-            team.currQuarter.set(quarter - 1);
-            const qrt = team.GetQuarto(quarter - 1);
-            if (qrt)
-               qrt.punti = qrt.punti + realizz.rPunti;
-         }
-      }
-      await this.compMyTeam?.Update();
-      await this.compOppoTeam?.Update();
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       const op = new TOperation(quarter, time, oper, isMyTeam, player);
+      // realizzazione del giocatore e punti del quarto: vedi TOperationList.ApplyOperation
+      opList.ApplyOperation(op);
+      this.UpdateCommandsData(player);
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
       await opList.Add(op);
       this.ScrollOperazioniToBottom();
    }
@@ -1681,7 +1699,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.rimbDifesa.set(player.rimbDifesa() + 1);
                this.UpdateCommandsData(player);
                this.compRimb.Flash();
                await this.AddGameOperation(TOperationType.totRimbDifesa, player);
@@ -1695,7 +1712,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.pPerse.set(player.pPerse() + 1);
                this.UpdateCommandsData(player);
                this.compPalle?.Flash();
                await this.AddGameOperation(TOperationType.totPPersa, player);
@@ -1709,7 +1725,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.stoppSubite.set(player.stoppSubite() + 1);
                this.UpdateCommandsData(player);
                this.compStopp?.Flash();
                await this.AddGameOperation(TOperationType.totStopSubita, player);
@@ -1723,7 +1738,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.assist.set(player.assist() + 1);
                this.UpdateCommandsData(player);
                this.compAssist?.Flash();
                await this.AddGameOperation(TOperationType.totAssist, player);
@@ -1762,7 +1776,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.rimbAttacco.set(player.rimbAttacco() + 1);
                this.UpdateCommandsData(player);
                this.compRimb.Flash();
                await this.AddGameOperation(TOperationType.totRimbAttacco, player);
@@ -1776,7 +1789,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.pRecuperate.set(player.pRecuperate() + 1);
                this.UpdateCommandsData(player);
                this.compPalle?.Flash();
                await this.AddGameOperation(TOperationType.totPRecuperata, player);
@@ -1790,7 +1802,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.stoppFatte.set(player.stoppFatte() + 1);
                this.UpdateCommandsData(player);
                this.compStopp?.Flash();
                await this.AddGameOperation(TOperationType.totStopFatta, player);
@@ -1804,7 +1815,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             const player = this.currSelectedPlayer;
             if (player)
             {
-               player.falliSubiti.set(player.falliSubiti() + 1);
                this.UpdateCommandsData(player);
                this.compFalli?.Flash();
                await this.AddGameOperation(TOperationType.totFalloSubito, player);
@@ -1837,7 +1847,32 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
       const isMyTeam = (this.currSelectedPlayer?.isMyTeam() ?? false);
       const op = new TOperation(quarter, time, oper, isMyTeam, player, undefined, desc);
+      opList.ApplyOperation(op);
       await opList.Add(op);
+      this.UpdateCommandsData(player);
+      this.ScrollOperazioniToBottom();
+   }
+
+
+   // OK nella dialog timeout di una squadra con qualche modifica: si registra la fotografia completa dei suoi
+   // timeout (anche se un timeout è stato tolto, es. perché assegnato alla squadra sbagliata), applicata con
+   // ApplyOperation come ogni altra operazione, così viene salvata e ricostruita ricaricando la partita.
+   async onTimeoutsChanged (isMyTeam: boolean,
+                            event: { prima: string, dopo: string }): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const [t1, t2, te] = event.dopo.split('|');
+      // solo caratteri ASCII: la connessione PHP al database non dichiara la codifica (vedi database.php)
+      const desc = `1T ${t1} 2T ${t2} Supl ${te}`;
+      const op = new TOperation(quarter, time, TOperationType.totTimeout, isMyTeam, undefined, undefined, desc, 0, `${event.prima}>${event.dopo}`);
+      opList.ApplyOperation(op);
+      await opList.Add(op);
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
       this.ScrollOperazioniToBottom();
    }
 
@@ -2338,6 +2373,148 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Inverso di QuarterKeyToNumber: 1..4 -> "1q".."4q", 5..8 -> "1et".."4et"
+   QuarterNumberToKey (num: number): string
+   {
+      return (num <= globs.MaxRegQuarters) ? `${num}q` : `${num - globs.MaxRegQuarters}et`;
+   }
+
+
+   // Carica gli eventi della partita e la ricostruisce rigiocandoli. false = nessun evento (partita da iniziare).
+   async LoadMatchFromEvents (): Promise<boolean>
+   {
+      const cm = matchGlobs.currMatch;
+      if ((!cm) || (!(this.matchHeader?.id > 0)))
+         return false;
+      const myTeam = cm.myTeam();
+      const oppTeam = cm.oppTeam();
+      const { events, source } = await this.matchSync.LoadMatchEvents(this.matchHeader.id);
+      if (source === 'local')
+         this.msgService.add({ severity: 'warn', summary: 'Senza connessione',
+                               detail: (events.length > 0)
+                                  ? 'Azioni lette dalla copia locale: verranno allineate col server al ritorno della connessione'
+                                  : 'Impossibile leggere le azioni dal server e nessuna copia locale per questa partita' });
+      const opList = await cm.EnsureOperationList();
+      await opList.Destroy();
+      if (events.length === 0)
+         return false;
+      myTeam?.ResetForReplay();
+      oppTeam?.ResetForReplay();
+      // AddNoSort non notifica OnItemAdded: gli eventi caricati non vanno rimessi in coda per l'invio
+      for (const ev of events)
+         await opList.AddNoSort (this.matchSync.EventToOperation(ev, myTeam, oppTeam));
+      await opList.Refresh();
+      this.ReplayOperations (opList, opList.items());
+      this.ScrollOperazioniToBottom();
+      return true;
+   }
+
+
+   // Rigioca in ordine le operazioni (già ordinate per quarto/tempo/sequenza), come se venissero registrate
+   // adesso: effetti statistici con TOperationList.ApplyOperation (lo stesso usato dal live), e in più chi è
+   // in campo, tempo di gioco e plus/minus con le stesse regole di quintetto (AddQuintettoOperations),
+   // sostituzione (AddSostituzioneOperations) e cambio quarto (onQuarterChanged). Alla fine il cronometro
+   // viene riportato, fermo, sul quarto dell'ultima operazione e sull'ultimo tempo registrato.
+   ReplayOperations (opList: TOperationList,
+                     ops: TOperation[]): void
+   {
+      const myTeam = matchGlobs.currMatch?.myTeam() ?? null;
+      const oppTeam = matchGlobs.currMatch?.oppTeam() ?? null;
+      const allPlayers = [...(myTeam?.Roster ?? []), ...(oppTeam?.Roster ?? [])];
+      const onCourt = (isMyTeam?: boolean) => allPlayers.filter(p => p.inGioco() && ((isMyTeam === undefined) || (p.isMyTeam() === isMyTeam)));
+      const diffNow = () => (myTeam?.CalcPunti() ?? 0) - (oppTeam?.CalcPunti() ?? 0);
+      const maxTimeOf = (q: number) => (q <= globs.MaxRegQuarters) ? globs.DurationRegulTime : globs.DurationExtraTime;
+
+      allPlayers.forEach(p => p.inGioco.set(false));
+      this.quarterEndLineups = {};
+      const quarterTimes: Record<string, number> = {};
+      let currQ = 0;
+      let lastTime = 0;
+      // blocco di operazioni "Quintetto" in corso (stesso criterio di LineupFromOperations)
+      let quintTeam: boolean | null = null;
+      let quintIds = new Set<number>();
+      let prevCounter = -1;
+
+      for (const op of ops)
+      {
+         const q = op.quarter();
+         if (q !== currQ)
+         {
+            // cambio quarto: chiude gli stint del quarto lasciato e riparte dai giocatori che lo hanno finito
+            // (nel 1° quarto dal quintetto base)
+            let startLineup: TMatchPlayer[];
+            if (currQ > 0)
+            {
+               const key = this.QuarterNumberToKey(currQ);
+               quarterTimes[key] = lastTime;
+               const oc = onCourt();
+               this.quarterEndLineups[key] = [...oc];
+               this.ConsolidateOutgoingPlayers (oc, lastTime);
+               startLineup = oc;
+            }
+            else
+               startLineup = allPlayers.filter(p => p.inQuintetto());
+            currQ = q;
+            lastTime = maxTimeOf(q);
+            this.PutPlayersOnCourt (startLineup, lastTime);
+            quintTeam = null;
+         }
+         lastTime = op.time();
+         opList.ApplyOperation (op);
+
+         const p1 = op.player1();
+         const p2 = op.player2();
+         if (op.oper() === TOperationType.totQuintetto)
+         {
+            const id1 = p1?.playerRecID ?? 0;
+            const nuovoBlocco = (quintTeam !== op.myTeam()) || (op.counter() !== prevCounter + 1) || (quintIds.has(id1));
+            if (nuovoBlocco)
+            {
+               // il nuovo quintetto sostituisce chi era in campo per quella squadra
+               this.ConsolidateOutgoingPlayers (onCourt(op.myTeam()), op.time());
+               quintIds = new Set<number>();
+               quintTeam = op.myTeam();
+            }
+            if (p1)
+            {
+               quintIds.add(id1);
+               this.PutPlayersOnCourt ([p1], maxTimeOf(q));
+            }
+         }
+         else
+         {
+            quintTeam = null;
+            if (op.oper() === TOperationType.totSostituz)
+            {
+               const diff = diffNow();
+               if (p1 && p1.inGioco())
+               {
+                  p1.tempoGioco.set(p1.tempoGioco() + (p1.inTime() - op.time()));
+                  p1.plusMinus.set(p1.plusMinus() + (diff - p1.fPMIn));
+                  p1.outTime.set(op.time());
+                  p1.inGioco.set(false);
+               }
+               if (p2)
+               {
+                  p2.inTime.set(op.time());
+                  p2.outTime.set(op.time());
+                  p2.currCronotime = op.time();
+                  p2.fPMIn = diff;
+                  p2.inGioco.set(true);
+               }
+            }
+         }
+         prevCounter = op.counter();
+      }
+      if (currQ > 0)
+      {
+         const key = this.QuarterNumberToKey(currQ);
+         quarterTimes[key] = lastTime;
+         this.compTimer?.RestoreState (key, quarterTimes);
+      }
+   }
+
+
    // Mette in campo, per entrambe le squadre, la situazione dell'ultimo momento di gioco del quarto indicato.
    // Lo stint riparte dal tempo attuale del cronometro di quel quarto: quanto giocato prima è già stato
    // consolidato in tempoGioco/plusMinus quando il quarto è stato lasciato (vedi onQuarterChanged).
@@ -2366,6 +2543,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       ];
       this.quarterEndLineups[event.oldQuarto] = [...onCourt];
       this.ConsolidateOutgoingPlayers (onCourt, event.oldTime);
+      if (this.compTimer?.IsQuarterStarted(event.oldQuarto))
+         this.SaveQuarterState (event.oldQuarto, event.oldTime);
       this.ApplyLineupForQuarter (event.newQuarto);
       this.RefreshFrozenClock();
       this.UpdateFieldPlayers();
@@ -2416,6 +2595,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async onNumeriNomiOk ()
    {
       this.dialogVisible_NumeriNomi = false;
+      await this.SaveNumeriMagliaToDB();
       this.SyncRosterListsFromMatchPlayers();
       await this.compMyTeam?.Update();
       await this.compOppoTeam?.Update();
@@ -2491,6 +2671,104 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Falli di ogni giocatore all'apertura di una dialog dei falli (copie), da confrontare alla conferma
+   private falliPrima = new Map<TMatchPlayer, TFallo[]>();
+
+
+   SnapshotFalli (players: TMatchPlayer[]): void
+   {
+      this.falliPrima = new Map(players.map(p => [p, p.falliFatti().map(f => f.Clone())]));
+   }
+
+
+   // Trasforma le modifiche fatte nelle dialog dei falli (fallo singolo e "Falli totali") negli eventi che
+   // sarebbero stati registrati durante il gioco, ciascuno al quarto/tempo del fallo stesso:
+   //  - fallo aggiunto  -> nuovo evento "Fallo fatto";
+   //  - fallo tolto     -> il suo evento viene tolto (e cancellato sul server);
+   //  - fallo corretto (quarto, tempo, tipo, liberi) -> evento vecchio tolto e sostituito da quello corretto.
+   // Il confronto è casella per casella (le 5 caselle falli del giocatore). I falli del giocatore sono già
+   // stati aggiornati dalla dialog: qui si allinea solo la lista delle operazioni, senza riapplicare effetti.
+   async RegistraModificheFalli (): Promise<void>
+   {
+      const cm = matchGlobs.currMatch;
+      if (!cm)
+         return;
+      const opList = await cm.EnsureOperationList();
+      const uguali = (a: TFallo, b: TFallo) =>
+         (a.fCommesso === b.fCommesso) &&
+         ((!a.fCommesso) || ((a.fQuarto === b.fQuarto) && (a.fTempo === b.fTempo) && (a.numLiberi === b.numLiberi) &&
+                             (a.fTecnico === b.fTecnico) && (a.fAntisportivo === b.fAntisportivo) && (a.fEspulsione === b.fEspulsione)));
+      const tolte = new Set<TOperation>();
+      for (const [player, prima] of this.falliPrima)
+      {
+         const dopo = player.falliFatti();
+         for (let i = 0; i < Math.min(prima.length, dopo.length); i++)
+         {
+            const fp = prima[i];
+            const fd = dopo[i];
+            if (uguali(fp, fd))
+               continue;
+            if (fp.fCommesso)
+            {
+               const vecchia = opList.items().find(o =>
+                  (o.oper() === TOperationType.totFalloFatto) && (o.player1() === player) &&
+                  (o.quarter() === fp.fQuarto) && (o.time() === fp.fTempo) && (!tolte.has(o)));
+               if (vecchia)
+               {
+                  tolte.add(vecchia);
+                  await opList.RemoveItem(vecchia);
+               }
+            }
+            if (fd.fCommesso)
+            {
+               const op = new TOperation(fd.fQuarto, fd.fTempo, TOperationType.totFalloFatto, player.isMyTeam(), player);
+               op.eventData = { subtype: MatchSyncService.FalloSubtype(fd), ftawarded: fd.numLiberi };
+               await opList.Add(op);
+            }
+         }
+      }
+      this.falliPrima = new Map();
+      this.ScrollOperazioniToBottom();
+   }
+
+
+   // Numeri di maglia cambiati da "Modifica Numeri/Nomi": valgono solo per questa partita e vanno quindi su
+   // matchroster (listaRosterCasa/listaRosterFuori contengono i record completi letti da DB), altrimenti
+   // ricaricando la partita tornerebbero quelli di prima.
+   async SaveNumeriMagliaToDB (): Promise<void>
+   {
+      const byId = new Map([
+         ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+      ].map(p => [p.playerRecID, p]));
+      let errori = 0;
+      for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
+      {
+         const plr = byId.get(entry.playerId_link);
+         if ((!plr) || (plr.playNumber() === entry.playNumber))
+            continue;
+         const vecchio = entry.playNumber;
+         entry.playNumber = plr.playNumber();
+         try
+         {
+            const strJson = JSON.stringify(this.servMatchRoster.MatchRosterToDb(entry));
+            const rrr: any = await firstValueFrom (this.servMatchRoster.updateData (entry.id, strJson));
+            if (rrr && (rrr.ok === false))
+               throw new Error(rrr.message);
+         }
+         catch (err)
+         {
+            console.error('Errore nel salvataggio del numero di maglia:', err);
+            entry.playNumber = vecchio;
+            errori++;
+         }
+      }
+      if (errori > 0)
+         this.msgService.add({ severity: 'error', summary: 'Numeri di maglia',
+                               detail: `${errori} numeri non salvati sul server: ricaricando la partita tornerebbero quelli precedenti` });
+   }
+
+
    mnuFalliTotali()
    {
       this.dialogVisible_FalliTotali = true;
@@ -2499,6 +2777,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    onFalliTotaliDialogShow()
    {
+      this.SnapshotFalli ([
+         ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+      ]);
       this.falliTotaliComp?.onComponentShow();
    }
 
@@ -2506,6 +2788,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async onFalliTotaliOk ()
    {
       this.dialogVisible_FalliTotali = false;
+      await this.RegistraModificheFalli();
       await this.compMyTeam?.Update();
       await this.compOppoTeam?.Update();
       await matchGlobs.currSavedMatch.SaveToStorage();
@@ -2538,6 +2821,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          const opList = await matchGlobs.currMatch.EnsureOperationList();
          await opList.Destroy();
+         await this.matchSync.EnqueueResetMatch (this.matchHeader.id);
          matchGlobs.currMatch.myTeam()?.ResetMatchState();
          matchGlobs.currMatch.oppTeam()?.ResetMatchState();
       }

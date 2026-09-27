@@ -854,7 +854,10 @@ export class TMatchPlayer
       this.assist.set(0);
       this.plusMinus.set(0);
 
-      this.falliFatti().forEach(f => f.Reset?.()); // Se Reset è sincrono
+      // i falli vanno svuotati E notificati con un nuovo array: modificarli solo "sul posto" lascia
+      // l'interfaccia (conteggi calcolati dal signal) con il valore vecchio
+      this.falliFatti().forEach(f => f.Reset?.());
+      this.falliFatti.set([...this.falliFatti()]);
    }
 
 
@@ -883,7 +886,10 @@ export class TMatchPlayer
       this.plusMinus.set(0);
       this.inTime.set(0);
       this.outTime.set(0);
+      // i falli vanno svuotati E notificati con un nuovo array: modificarli solo "sul posto" lascia
+      // l'interfaccia (conteggi calcolati dal signal) con il valore vecchio
       this.falliFatti().forEach(f => f.Reset?.());
+      this.falliFatti.set([...this.falliFatti()]);
    }
 
 
@@ -1320,6 +1326,17 @@ export class TMatchTeam
    // Riporta la squadra allo stato "partita mai iniziata": azzera quarti, quintetti, timeout,
    // falli e le statistiche di gioco di ogni giocatore, ma preserva il Roster (convocati con
    // numero di maglia e capitano) — usato da "Azzera tutta la partita".
+   // Prima di ricostruire la partita rigiocando gli eventi: azzera solo lo stato che gli eventi ricalcolano
+   // (punti/stato dei quarti, quintetti per quarto), lasciando roster e timeout come sono
+   public ResetForReplay(): void
+   {
+      this.SetTimeoutSnapshot('');
+      this.currQuarter.set(0);
+      this.QuintettoQuarto.fill(false);
+      this.quarti().forEach(q => q.Reset());
+   }
+
+
    public ResetMatchState(): void
    {
       this.timeout1.set("OO");
@@ -1453,6 +1470,25 @@ export class TMatchTeam
          return this.quarti()[n];
       }
       return null;
+   }
+
+
+   // Fotografia completa dei timeout della squadra: "1°tempo|2°tempo|supplementari", es. "XO|OOO|OOOO"
+   public GetTimeoutSnapshot(): string
+   {
+      return `${this.timeout1()}|${this.timeout2()}|${this.timeoutExtra()}`;
+   }
+
+
+   // Imposta i timeout da una fotografia (vedi GetTimeoutSnapshot); stringa vuota = nessun timeout
+   public SetTimeoutSnapshot(aSnapshot: string): void
+   {
+      const parts = (aSnapshot ?? '').split('|');
+      const norm = (v: string | undefined, len: number) =>
+         Array.from({ length: len }, (_, i) => ((v ?? '')[i] === 'X') ? 'X' : 'O').join('');
+      this.timeout1.set(norm(parts[0], 2));
+      this.timeout2.set(norm(parts[1], 3));
+      this.timeoutExtra.set(norm(parts[2], 4));
    }
 
 
@@ -1699,10 +1735,10 @@ export class TMatchTeam
          // Gestione array falli
          if (plr.falliFatti)
          {
-            for (let yyy=0;   yyy<plr.falliFatti.length;   yyy++)
-            {
-               plr.falliFatti()[yyy].Reset();
-            }
+            // falliFatti è un signal: la lunghezza è quella dell'array che contiene, e va notificato un nuovo
+            // array perché l'interfaccia veda i falli azzerati
+            plr.falliFatti().forEach(f => f.Reset());
+            plr.falliFatti.set([...plr.falliFatti()]);
          }
          plr.falliSubiti.set (0);
          plr.rimbAttacco.set (0);

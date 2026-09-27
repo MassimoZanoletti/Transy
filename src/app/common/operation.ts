@@ -42,7 +42,11 @@ export enum TOperationType
    totQuintetto,
    totTimeStart,
    totTimeStop,
-   totCheckPoint
+   totCheckPoint,
+   // Fotografia dei timeout di una squadra dopo un OK nella dialog timeout: desc2 = "prima>dopo", ciascuna nel
+   // formato di TMatchTeam.GetTimeoutSnapshot (es. "XO|OOO|OOOO"). Va in fondo: i valori numerici esistenti
+   // non devono cambiare.
+   totTimeout
 }
 export namespace TOperationType
 {
@@ -73,7 +77,76 @@ export namespace TOperationType
          case TOperationType.totTimeStart:   return "TimeStart ";
          case TOperationType.totTimeStop:    return "TimeStop  ";
          case TOperationType.totCheckPoint:  return "Checkpoint";
+         case TOperationType.totTimeout:     return "Timeout   ";
          default:                            return "?????     ";
+      }
+   }
+   // Corrispondenza con bbs_matchevent: eventtype è un ENUM generico (SHOT, FOUL, REBOUND, ...) e i dettagli
+   // stanno nelle altre colonne (subtype, shottype, made). aIParam distingue start/stop del cronometro da
+   // inizio/fine quarto (iParam = 1). Il subtype restituito qui è quello che dipende solo dal tipo: falli e
+   // timeout lo impostano con i propri dettagli (vedi MatchSyncService.OperationToEvent).
+   export function ToDbEvent (value: TOperationType,
+                              aIParam: number = 0): { type: string, subtype: string | null }
+   {
+      switch (value)
+      {
+         case TOperationType.totTLYes:
+         case TOperationType.totTLNo:
+         case TOperationType.totT2Yes:
+         case TOperationType.totT2No:
+         case TOperationType.totT3Yes:
+         case TOperationType.totT3No:       return { type: 'SHOT',          subtype: null };
+         case TOperationType.totFalloFatto:  return { type: 'FOUL',          subtype: null };
+         case TOperationType.totFalloSubito: return { type: 'FOUL_SUFFERED', subtype: null };
+         case TOperationType.totRimbDifesa:  return { type: 'REBOUND',       subtype: 'DEF' };
+         case TOperationType.totRimbAttacco: return { type: 'REBOUND',       subtype: 'OFF' };
+         case TOperationType.totPPersa:      return { type: 'TURNOVER',      subtype: null };
+         case TOperationType.totPRecuperata: return { type: 'STEAL',         subtype: null };
+         case TOperationType.totStopFatta:   return { type: 'BLOCK',         subtype: 'FATTA' };
+         case TOperationType.totStopSubita:  return { type: 'BLOCK',         subtype: 'SUBITA' };
+         case TOperationType.totAssist:      return { type: 'ASSIST',        subtype: null };
+         case TOperationType.totSostituz:    return { type: 'SUBSTITUTION',  subtype: null };
+         case TOperationType.totQuintetto:   return { type: 'STARTING_FIVE', subtype: null };
+         case TOperationType.totTimeStart:   return { type: (aIParam === 1) ? 'PERIOD_START' : 'CLOCK_START', subtype: null };
+         case TOperationType.totTimeStop:    return { type: (aIParam === 1) ? 'PERIOD_END' : 'CLOCK_STOP', subtype: null };
+         case TOperationType.totTimeout:     return { type: 'TIMEOUT',       subtype: null };
+         case TOperationType.totCheckPoint:  return { type: 'CHECKPOINT',    subtype: null };
+         default:                            return { type: '',              subtype: null };
+      }
+   }
+   export function FromDbEvent (aType: string,
+                                aSubtype: string | null,
+                                aShotType: string | null,
+                                aMade: any): TOperationType
+   {
+      const sub = String(aSubtype ?? '').toUpperCase();
+      const made = (Number(aMade) === 1);
+      switch (String(aType ?? '').trim().toUpperCase())
+      {
+         case 'SHOT':
+            switch (String(aShotType ?? '').toUpperCase())
+            {
+               case 'TL': return made ? TOperationType.totTLYes : TOperationType.totTLNo;
+               case 'T2': return made ? TOperationType.totT2Yes : TOperationType.totT2No;
+               case 'T3': return made ? TOperationType.totT3Yes : TOperationType.totT3No;
+               default:   return TOperationType.totUndefined;
+            }
+         case 'FOUL':          return TOperationType.totFalloFatto;
+         case 'FOUL_SUFFERED': return TOperationType.totFalloSubito;
+         case 'REBOUND':       return (sub === 'OFF') ? TOperationType.totRimbAttacco : TOperationType.totRimbDifesa;
+         case 'TURNOVER':      return TOperationType.totPPersa;
+         case 'STEAL':         return TOperationType.totPRecuperata;
+         case 'BLOCK':         return (sub === 'SUBITA') ? TOperationType.totStopSubita : TOperationType.totStopFatta;
+         case 'ASSIST':        return TOperationType.totAssist;
+         case 'SUBSTITUTION':  return TOperationType.totSostituz;
+         case 'STARTING_FIVE': return TOperationType.totQuintetto;
+         case 'CLOCK_START':
+         case 'PERIOD_START':  return TOperationType.totTimeStart;
+         case 'CLOCK_STOP':
+         case 'PERIOD_END':    return TOperationType.totTimeStop;
+         case 'TIMEOUT':       return TOperationType.totTimeout;
+         case 'CHECKPOINT':    return TOperationType.totCheckPoint;
+         default:              return TOperationType.totUndefined;
       }
    }
    export function fromDesc (aStr: string): TOperationType
@@ -111,6 +184,12 @@ export class TOperation
    public readonly iParam = signal<number>(0);
    public readonly counter = signal<number>(0);
    public readonly internalStatus = signal<number>(OperIntStatus.OperIntStatus_Done);
+   // Identificativo univoco generato dal client: lega l'operazione al suo evento su bbs_matchevent
+   // (idempotenza dei reinvii e cancellazione anche prima di conoscere l'id del server, vedi MatchSyncService)
+   public clientUid: string = TOperation.NewClientUid();
+   // Dettagli dell'evento letto dal database (subtype/ftawarded dei falli, courtx/courty dei tiri): usati
+   // solo da TOperationList.ApplyOperation quando si ricostruisce la partita, null per le operazioni live
+   public eventData: any = null;
 
 
    public constructor(aQrt?: number,
@@ -154,6 +233,27 @@ export class TOperation
          this.desc2.set(aDesc2);   }
 
 
+   // Fotografia dei timeout dopo l'operazione ("prima>dopo" -> "dopo")
+   public static TimeoutAfter (aDesc2: string): string
+   {
+      const parts = (aDesc2 ?? '').split('>');
+      return parts[parts.length - 1];
+   }
+
+
+   public static NewClientUid (): string
+   {
+      if ((typeof crypto !== 'undefined') && (typeof crypto.randomUUID === 'function'))
+         return crypto.randomUUID();
+      // fallback per contesti non sicuri (http non localhost), dove randomUUID non è disponibile
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c =>
+      {
+         const r = Math.random() * 16 | 0;
+         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+   }
+
+
    public static async CreateFromString (fromStr: string,
                                          aMyTeam: TMatchTeam,
                                          aOppTeam: TMatchTeam): Promise<TOperation>
@@ -189,6 +289,8 @@ export class TOperation
          o.counter.set(data.fCounter);
       if (data.fInternalStatus !== undefined)
          o.internalStatus.set(data.fInternalStatus);
+      if (data.clientUid !== undefined)
+         o.clientUid = data.clientUid;
       /*
       // Attenzione: se TMatchPlayer è una classe complessa,
       // andrebbe ricostruita anche quella con un suo metodo statico
@@ -374,6 +476,7 @@ export class TOperation
             case TOperationType.totTimeStart:   s2 = (this.iParam()==1)?"QrtStart":"TimStart"; break
             case TOperationType.totTimeStop:    s2 = (this.iParam()==1)?"QrtStop ":"TimStop "; break
             case TOperationType.totCheckPoint:  s2 = `-------`; break
+            case TOperationType.totTimeout:     s2 = `${tm}|${TOperation.TimeoutAfter(this.desc2())}`; break
             default:                            s2 = `       `; break
          }
          const opTime: number = this.time();
@@ -447,6 +550,10 @@ export class TOperationList
    private fModified: boolean = false;
    private fCounter: number = 0;
    public OnChanged?: () => void;
+   // Notifiche puntuali per il salvataggio remoto (vedi MatchSyncService): operazione aggiunta con Add,
+   // operazione effettivamente tolta da RemoveAction (Undo, editor azioni)
+   public OnItemAdded?: (item: TOperation) => void;
+   public OnItemRemoved?: (item: TOperation) => void;
 
    // esposizione reattiva del contenuto della lista, per il binding diretto nei template (es. p-table)
    public readonly items = signal<TOperation[]>([]);
@@ -558,6 +665,8 @@ export class TOperationList
       await this.Sort();
       this.fModified = true;
       this.SyncItems();
+      if (this.OnItemAdded)
+         this.OnItemAdded(item);
       if (this.OnChanged)
          this.OnChanged();
    }
@@ -570,6 +679,25 @@ export class TOperationList
       const punteggio: string = `${myPts}-${oppoPts}`;
       const existing: string = item.desc();
       item.desc.set(existing ? `${existing} ${punteggio}` : punteggio);
+   }
+
+
+   // Toglie un'operazione dalla lista SENZA annullarne gli effetti (a differenza di RemoveAction): per quando
+   // l'effetto è già stato tolto altrove, es. un fallo eliminato o corretto dalle dialog dei falli.
+   // Notifica OnItemRemoved, così l'evento viene cancellato anche sul server.
+   public async RemoveItem(item: TOperation): Promise<boolean>
+   {
+      const idx = this.fList.indexOf(item);
+      if (idx < 0)
+         return false;
+      this.fList.splice(idx, 1);
+      this.fModified = true;
+      this.SyncItems();
+      if (this.OnItemRemoved)
+         this.OnItemRemoved(item);
+      if (this.OnChanged)
+         this.OnChanged();
+      return true;
    }
 
 
@@ -668,6 +796,84 @@ export class TOperationList
    }
 
 
+   // Applica gli effetti statistici di un'operazione (speculare a RemoveAction): è l'unico punto in cui vengono
+   // applicati, sia durante il live (vedi AddGameOperation/RegistraRealizzazione in match.component.ts) sia
+   // quando la partita viene ricostruita rigiocando gli eventi letti dal database.
+   // Non tocca chi è in campo né i tempi di gioco (quintetti/sostituzioni): quelli li gestisce match.component.
+   //  - Fallo fatto: durante il live il fallo viene già registrato dalla dialog falli; qui viene applicato solo
+   //    se l'operazione porta i dettagli letti dal database (eventData).
+   public ApplyOperation (aItem: TOperation): void
+   {
+      const pl: TMatchPlayer | null = aItem.player1();
+      const team: TMatchTeam | null = (matchGlobs.currMatch == null) ? null
+         : (aItem.myTeam() ? matchGlobs.currMatch.myTeam() : matchGlobs.currMatch.oppTeam());
+      let tipo: TTipoRealizzazione = TTipoRealizzazione.trUndefined;
+      let fatto: boolean = false;
+      switch (aItem.oper())
+      {
+         case TOperationType.totTLYes: tipo = TTipoRealizzazione.trTL; fatto = true;  break;
+         case TOperationType.totTLNo:  tipo = TTipoRealizzazione.trTL; fatto = false; break;
+         case TOperationType.totT2Yes: tipo = TTipoRealizzazione.trT2; fatto = true;  break;
+         case TOperationType.totT2No:  tipo = TTipoRealizzazione.trT2; fatto = false; break;
+         case TOperationType.totT3Yes: tipo = TTipoRealizzazione.trT3; fatto = true;  break;
+         case TOperationType.totT3No:  tipo = TTipoRealizzazione.trT3; fatto = false; break;
+         case TOperationType.totRimbDifesa:  if (pl) pl.rimbDifesa.set(pl.rimbDifesa() + 1);   break;
+         case TOperationType.totRimbAttacco: if (pl) pl.rimbAttacco.set(pl.rimbAttacco() + 1); break;
+         case TOperationType.totPPersa:      if (pl) pl.pPerse.set(pl.pPerse() + 1);           break;
+         case TOperationType.totPRecuperata: if (pl) pl.pRecuperate.set(pl.pRecuperate() + 1); break;
+         case TOperationType.totStopSubita:  if (pl) pl.stoppSubite.set(pl.stoppSubite() + 1); break;
+         case TOperationType.totStopFatta:   if (pl) pl.stoppFatte.set(pl.stoppFatte() + 1);   break;
+         case TOperationType.totAssist:      if (pl) pl.assist.set(pl.assist() + 1);           break;
+         case TOperationType.totFalloSubito: if (pl) pl.falliSubiti.set(pl.falliSubiti() + 1); break;
+         case TOperationType.totFalloFatto:
+            if (pl && aItem.eventData)
+            {
+               const falli = pl.falliFatti();
+               const ff = falli.find(f => !f.fCommesso);
+               if (ff)
+               {
+                  const sub = String(aItem.eventData.subtype ?? '').toUpperCase();
+                  ff.fCommesso = true;
+                  ff.fQuarto = aItem.quarter();
+                  ff.fTempo = aItem.time();
+                  ff.numLiberi = Number(aItem.eventData.ftawarded ?? 0) || 0;
+                  ff.fTecnico = (sub === 'TECNICO');
+                  ff.fAntisportivo = (sub === 'ANTISPORTIVO');
+                  ff.fEspulsione = (sub === 'ESPULSIONE');
+                  pl.falliFatti.set([...falli]);
+               }
+            }
+            break;
+         case TOperationType.totQuintetto:
+            if (team && (aItem.quarter() > 0))
+               team.QuintettoQuarto[aItem.quarter() - 1] = true;
+            break;
+         case TOperationType.totTimeout:
+            if (team)
+               team.SetTimeoutSnapshot(TOperation.TimeoutAfter(aItem.desc2()));
+            break;
+         default:
+            break;
+      }
+      if ((tipo !== TTipoRealizzazione.trUndefined) && pl)
+      {
+         const x = Number(aItem.eventData?.courtx ?? 0) || 0;
+         const y = Number(aItem.eventData?.courty ?? 0) || 0;
+         const realizz = new TRealizzazione();
+         realizz.Add(tipo, aItem.quarter(), aItem.time(), fatto, x, y);
+         realizz.rPlr = pl;
+         pl.realizzazioni.set([...pl.realizzazioni(), realizz]);
+         if (fatto && (realizz.rPunti > 0) && team)
+         {
+            team.currQuarter.set(aItem.quarter() - 1);
+            const qrt = team.GetQuarto(aItem.quarter() - 1);
+            if (qrt)
+               qrt.punti = qrt.punti + realizz.rPunti;
+         }
+      }
+   }
+
+
    public async RemoveAction (arg: TOperation | number): Promise<boolean>
    {
       let result: boolean = false;
@@ -721,6 +927,8 @@ export class TOperationList
                         if ((ff.fCommesso) && (ff.fQuarto == (aItem.quarter())) && (ff.fTempo == (aItem.time())))
                         {
                            await (pl.GeTFallo(i)).Reset();
+                           // nuovo array: il solo Reset "sul posto" non aggiornerebbe i conteggi a video
+                           pl.falliFatti.set([...pl.falliFatti()]);
                            Qrt = null;
                            if (matchGlobs.currMatch)
                            {
@@ -843,6 +1051,19 @@ export class TOperationList
                case TOperationType.totSostituz:
                   toDelete = false;
                   break;
+               case TOperationType.totTimeout:
+               {
+                  // la squadra torna all'ultima fotografia rimasta in lista (o a nessun timeout): così anche
+                  // togliendo un'operazione non recente lo stato resta coerente con quelle successive
+                  const isMy = aItem.myTeam();
+                  const team: TMatchTeam | null = (matchGlobs.currMatch == null) ? null
+                     : (isMy ? matchGlobs.currMatch.myTeam() : matchGlobs.currMatch.oppTeam());
+                  const others = this.fList.filter(o => (o !== aItem) && (o.oper() === TOperationType.totTimeout) && (o.myTeam() === isMy));
+                  if (team)
+                     team.SetTimeoutSnapshot((others.length > 0) ? TOperation.TimeoutAfter(others[others.length - 1].desc2()) : '');
+                  toDelete = true;
+                  break;
+               }
                default:
                   toDelete = false;
                   break;
@@ -851,6 +1072,8 @@ export class TOperationList
             {
                this.fList.splice (idx, 1);
                this.SyncItems();
+               if (this.OnItemRemoved)
+                  this.OnItemRemoved(aItem);
             }
          }//if (idx >= 0)
          result = true;
