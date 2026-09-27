@@ -465,6 +465,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if ((this.MatchNotStarted()) && (this.compTimer))
          this.compTimer.ResetToMatchStart();
       //
+      // In campo la situazione dell'ultimo momento di gioco del quarto selezionato nel cronometro
+      // (che riprende il quarto in corso se si esce e si rientra nella partita)
+      this.ApplyLineupForQuarter (this.compTimer ? this.compTimer.currQuarter : '1q');
+      //
       if (this.matchHeader.atHome)
       {
          this.matchTitle = `${this.matchHeader.myTeamNome_lk}  -  ${this.matchHeader.oppoTeamNome_lk}`;
@@ -782,8 +786,54 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   ot.NotifyRosterChanged();
                }
             }
+            //
+            // I giocatori sono stati appena ricreati: le formazioni registrate per quarto puntano ai vecchi oggetti
+            // (chi va in campo viene deciso in InitializeComponent, vedi ApplyLineupForQuarter)
+            this.quarterEndLineups = {};
          }
          //
+      }
+   }
+
+
+   // Mette in campo i giocatori indicati a partire dal tempo indicato del cronometro, con gli stessi
+   // riferimenti iniziali di AddQuintettoOperations per tempo di gioco e plus/minus.
+   PutPlayersOnCourt (players: TMatchPlayer[],
+                      maxTime: number): void
+   {
+      const diff = (matchGlobs.currMatch?.myTeam()?.CalcPunti() ?? 0) - (matchGlobs.currMatch?.oppTeam()?.CalcPunti() ?? 0);
+      for (const p of players)
+      {
+         p.inTime.set(maxTime);
+         p.outTime.set(maxTime);
+         p.currCronotime = maxTime;
+         p.fPMIn = diff;
+         p.inGioco.set(true);
+      }
+   }
+
+
+   // Salva su matchroster il flag "quintetto" dei giocatori indicati, aggiornando solo i record cambiati
+   // (listaRosterCasa/listaRosterFuori contengono i record completi letti da DB).
+   async SaveQuintettoToDB (players: TMatchPlayer[]): Promise<void>
+   {
+      const byId = new Map(players.map(p => [p.playerRecID, p]));
+      try
+      {
+         for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
+         {
+            const plr = byId.get(entry.playerId_link);
+            if ((!plr) || (entry.quintetto === plr.inQuintetto()))
+               continue;
+            entry.quintetto = plr.inQuintetto();
+            const strJson = JSON.stringify(this.servMatchRoster.MatchRosterToDb(entry));
+            await firstValueFrom (this.servMatchRoster.updateData (entry.id, strJson));
+         }
+      }
+      catch (err)
+      {
+         console.error('Errore nel salvataggio del quintetto:', err);
+         this.msgService.add({ severity: 'error', summary: 'Quintetto', detail: 'Salvataggio non riuscito' });
       }
    }
 
@@ -1334,22 +1384,67 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       if (event.id !== 'comptimer')
          return;
-      if (!this.QuintettoSelezionato())
+      const mancanti = this.TeamsSenzaQuintetto();
+      if (mancanti.length > 0)
       {
          const dlgData: MessDlgData = {
             title:               'Quintetto non selezionato',
             subtitle:            '',
-            message:             `Il quintetto di una o entrambe le squadre non è ancora stato selezionato per questo quarto.<br>Vuoi continuare comunque?`,
+            message:             `Il quintetto di una o entrambe le squadre non è ancora stato selezionato per questo quarto.<br>Vuoi impostarlo ora, oppure continuare con i giocatori attualmente in campo?`,
             messtype:            'warning',
-            btncaption:          'No, annulla',
+            btncaption:          'Imposta quintetto',
             showCancelButton:    true,
-            cancelButtonCaption: 'Sì, continua'
+            cancelButtonCaption: 'Continua così',
+            showThirdButton:     true,
+            thirdButtonCaption:  'Annulla'
          };
          const result = await firstValueFrom (this.messageDialogService.showMessage (dlgData, '', true));
+         if (result === 'primary')
+         {
+            // Una dialog Quintetto per ogni squadra senza quintetto, una dopo l'altra (vedi onSostituzioneSave);
+            // il cronometro resta fermo: si riavvia con Start dopo aver confermato i quintetti.
+            this.pendingQuintettoTeams = [...mancanti];
+            this.OpenNextPendingQuintetto();
+            return;
+         }
          if (result !== 'secondary')
             return; // l'utente ha annullato: il cronometro non viene nemmeno avviato
+         await this.AssegnaQuintettoDaInCampo (mancanti);
       }
       this.compTimer?.start();
+   }
+
+
+   // Squadre (true = myTeam) che non hanno ancora il quintetto registrato per il quarto corrente
+   TeamsSenzaQuintetto (): boolean[]
+   {
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 1;
+      const result: boolean[] = [];
+      if (!(matchGlobs.currMatch?.myTeam()?.QuintettoQuarto[quarter - 1] ?? false))
+         result.push(true);
+      if (!(matchGlobs.currMatch?.oppTeam()?.QuintettoQuarto[quarter - 1] ?? false))
+         result.push(false);
+      return result;
+   }
+
+
+   // "Continua così" all'avvio di un quarto non ancora iniziato: i giocatori già in campo (fine del quarto
+   // precedente, o quintetto base nel 1° quarto) diventano il quintetto registrato del quarto, senza toccare
+   // il quintetto base della partita. Su un quarto già iniziato o senza nessuno in campo non si registra nulla.
+   async AssegnaQuintettoDaInCampo (teams: boolean[]): Promise<void>
+   {
+      if ((!this.compTimer) || (this.compTimer.IsCurrentQuarterStarted()))
+         return;
+      const quarter = this.compTimer.GetQuarterNumber();
+      for (const isMyTeam of teams)
+      {
+         const team = isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+         const inCampo = (team?.Roster ?? []).filter(p => p.inGioco());
+         if ((!team) || (inCampo.length === 0))
+            continue;
+         team.QuintettoQuarto[quarter - 1] = true;
+         await this.AddQuintettoOperations (inCampo, this.compTimer.GetTimeSeconds(), isMyTeam);
+      }
    }
 
 
@@ -1960,7 +2055,31 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async BtnSostit()
    {
-      if (this.compOppoTeam.isSelected)
+      this.pendingQuintettoTeams = [];
+      this.OpenSostituzioneDialog (!this.compOppoTeam.isSelected, false);
+   }
+
+
+   // Squadre (true = myTeam) per cui aprire in sequenza la dialog Quintetto, dopo "Imposta quintetto"
+   // all'avvio del cronometro (vedi onStartRequested)
+   private pendingQuintettoTeams: boolean[] = [];
+   // true se la dialog va aperta con i giocatori in campo già selezionati (proposta di quintetto)
+   private sostPreselectInGioco: boolean = false;
+
+
+   OpenNextPendingQuintetto (): void
+   {
+      const isMyTeam = this.pendingQuintettoTeams.shift();
+      if (isMyTeam !== undefined)
+         this.OpenSostituzioneDialog (isMyTeam, true);
+   }
+
+
+   OpenSostituzioneDialog (isMyTeam: boolean,
+                           preselectInGioco: boolean): void
+   {
+      this.sostPreselectInGioco = preselectInGioco;
+      if (!isMyTeam)
       {
          const team = matchGlobs.currMatch?.oppTeam();
          this.sostTeamName  = team?.name() ?? '';
@@ -1986,7 +2105,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       if (this.sostituzioneComp)
       {
-         await this.sostituzioneComp.onComponentShow (this.compTimer?.displayTime ?? '');
+         await this.sostituzioneComp.onComponentShow (this.compTimer?.displayTime ?? '', this.sostPreselectInGioco);
       }
    }
 
@@ -2003,6 +2122,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             const selezionati = new Set<TMatchPlayer>(event.quintetto ?? []);
             event.players.forEach(p => p.inQuintetto.set(selezionati.has(p)));
+            await this.SaveQuintettoToDB (event.players);
          }
          // Chi era in campo prima (es. quintetto del quarto precedente) e non fa parte del nuovo quintetto è
          // stato appena messo inGioco=false dalla dialog, ma senza mai passare da AddSostituzioneOperations:
@@ -2029,6 +2149,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       this.RefreshFrozenClock();
       this.UpdateFieldPlayers();
       await this.TeamClicked(this.sostIsMyTeam ? 'compmyteam' : 'compoppoteam');
+      // Dopo "Imposta quintetto" all'avvio: passa alla squadra successiva ancora senza quintetto. Il timeout
+      // lascia chiudere la dialog corrente, così la riapertura rifà onShow (e quindi la preselezione).
+      if (this.pendingQuintettoTeams.length > 0)
+         setTimeout(() => this.OpenNextPendingQuintetto());
    }
 
 
@@ -2119,63 +2243,138 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   // Per ogni quarto lasciato con qualcuno ancora in campo, lo snapshot esatto (chi c'era, il loro
-   // inTime/outTime/currCronotime di quel momento, e quanto è stato aggiunto a tempoGioco/plusMinus dal
-   // consolidamento) — permette di far tornare in campo esattamente le stesse persone, annullando con
-   // precisione quel consolidamento, se si torna su quel quarto in seguito (vedi onQuarterChanged).
-   private quarterOnCourtSnapshots: Record<string, Array<{
-      player: TMatchPlayer, inTime: number, outTime: number, currCronotime: number,
-      tempoGiocoDelta: number, plusMinusDelta: number
-   }>> = {};
+   // Giocatori in campo nell'ultimo momento di ciascun quarto lasciato in questa sessione (chiave = quarto, es.
+   // "1q"/"1et"). Serve solo quando per quel quarto non ci sono operazioni da cui ricostruirlo (vedi LineupForQuarter).
+   private quarterEndLineups: Record<string, TMatchPlayer[]> = {};
+
+
+   // Quarto che precede quello indicato: "2q" -> "1q", "1et" -> ultimo quarto regolare, "2et" -> "1et".
+   // Per il 1° quarto non esiste (null).
+   PrevQuarterKey (quarto: string): string | null
+   {
+      const n = parseInt(quarto, 10);
+      if (quarto.endsWith('et'))
+         return (n > 1) ? `${n - 1}et` : `${globs.MaxRegQuarters}q`;
+      return (n > 1) ? `${n - 1}q` : null;
+   }
+
+
+   // Stessa numerazione di TimerCompComponent.GetQuarterNumber (1..4 regolari, 5..8 supplementari)
+   QuarterKeyToNumber (quarto: string): number
+   {
+      const n = parseInt(quarto, 10);
+      return quarto.endsWith('et') ? globs.MaxRegQuarters + n : n;
+   }
+
+
+   // Ricostruisce chi è in campo nell'ultimo momento registrato di un quarto, rigiocando in ordine le sue
+   // operazioni (già ordinate per tempo): un blocco di "Quintetto" imposta la formazione, ogni "Sostituzione"
+   // toglie player1 e mette player2. I giocatori sono cercati per ID, perché gli oggetti TMatchPlayer vengono
+   // ricreati ad ogni caricamento del roster. null = nessun quintetto registrato per quel quarto.
+   LineupFromOperations (quarterNum: number,
+                         isMyTeam: boolean): TMatchPlayer[] | null
+   {
+      const ops = (matchGlobs.currMatch?.matchOperList()?.items() ?? [])
+         .filter(op => (op.quarter() === quarterNum) && (op.myTeam() === isMyTeam));
+      let ids: Set<number> | null = null;
+      let prevWasQuintetto = false;
+      let prevCounter = -1;
+      for (const op of ops)
+      {
+         const id1 = op.player1()?.playerRecID ?? 0;
+         if (op.oper() === TOperationType.totQuintetto)
+         {
+            // Nuovo blocco di quintetto (es. riassegnato): non contiguo al precedente, o giocatore già presente
+            if ((ids == null) || (!prevWasQuintetto) || (op.counter() !== prevCounter + 1) || (ids.has(id1)))
+               ids = new Set<number>();
+            if (id1 > 0)
+               ids.add(id1);
+            prevWasQuintetto = true;
+         }
+         else
+         {
+            if ((op.oper() === TOperationType.totSostituz) && (ids != null))
+            {
+               ids.delete(id1);
+               const id2 = op.player2()?.playerRecID ?? 0;
+               if (id2 > 0)
+                  ids.add(id2);
+            }
+            prevWasQuintetto = false;
+         }
+         prevCounter = op.counter();
+      }
+      if (ids == null)
+         return null;
+      const team = isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+      const idSet: Set<number> = ids;
+      return (team?.Roster ?? []).filter(p => idSet.has(p.playerRecID));
+   }
+
+
+   // Giocatori da presentare in campo per una squadra selezionando un quarto, cioè la situazione del suo
+   // ultimo momento di gioco:
+   //  1. operazioni del quarto (quintetto + sostituzioni), se ce ne sono: vale per quarti in gioco, terminati,
+   //     o non ancora avviati ma con il quintetto già confermato;
+   //  2. quarto non ancora avviato: il 1° quarto presenta il quintetto base, gli altri i giocatori finali del
+   //     quarto precedente (ricorsivamente con le stesse regole);
+   //  3. quarto avviato senza operazioni: chi c'era quando lo si è lasciato in questa sessione.
+   LineupForQuarter (quarto: string,
+                     isMyTeam: boolean): TMatchPlayer[]
+   {
+      const fromOps = this.LineupFromOperations(this.QuarterKeyToNumber(quarto), isMyTeam);
+      if (fromOps != null)
+         return fromOps;
+      const team = isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+      const started = this.compTimer ? this.compTimer.IsQuarterStarted(quarto) : false;
+      if (!started)
+      {
+         const prev = this.PrevQuarterKey(quarto);
+         if (prev == null)
+            return (team?.Roster ?? []).filter(p => p.inQuintetto());
+         return this.LineupForQuarter(prev, isMyTeam);
+      }
+      return (this.quarterEndLineups[quarto] ?? []).filter(p => p.isMyTeam() === isMyTeam);
+   }
+
+
+   // Mette in campo, per entrambe le squadre, la situazione dell'ultimo momento di gioco del quarto indicato.
+   // Lo stint riparte dal tempo attuale del cronometro di quel quarto: quanto giocato prima è già stato
+   // consolidato in tempoGioco/plusMinus quando il quarto è stato lasciato (vedi onQuarterChanged).
+   ApplyLineupForQuarter (quarto: string): void
+   {
+      const maxTime = quarto.endsWith('et') ? globs.DurationExtraTime : globs.DurationRegulTime;
+      const time = (this.compTimer && (this.compTimer.currQuarter === quarto)) ? this.compTimer.GetTimeSeconds() : maxTime;
+      for (const isMyTeam of [true, false])
+      {
+         const team = isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+         (team?.Roster ?? []).forEach(p => p.inGioco.set(false));
+         this.PutPlayersOnCourt (this.LineupForQuarter(quarto, isMyTeam), time);
+      }
+   }
 
 
    // Un cambio di quarto (SelezionaQuarto nel timer) chiude implicitamente lo stint di chiunque sia ancora in
-   // campo dal quarto abbandonato: va consolidato subito, usando il suo ultimo tempo rimanente ("oldTime" —
-   // NON quello del quarto nuovo, appena resettato al massimo, che darebbe un calcolo completamente sbagliato).
-   // In questo modo, qualunque azione si usi poi (Quintetto/Così in campo/Sostituisci) per impostare i
-   // titolari del quarto nuovo parte già da una situazione pulita, senza giocatori "fantasma" del quarto prima.
-   // Se invece si torna su un quarto già lasciato in precedenza, chi c'era rientra in campo esattamente come
-   // era rimasto (vedi quarterOnCourtSnapshots).
+   // campo dal quarto abbandonato: va consolidato subito, usando il suo ultimo tempo rimanente ("oldTime" -
+   // NON quello del quarto nuovo, che darebbe un calcolo completamente sbagliato). Poi si presenta la
+   // situazione del quarto selezionato (vedi LineupForQuarter).
    onQuarterChanged (event: { oldQuarto: string, oldTime: number, newQuarto: string })
    {
       const onCourt = [
          ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []).filter(p => p.inGioco()),
          ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? []).filter(p => p.inGioco())
       ];
-      if (onCourt.length > 0)
-      {
-         const diff = (matchGlobs.currMatch?.myTeam()?.CalcPunti() ?? 0) - (matchGlobs.currMatch?.oppTeam()?.CalcPunti() ?? 0);
-         this.quarterOnCourtSnapshots[event.oldQuarto] = onCourt.map(p => ({
-            player:           p,
-            inTime:           p.inTime(),
-            outTime:          p.outTime(),
-            currCronotime:    p.currCronotime,
-            tempoGiocoDelta:  p.inTime() - event.oldTime,
-            plusMinusDelta:   diff - p.fPMIn
-         }));
-         this.ConsolidateOutgoingPlayers (onCourt, event.oldTime);
-      }
-      const snapshot = this.quarterOnCourtSnapshots[event.newQuarto];
-      if (snapshot)
-      {
-         for (const s of snapshot)
-         {
-            s.player.tempoGioco.set(s.player.tempoGioco() - s.tempoGiocoDelta);
-            s.player.plusMinus.set(s.player.plusMinus() - s.plusMinusDelta);
-            s.player.inTime.set(s.inTime);
-            s.player.outTime.set(s.outTime);
-            s.player.currCronotime = s.currCronotime;
-            s.player.inGioco.set(true);
-         }
-         delete this.quarterOnCourtSnapshots[event.newQuarto];
-      }
+      this.quarterEndLineups[event.oldQuarto] = [...onCourt];
+      this.ConsolidateOutgoingPlayers (onCourt, event.oldTime);
+      this.ApplyLineupForQuarter (event.newQuarto);
       this.RefreshFrozenClock();
       this.UpdateFieldPlayers();
    }
 
 
    async AddQuintettoOperations (players: TMatchPlayer[],
-                                 time: number): Promise<void>
+                                 time: number,
+                                 isMyTeam: boolean = this.sostIsMyTeam): Promise<void>
    {
       if (!matchGlobs.currMatch)
          return;
@@ -2188,7 +2387,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          player.inTime.set(maxTime);
          player.outTime.set(maxTime);
          player.currCronotime = maxTime;
-         const op = new TOperation(quarter, time, TOperationType.totQuintetto, this.sostIsMyTeam, player);
+         const op = new TOperation(quarter, time, TOperationType.totQuintetto, isMyTeam, player);
          await opList.Add(op);
       }
       this.ScrollOperazioniToBottom();
@@ -2197,6 +2396,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    onSostituzioneAnnulla(): void
    {
+      this.pendingQuintettoTeams = [];
       this.dialogVisible_Sostit = false;
    }
 
@@ -2344,7 +2544,12 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       //
       await this.ClearSelection();
       this.compTimer?.ResetToMatchStart();
+      this.quarterEndLineups = {};
       this.UpdateFieldPlayers();
+      await this.SaveQuintettoToDB ([
+         ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+      ]);
       await this.compMyTeam.Update();
       await this.compOppoTeam.Update();
       await matchGlobs.currSavedMatch.SaveToStorage();

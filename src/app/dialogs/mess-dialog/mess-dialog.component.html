@@ -19,6 +19,13 @@
 
 <div class="p-dialog-footer" style="text-align: end;">
    <p-button
+      *ngIf="data.showThirdButton"
+      label="{{ data.thirdButtonCaption || 'Annulla' }}"
+      styleClass="p-button-sm p-button-secondary p-button-text"
+      (onClick)="onThird()">
+   </p-button>
+
+   <p-button
       *ngIf="data.showCancelButton"
       label="{{ data.cancelButtonCaption || 'Annulla' }}"
       styleClass="p-button-sm p-button-secondary p-button-text"

@@ -288,7 +288,10 @@ export class MainPageComponent implements OnInit, OnDestroy
       }
       //
       if (this.currChamp)
+      {
          await this.LoadPhase (this.currChamp?.id);
+         await this.LoadTeams (this.currChamp?.id);
+      }
       else
       {
          this.listaFasi = [];
@@ -358,11 +361,11 @@ export class MainPageComponent implements OnInit, OnDestroy
          {
             this.listaCampionati = [];
             this.currChamp = null;
-            utils.removeFromSessionStorage("BBS_CurrChamp");
+            utils.removeFromLocalStorage("BBS_CurrChamp");
          }
          else
          {
-            const tmpChamp: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrChamp");
+            const tmpChamp: IDSChamp | null = utils.GetFromLocalStorage<IDSChamp> ("BBS_CurrChamp");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.champService.getAllData (seasonId));
             if ((data) && (data.ok))
@@ -393,11 +396,11 @@ export class MainPageComponent implements OnInit, OnDestroy
          {
             this.listaFasi = [];
             this.currFase = null;
-            utils.removeFromSessionStorage("BBS_CurrPhase");
+            utils.removeFromLocalStorage("BBS_CurrPhase");
          }
          else
          {
-            const tempPhase: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrPhase");
+            const tempPhase: IDSChamp | null = utils.GetFromLocalStorage<IDSChamp> ("BBS_CurrPhase");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.phaseService.getAllData (champId));
             if ((data) && (data.ok))
@@ -428,11 +431,11 @@ export class MainPageComponent implements OnInit, OnDestroy
          {
             this.listaFasi = [];
             this.currFase = null;
-            utils.removeFromSessionStorage("BBS_CurrPhase");
+            utils.removeFromLocalStorage("BBS_CurrPhase");
          }
          else
          {
-            const tempPhase: IDSChamp | null = utils.GetFromSessionStorage<IDSChamp> ("BBS_CurrPhase");
+            const tempPhase: IDSChamp | null = utils.GetFromLocalStorage<IDSChamp> ("BBS_CurrPhase");
             await this.SetLoading (1);
             const data = await firstValueFrom (this.teamService.getAllData (champId));
             if ((data) && (data.ok))
@@ -546,12 +549,14 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       if (this.currChamp != null)
       {
-         utils.SaveToSessionStorage ("BBS_CurrChamp", this.currChamp);
+         utils.SaveToLocalStorage ("BBS_CurrChamp", this.currChamp);
          await this.LoadPhase (this.currChamp.id);
          await this.LoadTeams (this.currChamp.id);
       }
       else
       {
+         utils.removeFromLocalStorage ("BBS_CurrChamp");
+         utils.removeFromLocalStorage ("BBS_CurrPhase");
          this.listaFasi = [];
          this.currFase = null;
          this.listaTeams = [];
@@ -563,11 +568,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    {
       if (this.currFase != null)
       {
-         utils.SaveToSessionStorage ("BBS_CurrPhase", this.currFase);
+         utils.SaveToLocalStorage ("BBS_CurrPhase", this.currFase);
          await this.LoadMatchHeader (this.currFase.id);
       }
       else
       {
+         utils.removeFromLocalStorage ("BBS_CurrPhase");
          this.listaMatch = [];
          this.currMatchHeader = null;
       }

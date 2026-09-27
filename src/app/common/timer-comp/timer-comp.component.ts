@@ -80,6 +80,39 @@ export class TimerCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Quarto selezionato e tempi registrati per quarto: permettono, uscendo e rientrando nella partita, di
+   // riprendere dal quarto in corso invece che dal 1°.
+   private get quarterStateKey (): string
+   {
+      return `countdownQuarterState-${this.instanceId}`;
+   }
+
+
+   private SaveQuarterState (): void
+   {
+      localStorage.setItem (this.quarterStateKey, JSON.stringify ({ currQuarter: this.currQuarter, quarterTimes: this.quarterTimes }));
+   }
+
+
+   private LoadQuarterState (): void
+   {
+      try
+      {
+         const saved = localStorage.getItem (this.quarterStateKey);
+         if (!saved)
+            return;
+         const data = JSON.parse (saved);
+         if (typeof data.currQuarter === 'string')
+            this.currQuarter = data.currQuarter;
+         if ((data.quarterTimes) && (typeof data.quarterTimes === 'object'))
+            this.quarterTimes = data.quarterTimes;
+      }
+      catch
+      {
+      }
+   }
+
+
    ngOnInit (): void
    {
       // Match non ancora iniziato: ignora qualunque stato residuo in localStorage
@@ -89,6 +122,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
          this.ResetToMatchStart ();
          return;
       }
+      this.LoadQuarterState ();
       const savedPausedTime = localStorage.getItem (this.pausedTimeKey);
       const savedStartTime = localStorage.getItem (this.startTimeKey);
 
@@ -96,6 +130,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
       if (savedPausedTime)
       {
          this.totalSeconds = parseInt (savedPausedTime, 10);
+         this.pausedTime = this.totalSeconds;
          this.updateDisplay (this.totalSeconds);
       }
       // Se il timer era in esecuzione prima del refresh, riprende
@@ -168,6 +203,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
          localStorage.setItem (this.pausedTimeKey, this.pausedTime.toString ());
          localStorage.removeItem (this.startTimeKey);
          this.quarterTimes[this.currQuarter] = this.pausedTime;
+         this.SaveQuarterState ();
 
          this.stopped.emit ({id: this.instanceId});
          this.updateDisplay (this.pausedTime);
@@ -362,6 +398,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
          localStorage.setItem (this.pausedTimeKey, this.pausedTime.toString ());
          localStorage.removeItem (this.startTimeKey);
          this.updateDisplay (this.pausedTime);
+         this.SaveQuarterState ();
          this.quarterChanged.emit ({ oldQuarto, oldTime, newQuarto: quarto });
       }
       this.quartiVisible = false;
@@ -376,6 +413,7 @@ export class TimerCompComponent implements OnInit, OnDestroy
       this.quartiVisible = false;
       this.quarterTimes = {};
       this.clearLocalStorage ();
+      localStorage.removeItem (this.quarterStateKey);
       this.totalSeconds = this.GetMaxTimeForQuarter (this.currQuarter);
       this.pausedTime = this.totalSeconds;
       this.updateDisplay (this.totalSeconds);
@@ -398,9 +436,29 @@ export class TimerCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Un quarto è "iniziato" se il suo cronometro è già sceso sotto la durata massima: un quarto solo
+   // selezionato e poi lasciato senza mai avviarlo resta registrato in quarterTimes col tempo pieno.
+   public IsQuarterStarted (quarto: string): boolean
+   {
+      if ((quarto === this.currQuarter) && (this.isRunning))
+         return true;
+      const time = (quarto === this.currQuarter) ? this.pausedTime : this.quarterTimes[quarto];
+      return (time !== undefined) && (time < this.GetMaxTimeForQuarter (quarto));
+   }
+
+
+   // Numero progressivo del quarto (1..4 regolari, 5..8 supplementari), come l'indice 1..8 del Delphi:
+   // "1et" -> 5, non 1 (altrimenti il 1° supplementare verrebbe scambiato per il 1° quarto).
    public GetQuarterNumber(): number
    {
-      return parseInt(this.currQuarter, 10);
+      const n = parseInt(this.currQuarter, 10);
+      return this.currQuarter.endsWith ('et') ? globs.MaxRegQuarters + n : n;
+   }
+
+
+   public IsCurrentQuarterStarted (): boolean
+   {
+      return this.IsQuarterStarted (this.currQuarter);
    }
 
 }

@@ -2120,10 +2120,12 @@ export interface MessDlgData {
    messtype?: 'info' | 'warning' | 'error';
    showCancelButton?: boolean; // New: true to show a second button (e.g., No/Cancel)
    cancelButtonCaption?: string; // New: Caption for the second button
+   showThirdButton?: boolean; // true per mostrare un terzo bottone (a sinistra degli altri), risultato 'third'
+   thirdButtonCaption?: string; // Caption del terzo bottone
 }
 
 // Aggiungiamo un tipo per il risultato del dialogo per maggiore chiarezza
-export type MessDialogResult = boolean | 'primary' | 'secondary' | undefined;
+export type MessDialogResult = boolean | 'primary' | 'secondary' | 'third' | undefined;
 // 'confirm' o true per il bottone principale (OK/Sì)
 // 'cancel' o false per il secondo bottone (Annulla/No)
 // undefined se chiuso dalla 'X' o ESC

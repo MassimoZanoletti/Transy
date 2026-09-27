@@ -64,6 +64,14 @@ export class MessDialogPrimeNgComponent implements OnInit
    }
 
 
+   // Terzo bottone opzionale (showThirdButton)
+   onThird (): void
+   {
+      this.dialogVisible = false;
+      this.ref.close ('third' as MessDialogResult);
+   }
+
+
    // Metodo per gestire la chiusura da pulsante X o ESC
    onHide (): void
    {

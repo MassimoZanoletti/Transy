@@ -57,10 +57,12 @@ export class SostituzioneCompComponent implements OnInit
    }
 
 
-   async onComponentShow(aTempo: string)
+   // aPreselectInGioco: pre-seleziona i giocatori già in campo (proposta di quintetto per il quarto)
+   async onComponentShow(aTempo: string,
+                         aPreselectInGioco: boolean = false)
    {
       this.tempoEdit = aTempo;
-      this.selectedInGioco = [];
+      this.selectedInGioco = aPreselectInGioco ? [...this.playersInGioco] : [];
       this.selectedInPanchina = [];
       this.cdr.detectChanges();
    }
