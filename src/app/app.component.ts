@@ -114,7 +114,6 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          {
             label: "",
             items: [
-               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', routerLink: ['/']},
                {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', routerLink: ['/']}
             ]
          },

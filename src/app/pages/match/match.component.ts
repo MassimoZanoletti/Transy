@@ -300,7 +300,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             label: "",
             items: [
-               {label: "Azzera solo tempi di gioco", icon: 'pi pi-sync', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTempiGioco(); } },
                {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTutto(); } }
             ]
          },
@@ -2787,12 +2786,6 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await this.compOppoTeam?.Update();
       await matchGlobs.currSavedMatch.SaveToStorage();
       this.cdr.detectChanges();
-   }
-
-
-   mnuAzzeraTempiGioco()
-   {
-      this.msgService.add({ severity: 'info', summary: 'Azzera tempi di gioco', detail: 'Non ancora implementato' });
    }
 
 
