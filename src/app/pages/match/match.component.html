@@ -195,6 +195,14 @@
                   (componentClicked)="TeamClicked($event)"
                   [isSelected]="'compmyteam' == currTeam"
                ></app-team-comp>
+               <!-- Punteggi progressivi per quarto (MyTeam sempre per primo), a destra della squadra -->
+               <div class="punteggi-quarti">
+                  <div class="punteggi-quarti-titolo">Progressivi</div>
+                  @for (riga of GetPunteggiQuarti().progressivi; track $index)
+                  {
+                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo">{{riga.diff}}</span></div>
+                  }
+               </div>
             </div>
             <div id="div-gioco-timer"
                  class="div-gioco-timer">
@@ -208,6 +216,14 @@
                   (stopped)="onTimerStopped($event)"
                   (quarterChanged)="onQuarterChanged($event)">
                </app-timer-comp>
+               <!-- Punteggi parziali per quarto (MyTeam sempre per primo), a destra del cronometro -->
+               <div class="punteggi-quarti">
+                  <div class="punteggi-quarti-titolo">Parziali</div>
+                  @for (riga of GetPunteggiQuarti().parziali; track $index)
+                  {
+                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo">{{riga.diff}}</span></div>
+                  }
+               </div>
             </div>
             <div id="div-gioco-oppoteam"
                  class="div-gioco-oppoteam">

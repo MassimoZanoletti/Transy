@@ -95,6 +95,10 @@ import { TOperation, TOperationList, TOperationType } from "../../common/operati
 import { MatchSyncService } from "../../services/match-sync.service";
 
 
+// Riga dei punteggi per quarto (vedi GetPunteggiQuarti)
+type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
+
+
 
 @Component({
   selector:    'app-match',
@@ -2384,6 +2388,34 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    QuarterNumberToKey (num: number): string
    {
       return (num <= globs.MaxRegQuarters) ? `${num}q` : `${num - globs.MaxRegQuarters}et`;
+   }
+
+
+   // Punteggi per quarto, parziali e progressivi, con lo scarto tra parentesi (UpdateParzialiProgressivi del
+   // Delphi): MyTeam sempre per primo, anche in trasferta. Solo i quarti giocati o in gioco: quelli col
+   // cronometro già avviato (stesso criterio dello stato salvato su bbs_quarter) o con punti già segnati.
+   GetPunteggiQuarti (): { parziali: TRigaPunteggio[], progressivi: TRigaPunteggio[] }
+   {
+      const riga = (my: number, opp: number): TRigaPunteggio =>
+         ({ punti: `${my} - ${opp}`, diff: `(${(my - opp > 0) ? '+' : ''}${my - opp})`, positivo: (my - opp > 0) });
+      const myTeam = matchGlobs.currMatch?.myTeam() ?? null;
+      const oppTeam = matchGlobs.currMatch?.oppTeam() ?? null;
+      const result = { parziali: [] as TRigaPunteggio[], progressivi: [] as TRigaPunteggio[] };
+      let myTot = 0;
+      let oppTot = 0;
+      for (let num = 1; num <= globs.MaxRegQuarters + globs.MaxExtraQuarters; num++)
+      {
+         const my = myTeam?.GetQuarto(num - 1)?.punti ?? 0;
+         const opp = oppTeam?.GetQuarto(num - 1)?.punti ?? 0;
+         const iniziato = this.compTimer?.IsQuarterStarted(this.QuarterNumberToKey(num)) ?? false;
+         if ((!iniziato) && (my === 0) && (opp === 0))
+            continue;
+         myTot += my;
+         oppTot += opp;
+         result.parziali.push(riga(my, opp));
+         result.progressivi.push(riga(myTot, oppTot));
+      }
+      return result;
    }
 
 
