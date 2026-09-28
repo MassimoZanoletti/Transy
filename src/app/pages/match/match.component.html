@@ -2,7 +2,7 @@
 
 <p-toast />
 
-<div class="card flex justify-content-left">
+<div class="card flex justify-content-left align-items-center">
    <p-menu
       #menuPartita
       [model]="itemsMenuPartita"
@@ -15,6 +15,8 @@
       label="Gestione partita"
       [style]="{'height': '30px', 'padding-top': '0', 'padding-bottom': '0', 'font-size': '0.85rem'}">
    </p-button>
+   <!-- Stato del salvataggio sul server (coda di MatchSyncService), allineato a destra -->
+   <app-sync-badge class="ml-auto"></app-sync-badge>
 </div>
 
 
@@ -426,27 +428,6 @@
                >
                   <i class="pi pi-flag-fill" style="font-size:60px;"></i>
                </button>
-
-               <!-- Stato del salvataggio remoto (MatchSyncService) -->
-               <div class="sync-badge"
-                    [class.sync-ok]="matchSync.pendingCount() === 0 && !matchSync.lastError()"
-                    [class.sync-pending]="matchSync.pendingCount() > 0 && matchSync.online() && !matchSync.lastError()"
-                    [class.sync-offline]="!matchSync.online()"
-                    [class.sync-error]="matchSync.online() && !!matchSync.lastError()"
-                    [pTooltip]="matchSync.lastError() || (matchSync.online() ? 'Salvataggio sul server' : 'Offline: le azioni sono salvate in locale e verranno inviate al ritorno della connessione')"
-                    (click)="matchSync.ScheduleFlush(0)">
-                  <i class="pi"
-                     [class.pi-cloud]="matchSync.online()"
-                     [class.pi-wifi]="!matchSync.online()"></i>
-                  @if (matchSync.pendingCount() === 0)
-                  {
-                     <span>Salvato</span>
-                  }
-                  @else
-                  {
-                     <span>{{ matchSync.pendingCount() }} da inviare</span>
-                  }
-               </div>
             </div>
 
             <div id="div-gioco-oppofield"

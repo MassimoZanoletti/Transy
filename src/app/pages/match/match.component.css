@@ -361,25 +361,6 @@
 }
 
 
-.sync-badge {
-   width: 120px;
-   margin-top: -30px;
-   padding: 4px 6px;
-   border-radius: 6px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 6px;
-   font-size: 12px;
-   color: #ffffff;
-   cursor: pointer;
-}
-.sync-ok      { background-color: #2e7d32; }
-.sync-pending { background-color: #f9a825; color: #000000; }
-.sync-offline { background-color: #616161; }
-.sync-error   { background-color: #c62828; }
-
-
 .btn-gioco-cmd {
    width: 120px !important;
    height: 120px !important;

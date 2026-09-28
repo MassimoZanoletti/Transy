@@ -55,6 +55,7 @@ import {DialogService,
    DynamicDialogModule,
    DynamicDialogRef} from 'primeng/dynamicdialog';
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
+import {SyncBadgeComponent} from "../../common/sync-badge/sync-badge.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
 import {TeamCompComponent} from "../../common/team-comp/team-comp.component";
 import {BenchCompComponent} from "../../common/bench-comp/bench-comp.component";
@@ -115,6 +116,7 @@ import { MatchSyncService } from "../../services/match-sync.service";
                  DataViewModule,
                  TabViewModule,
                  TimerCompComponent,
+                 SyncBadgeComponent,
                  PlayerCompComponent,
                  TeamCompComponent,
                  BenchCompComponent,

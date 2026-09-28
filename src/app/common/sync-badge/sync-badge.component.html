@@ -1,0 +1,19 @@
+<div class="sync-badge"
+     [class.sync-ok]="matchSync.pendingCount() === 0 && !matchSync.lastError()"
+     [class.sync-pending]="matchSync.pendingCount() > 0 && matchSync.online() && !matchSync.lastError()"
+     [class.sync-offline]="!matchSync.online()"
+     [class.sync-error]="matchSync.online() && !!matchSync.lastError()"
+     [pTooltip]="Tooltip()"
+     tooltipPosition="left">
+   <i class="pi"
+      [class.pi-cloud]="matchSync.online()"
+      [class.pi-wifi]="!matchSync.online()"></i>
+   @if (matchSync.pendingCount() === 0)
+   {
+      <span>Salvato</span>
+   }
+   @else
+   {
+      <span>{{ matchSync.pendingCount() }} da inviare</span>
+   }
+</div>
