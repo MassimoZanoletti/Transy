@@ -193,6 +193,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    private today: Date = new Date();
    private routeSubscription!: Subscription;
+   // Partita per cui è già stata fatta l'inizializzazione (vedi ngAfterViewInit) e coda delle inizializzazioni
+   private initializedMatchId: number = 0;
+   private initChain: Promise<void> = Promise.resolve();
    private dataCompInstances: Map<string, DataCompComponent> = new Map();
    private pointsCompInstances: Map<string, PointsCompComponent> = new Map();
    private myBenchRefs: ComponentRef<BenchCompComponent>[] = [];
@@ -379,59 +382,45 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       matchGlobs.currSavedMatch.compTimer = this.compTimer;
       this.RefreshFrozenClock();
+      // Una sola sottoscrizione (prima era annidata: ogni cambio di URL ne aggiungeva un'altra, e più
+      // InitializeComponent partivano insieme duplicando i giocatori). La partita si (re)inizializza solo
+      // se cambia: il link "MATCH" del menu principale, o lo stesso indirizzo senza id, non ricarica nulla.
       this.routeSubscription = this.route.queryParamMap.subscribe(params =>
-                                                                  {
-                                                                     this.route.queryParamMap.subscribe (params =>
-                                                                                                         {
-                                                                                                            const tmp = params.get ('id');
-                                                                                                            if (tmp)
-                                                                                                            {
-                                                                                                               const nnn: number = Number (tmp);
-                                                                                                               globs.openedMatchHeaderId = nnn;
-                                                                                                               this.matchTitle = String (tmp);
-                                                                                                            }
-                                                                                                            else
-                                                                                                               this.matchTitle = "No match";
-                                                                                                            //
-                                                                                                            const tmpSe = params.get ("seasonid");
-                                                                                                            if (tmpSe)
-                                                                                                            {
-                                                                                                               const nnn: number = Number (tmpSe);
-                                                                                                               this.currSeason = {
-                                                                                                                  id:            nnn,
-                                                                                                                  nome:          "",
-                                                                                                                  abbrev:        "",
-                                                                                                                  tenantid_link: 0
-                                                                                                               }
-                                                                                                            }
-                                                                                                            else
-                                                                                                               this.currSeason = null;
-                                                                                                            //
-                                                                                                            const tmpPh = params.get ("phaseid");
-                                                                                                            if (tmpPh)
-                                                                                                            {
-                                                                                                               const nnn: number = Number (tmpPh);
-                                                                                                               this.currPhase = {
-                                                                                                                  id:           nnn,
-                                                                                                                  nome:         "",
-                                                                                                                  abbrev:       "",
-                                                                                                                  exportfolder: "",
-                                                                                                                  champid_link: 0
-                                                                                                               }
-                                                                                                            }
-                                                                                                            else
-                                                                                                               this.currPhase = null;
-                                                                                                            //
-                                                                                                            if (globs.openedMatchHeaderId > 0)
-                                                                                                            {
-                                                                                                               this.InitializeComponent ();
-                                                                                                            }
-                                                                                                         });
-                                                                  });
+      {
+         const tmp = params.get ('id');
+         if (tmp)
+         {
+            globs.openedMatchHeaderId = Number (tmp);
+            this.matchTitle = String (tmp);
+            //
+            const tmpSe = params.get ("seasonid");
+            this.currSeason = tmpSe ? { id: Number (tmpSe), nome: "", abbrev: "", tenantid_link: 0 } : null;
+            //
+            const tmpPh = params.get ("phaseid");
+            this.currPhase = tmpPh ? { id: Number (tmpPh), nome: "", abbrev: "", exportfolder: "", champid_link: 0 } : null;
+         }
+         else if (this.initializedMatchId === 0)
+            this.matchTitle = "No match";
+         //
+         if ((globs.openedMatchHeaderId > 0) && (globs.openedMatchHeaderId !== this.initializedMatchId))
+         {
+            this.initializedMatchId = globs.openedMatchHeaderId;
+            this.InitializeComponent ();
+         }
+      });
    }
 
 
-   async InitializeComponent()
+   // Una inizializzazione alla volta: una seconda chiamata (es. salvataggio intestazione/roster mentre la
+   // prima è ancora in corso) aspetta la fine della precedente, invece di ricostruire il roster in parallelo
+   InitializeComponent (): Promise<void>
+   {
+      this.initChain = this.initChain.then(() => this.DoInitializeComponent(), () => this.DoInitializeComponent());
+      return this.initChain;
+   }
+
+
+   private async DoInitializeComponent()
    {
       /*
       if (matchGlobs.currMatch == null)
