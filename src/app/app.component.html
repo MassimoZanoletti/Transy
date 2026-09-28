@@ -1,8 +1,10 @@
 <p-toast key="sync" position="bottom-right" />
 <div class="app-container">
-   <p-toolbar styleClass="p-mb-4">
+   <!-- header compatto (~50px): sul monitor del notebook lo spazio verticale è poco -->
+   <p-toolbar styleClass="p-mb-4"
+              [style]="{'padding': '4px 12px'}">
       <div class="p-toolbar-group-left">
-         <img src="assets/Transy-ico.png" alt="Transy" style="max-width: 64px; max-height: 64px; margin-right: 8px; vertical-align: middle;" />
+         <img src="assets/Transy-ico.png" alt="Transy" style="max-width: 40px; max-height: 40px; margin-right: 8px; vertical-align: middle;" />
          <span class="p-toolbar-text p-mr-3"
                style="font-size: 1.5em; font-weight: bold;">TRANSY</span>
          <ng-container *ngIf="authService.isAuthenticated()">
@@ -61,10 +63,11 @@
       </div>
       <ng-container *ngIf="authService.isAuthenticated()">
          <div class="p-toolbar-group-right">
-            <p style="margin-right: 15px;">Utente: {{loggedUser.nome}} ({{loggedUser.ruolo}}) </p>
+            <p style="margin: 0 15px 0 0;">Utente:{{loggedUser.nome}} ({{loggedUser.ruolo}}) </p>
             <button pButton
                     label="Logout"
                     icon="pi pi-sign-out"
+                    style="height: 32px; padding-top: 0; padding-bottom: 0;"
                     (click)="logout()"
                     [raised]="true">
             </button>

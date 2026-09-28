@@ -3,7 +3,9 @@
    border: #ffffff solid 1px;
    margin: 0px;
    padding: 2px;
-   width: 80px;
+   /* larghezza della colonna della panchina (max 80px): si restringe se compare la scrollbar verticale */
+   width: 100%;
+   max-width: 80px;
    height: 77px;
    box-sizing: border-box;
    font-size: 14px;

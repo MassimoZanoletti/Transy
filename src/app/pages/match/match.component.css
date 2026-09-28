@@ -401,6 +401,18 @@
    justify-content: center;
 }
 
+/* Undo più piccolo e centrato: meno facile da premere per sbaglio */
+.btn-gioco-undo {
+   width: 70px !important;
+   height: 70px !important;
+   align-self: center;
+}
+
+/* Checkpoint usato di rado: solo una barra bassa, larga come gli altri comandi */
+.btn-gioco-checkpoint {
+   height: 40px !important;
+}
+
 
 
 
@@ -451,10 +463,11 @@
    width: 485px !important;
 }
 
+/* Sempre 6 giocatori per riga (CreateBenchComponents ne mette al massimo 6 per riga): colonne uguali che si
+   restringono di poco quando compare la scrollbar verticale, invece di mandare a capo il sesto giocatore */
 .div-gioco-mybench-row {
    background-color: #880000;
-   display: flex !important;
-   flex-direction: row !important;
-   flex-wrap: wrap !important;
+   display: grid !important;
+   grid-template-columns: repeat(6, minmax(0, 80px));
    /*width: 100% !important;*/
 }

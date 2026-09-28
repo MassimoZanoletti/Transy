@@ -430,19 +430,19 @@
                <button pButton
                        id="btn-undo"
                        pTooltip="Undo"
-                       class="btn-gioco-cmd p-button p-button-primary"
+                       class="btn-gioco-cmd btn-gioco-undo p-button p-button-primary"
                        (click)="BtnUndoClick()"
                >
-                  <img src="assets/command-undo.png" style="width:110px;height:110px;" alt="UNDO"/>
+                  <img src="assets/command-undo.png" style="width:60px;height:60px;" alt="UNDO"/>
                </button>
 
                <button pButton
                        id="btn-checkpoint"
                        pTooltip="Checkpoint"
-                       class="btn-gioco-cmd p-button p-button-primary"
+                       class="btn-gioco-cmd btn-gioco-checkpoint p-button p-button-primary"
                        (click)="BtnCheckPointClick()"
                >
-                  <i class="pi pi-flag-fill" style="font-size:60px;"></i>
+                  <i class="pi pi-flag-fill" style="font-size:24px;"></i>
                </button>
             </div>
 
@@ -541,7 +541,7 @@
             </div>
             <div id="div-gioco-oppobench"
                  class="div-gioco-oppobench">
-               <div id="div-gioco-mybench1"
+               <div id="div-gioco-oppobench1"
                     class="div-gioco-mybench-row">
                   <ng-container #oppobench1></ng-container>
                </div>

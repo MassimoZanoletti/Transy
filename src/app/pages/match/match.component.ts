@@ -1062,7 +1062,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                stop = 6;
             for (let iii=start;   iii<stop;   iii++)
             {
-               const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
+               const benchRef = this.contOppoBench1.createComponent(BenchCompComponent);
                benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
                benchRef.instance.player = ot.Roster[iii];
                benchRef.instance.getCurrentTime = this.GetCurrClock;
@@ -1079,7 +1079,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   stop = 12;
                for (let iii=start;   iii<stop;   iii++)
                {
-                  const benchRef = this.contOppoBench3.createComponent(BenchCompComponent);
+                  const benchRef = this.contOppoBench2.createComponent(BenchCompComponent);
                   benchRef.instance.componentId = ot.Roster[iii].playerRecID.toString();
                   benchRef.instance.player = ot.Roster[iii];
                   benchRef.instance.getCurrentTime = this.GetCurrClock;
