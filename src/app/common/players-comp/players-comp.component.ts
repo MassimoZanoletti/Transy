@@ -22,6 +22,7 @@ import {DividerModule} from 'primeng/divider';
 import {PlayerService} from "../../services/player.service";
 import {TeamService} from "../../services/team.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
+import {MatchSyncService} from "../../services/match-sync.service";
 import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
 import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.component";
@@ -70,7 +71,8 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
    constructor(private cdr: ChangeDetectorRef,
                private servPlayer: PlayerService,
                private servTeam: TeamService,
-               private messageDialogService: MessageDialogService)
+               private messageDialogService: MessageDialogService,
+               private matchSync: MatchSyncService)
    {
 
    }
@@ -202,30 +204,18 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
       this.dialogVisible_PlayerEdit = false;
       //
 
-      const response = await firstValueFrom (this.servPlayer.addNewData ("", "",   // non usati
-                                                                         newPlayer.nomedisp,
-                                                                         newPlayer.anno,
-                                                                         newPlayer.ruolo,
-                                                                         newPlayer.numero,
-                                                                         newPlayer.altezza,
-                                                                         "", // foto: non usata
-                                                                         this.teamId));
-      if (response.ok)
-      {
-         //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
-         await this.LoadTabellaPlayer ();
-      }
-      else
-      {
-         const dlgData: MessDlgData = {
-            title:      'ERRORE',
-            subtitle:   "Errore nella modifica dei dati",
-            message:    `${response.message}`,
-            messtype:   'error',
-            btncaption: 'Chiudi'
-         };
-         this.messageDialogService.showMessage (dlgData, '600px');
-      }
+      // In coda con id provvisorio (anche senza rete, es. in palestra): l'elenco lo mostra subito e la
+      // creazione sul server avviene appena possibile; gli eventuali rifiuti sono segnalati da AppComponent
+      await this.matchSync.EnqueueWrite ('createplayer', this.matchSync.NewTempId(), {
+         nomedisp:    newPlayer.nomedisp,
+         anno:        newPlayer.anno,
+         ruolo:       newPlayer.ruolo,
+         numero:      newPlayer.numero,
+         altezza:     newPlayer.altezza,
+         teamid_link: this.teamId
+      }, 0);
+      await this.matchSync.WaitForWrites ();
+      await this.LoadTabellaPlayer ();
       this.cdr.detectChanges ();
    }
 

@@ -36,6 +36,7 @@ import {TeamService} from "../../services/team.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {MatchrosterService} from "../../services/matchroster.service";
 import {MatchheaderService} from "../../services/matchheader.service";
+import {MatchSyncService} from "../../services/match-sync.service";
 import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
 import {CellEditor} from "primeng/table";
@@ -101,6 +102,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
    public myViceValue: any;
    public oppoHeadCoachValue: any;
    public oppoViceValue: any;
+   private nuoviGiocatori: number = 0;
 
    constructor(private cdr: ChangeDetectorRef,
                private servMatchRoster: MatchrosterService,
@@ -108,7 +110,8 @@ export class RosterCompComponent implements OnInit, OnDestroy
                private servPlayer: PlayerService,
                private servTeam: TeamService,
                private servCoach: CoachService,
-               private messageDialogService: MessageDialogService)
+               private messageDialogService: MessageDialogService,
+               private matchSync: MatchSyncService)
    {
 
    }
@@ -189,78 +192,43 @@ export class RosterCompComponent implements OnInit, OnDestroy
       for (let iii=0;   iii<this.listaOppoRoster.length;   iii++)
          this.listaRoster.push(this.listaOppoRoster[iii]);
       //
-      try
-      {
-         await firstValueFrom (this.servMatchRoster.DeleteAllMatchRoster(this.matchHeader.id));
-      }
-      catch (err)
-      {
-      }
-      for (let iii=0;   iii<this.listaRoster.length;   iii++)
-      {
-         const strJson = JSON.stringify(this.servMatchRoster.MatchRosterToDb(this.listaRoster[iii]));
-         await firstValueFrom (this.servMatchRoster.addNewData(strJson));
-      }
-      //
-      if (typeof this.myHeadCoachValue == 'string')
-      {
-         const rrr = await firstValueFrom (this.servCoach.AddOrEdit(this.myHeadCoachValue, this.matchHeader.myTeamId_link));
-         if ((rrr) && (rrr.ok == true))
-         {
-            this.matchHeader.myCoach1Id_link = rrr.elements.id;
-         }
-      }
-      else
-      {
-         this.matchHeader.myCoach1Id_link = this.myHeadCoachValue.id;
-      }
-      if (typeof this.myViceValue == 'string')
-      {
-         const rrr = await firstValueFrom (this.servCoach.AddOrEdit(this.myViceValue, this.matchHeader.myTeamId_link));
-         if ((rrr) && (rrr.ok == true))
-         {
-            this.matchHeader.myCoach2Id_link = rrr.elements.id;
-         }
-      }
-      else
-      {
-         this.matchHeader.myCoach2Id_link = this.myViceValue.id;
-      }
-      //
+      // Tutto passa dalla coda (il roster degli avversari si inserisce in palestra, spesso senza rete):
+      // allenatori nuovi con id provvisorio, poi il roster completo; l'intestazione con gli allenatori la
+      // salva chi riceve salvaMatchRoster
+      this.matchHeader.myCoach1Id_link = await this.CoachId(this.myHeadCoachValue, this.matchHeader.myTeamId_link, this.matchHeader.myCoach1Id_link);
+      this.matchHeader.myCoach2Id_link = await this.CoachId(this.myViceValue, this.matchHeader.myTeamId_link, this.matchHeader.myCoach2Id_link);
       if (this.oppoHeadCoachValue != undefined)
-      {
-         if (typeof this.oppoHeadCoachValue == 'string')
-         {
-            const rrr = await firstValueFrom (this.servCoach.AddOrEdit (this.oppoHeadCoachValue, this.matchHeader.oppoTeamId_link));
-            if ((rrr) && (rrr.ok == true))
-            {
-               this.matchHeader.oppoCoach1Id_link = rrr.elements.id;
-            }
-         }
-         else
-         {
-            this.matchHeader.oppoCoach1Id_link = this.oppoHeadCoachValue.id;
-         }
-      }
+         this.matchHeader.oppoCoach1Id_link = await this.CoachId(this.oppoHeadCoachValue, this.matchHeader.oppoTeamId_link, this.matchHeader.oppoCoach1Id_link);
       if (this.oppoViceValue != undefined)
-      {
-         if (typeof this.oppoViceValue == 'string')
-         {
-            const rrr = await firstValueFrom (this.servCoach.AddOrEdit (this.oppoViceValue, this.matchHeader.oppoTeamId_link));
-            if ((rrr) && (rrr.ok == true))
-            {
-               this.matchHeader.oppoCoach2Id_link = rrr.elements.id;
-            }
-         }
-         else
-         {
-            this.matchHeader.oppoCoach2Id_link = this.oppoViceValue.id;
-         }
-      }
+         this.matchHeader.oppoCoach2Id_link = await this.CoachId(this.oppoViceValue, this.matchHeader.oppoTeamId_link, this.matchHeader.oppoCoach2Id_link);
+      //
+      const rows = this.listaRoster.map(r => ({ ...this.servMatchRoster.MatchRosterToDb(r), playername_lk: r.playerName_lk }));
+      await this.matchSync.EnqueueWrite ('roster', this.matchHeader.id, { rows }, this.matchHeader.id);
       //
       //await firstValueFrom (this.servMatchHeader.updateData(this.matchHeader.id, JSON.stringify(this.matchHeader, null, -1)));
       //
       this.salvaMatchRoster.emit([this.listaRoster, this.matchHeader]);
+   }
+
+
+   // Allenatore scelto nel dropdown (oggetto esistente) o digitato (stringa): un nome nuovo diventa un
+   // allenatore con id provvisorio, creato sul server dalla coda (addoredit: se esiste già, lo riusa)
+   private async CoachId (value: any,
+                          teamId: number,
+                          currentId: number): Promise<number>
+   {
+      if (typeof value == 'string')
+      {
+         const nome = value.trim();
+         if (nome === '')
+            return 0;
+         const tempId = this.matchSync.NewTempId();
+         await this.matchSync.EnqueueWrite ('createcoach', tempId, { nome, teamid_link: teamId }, this.matchHeader.id);
+         return tempId;
+      }
+      if (value === null)
+         return 0;
+      return (value?.id != null) ? Number(value.id) : currentId;
    }
 
 
@@ -461,7 +429,8 @@ export class RosterCompComponent implements OnInit, OnDestroy
       for (let iii=0;   iii<giocatori.length;   iii++)
       {
          let newPl: TDSMatchRoster = CreateEmptyMatchRoster();
-         newPl.id = 1000000+giocatori[iii].id;
+         // giocatori creati localmente e non ancora sul server hanno un id provvisorio negativo
+         newPl.id = (giocatori[iii].id > 0) ? 1000000+giocatori[iii].id : 2000000000 + (this.nuoviGiocatori++);
          newPl.playerId_link = giocatori[iii].id;
          newPl.playerName_lk = giocatori[iii].nomedisp;
          newPl.playNumber = giocatori[iii].numero;
@@ -780,50 +749,35 @@ export class RosterCompComponent implements OnInit, OnDestroy
       if (this.dialogVisible_PlayerEdit == 2)
          teamId = this.matchHeader.oppoTeamId_link;
       //
-      const response = await firstValueFrom (this.servPlayer.addNewData ("", "",   // non usati
-                                                                         newPlayer.nomedisp,
-                                                                         newPlayer.anno,
-                                                                         newPlayer.ruolo,
-                                                                         newPlayer.numero,
-                                                                         newPlayer.altezza,
-                                                                         "", // foto: non usata
-                                                                         teamId));
-      if (response.ok)
+      // Il giocatore nuovo (tipicamente un avversario, inserito in palestra) riceve subito un id provvisorio e
+      // viene creato sul server dalla coda: da quel momento l'id reale sostituisce il provvisorio ovunque
+      // (roster, eventi). Prima si usava newPlayer.id, sempre 0 perché api_player "add" non restituisce l'id.
+      const tempId = this.matchSync.NewTempId();
+      await this.matchSync.EnqueueWrite ('createplayer', tempId, {
+         nomedisp:    newPlayer.nomedisp,
+         anno:        newPlayer.anno,
+         ruolo:       newPlayer.ruolo,
+         numero:      newPlayer.numero,
+         altezza:     newPlayer.altezza,
+         teamid_link: teamId
+      }, this.matchHeader.id);
+      if ((this.dialogVisible_PlayerEdit == 1) || (this.dialogVisible_PlayerEdit == 2))
       {
-         //await this.logService.AddToLog (loggedUser, `Aggiunto Nuovo Player `);
-         if (this.dialogVisible_PlayerEdit == 1)
-         {
-            let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();
-            newRoster.id = 1000000+newPlayer.id;
-            newRoster.playerId_link = newPlayer.id;
-            newRoster.playerName_lk = newPlayer.nomedisp;
-            newRoster.playNumber = newPlayer.numero;
-            newRoster.isMyTeam = true;
-            newRoster.matchHeaderId_link = this.matchHeader.id;
+         let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();
+         // id della riga solo locale (il server lo riassegna salvando il roster), positivo e distinto da
+         // quelli dei giocatori scelti dall'elenco (1000000 + id giocatore)
+         newRoster.id = 2000000000 + (this.nuoviGiocatori++);
+         newRoster.playerId_link = tempId;
+         newRoster.playerName_lk = newPlayer.nomedisp;
+         newRoster.playNumber = newPlayer.numero;
+         newRoster.isMyTeam = (this.dialogVisible_PlayerEdit == 1);
+         newRoster.matchHeaderId_link = this.matchHeader.id;
+         newRoster.dbgPlayer = newPlayer.nomedisp;
+         newRoster.dbgMatch = this.matchHeader.title;
+         if (newRoster.isMyTeam)
             this.listaMyRoster.push (newRoster);
-         }
-         if (this.dialogVisible_PlayerEdit == 2)
-         {
-            let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();
-            newRoster.id = 1000000+newPlayer.id;
-            newRoster.playerId_link = newPlayer.id;
-            newRoster.playerName_lk = newPlayer.nomedisp;
-            newRoster.playNumber = newPlayer.numero;
-            newRoster.isMyTeam = false;
-            newRoster.matchHeaderId_link = this.matchHeader.id;
+         else
             this.listaOppoRoster.push (newRoster);
-         }
-      }
-      else
-      {
-         const dlgData: MessDlgData = {
-            title:      'ERRORE',
-            subtitle:   "Errore nella modifica dei dati",
-            message:    `${response.message}`,
-            messtype:   'error',
-            btncaption: 'Chiudi'
-         };
-         this.messageDialogService.showMessage (dlgData, '600px');
       }
       //
       this.dialogVisible_PlayerEdit = 0;

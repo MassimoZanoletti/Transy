@@ -68,6 +68,7 @@ import {DataView} from "primeng/dataview";
 import { MatchheaderCompComponent } from "../../common/matchheader-comp/matchheader-comp.component";
 import { PlayersCompComponent } from "../../common/players-comp/players-comp.component";
 import { RosterCompComponent } from "../../common/roster-comp/roster-comp.component";
+import { MatchSyncService } from "../../services/match-sync.service";
 
 
 
@@ -182,7 +183,8 @@ export class MainPageComponent implements OnInit, OnDestroy
                 public fltrDialogService: DialogService,
                 public fltrMessageService: MessageService,
                 private logService: LogService,
-                private teamService: TeamService)
+                private teamService: TeamService,
+                private matchSync: MatchSyncService)
    {
       //
    }
@@ -1003,7 +1005,25 @@ export class MainPageComponent implements OnInit, OnDestroy
          if (this.currMatchHeader)
          {
             const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
-            let rrr = await firstValueFrom (this.matchHeaderServ.addNewData(dataForDb));
+            // una nuova partita ha bisogno dell'id assegnato dal server: non può passare dalla coda
+            try
+            {
+               const rrr: any = await firstValueFrom (this.matchHeaderServ.addNewData(dataForDb));
+               if (rrr?.ok === false)
+                  throw new Error (rrr.message);
+            }
+            catch (err: any)
+            {
+               this.messageDialogService.showMessage ({
+                  title:      'ERRORE',
+                  subtitle:   'Nuova partita non salvata',
+                  message:    `Per creare una partita serve la connessione al server.
+${err?.message ?? ''}`,
+                  messtype:   'error',
+                  btncaption: 'Chiudi'
+               }, '600px');
+               return;
+            }
             if ((this.currSeason) && (this.currChamp) && (this.currFase))
             {
                await this.LoadChamp (this.currSeason.id);
@@ -1018,8 +1038,10 @@ export class MainPageComponent implements OnInit, OnDestroy
          this.currMatchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
          if (this.currMatchHeader)
          {
-            const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
-            let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.currMatchHeader.id, dataForDb));
+            // in coda: salvata anche senza connessione, e la rilettura vede comunque la modifica
+            await this.matchSync.EnqueueWrite ('matchheader', this.currMatchHeader.id,
+                                               this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), this.currMatchHeader.id);
+            await this.matchSync.WaitForWrites ();
             if ((this.currSeason) && (this.currChamp) && (this.currFase))
             {
                await this.LoadChamp (this.currSeason.id);
@@ -1073,8 +1095,9 @@ export class MainPageComponent implements OnInit, OnDestroy
       if ((this.currMatchHeader) && (this.currMatchHeader.matchStatus != this.diagMatchStatus_Status.code))
       {
          this.currMatchHeader.matchStatus = this.diagMatchStatus_Status.code;
-         const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), null, -1);
-         let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.currMatchHeader.id, dataForDb));
+         await this.matchSync.EnqueueWrite ('matchheader', this.currMatchHeader.id,
+                                            this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), this.currMatchHeader.id);
+         await this.matchSync.WaitForWrites ();
          if ((this.currSeason) && (this.currChamp) && (this.currFase))
          {
             await this.LoadChamp (this.currSeason.id);
@@ -1110,8 +1133,9 @@ export class MainPageComponent implements OnInit, OnDestroy
          this.selectedMatchHeader.myCoach2Id_link = Number(mH.myCoach2Id_link);
          this.selectedMatchHeader.oppoCoach1Id_link = Number(mH.oppoCoach1Id_link);
          this.selectedMatchHeader.oppoCoach2Id_link = Number(mH.oppoCoach2Id_link);
-         const dataForDb: string = JSON.stringify (this.matchHeaderServ.MatchHeaderToDb (this.selectedMatchHeader), null, -1);
-         let rrr = await firstValueFrom (this.matchHeaderServ.updateData (this.selectedMatchHeader.id, dataForDb));
+         await this.matchSync.EnqueueWrite ('matchheader', this.selectedMatchHeader.id,
+                                            this.matchHeaderServ.MatchHeaderToDb (this.selectedMatchHeader), this.selectedMatchHeader.id);
+         await this.matchSync.WaitForWrites ();
          if ((this.currSeason) && (this.currChamp) && (this.currFase))
          {
             await this.LoadChamp (this.currSeason.id);

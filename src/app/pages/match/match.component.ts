@@ -825,28 +825,34 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   // Salva su matchroster il flag "quintetto" dei giocatori indicati, aggiornando solo i record cambiati
+   // Salva su matchroster il flag "quintetto" dei giocatori indicati
    // (listaRosterCasa/listaRosterFuori contengono i record completi letti da DB).
    async SaveQuintettoToDB (players: TMatchPlayer[]): Promise<void>
    {
       const byId = new Map(players.map(p => [p.playerRecID, p]));
-      try
+      let changed = false;
+      for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
       {
-         for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
-         {
-            const plr = byId.get(entry.playerId_link);
-            if ((!plr) || (entry.quintetto === plr.inQuintetto()))
-               continue;
-            entry.quintetto = plr.inQuintetto();
-            const strJson = JSON.stringify(this.servMatchRoster.MatchRosterToDb(entry));
-            await firstValueFrom (this.servMatchRoster.updateData (entry.id, strJson));
-         }
+         const plr = byId.get(entry.playerId_link);
+         if ((!plr) || (entry.quintetto === plr.inQuintetto()))
+            continue;
+         entry.quintetto = plr.inQuintetto();
+         changed = true;
       }
-      catch (err)
-      {
-         console.error('Errore nel salvataggio del quintetto:', err);
-         this.msgService.add({ severity: 'error', summary: 'Quintetto', detail: 'Salvataggio non riuscito' });
-      }
+      if (changed)
+         await this.EnqueueRosterSnapshot();
+   }
+
+
+   // Il roster si salva sempre per intero (sul server viene cancellato e reinserito): gli id delle righe
+   // cambiano ad ogni salvataggio e, se il roster è stato inserito offline, non esistono ancora sul server,
+   // quindi non si possono aggiornare le singole righe. In coda resta solo l'ultimo roster della partita;
+   // gli eventuali rifiuti del server sono segnalati da AppComponent.
+   private async EnqueueRosterSnapshot (): Promise<void>
+   {
+      const rows = [...this.listaRosterCasa, ...this.listaRosterFuori].map(r =>
+         ({ ...this.servMatchRoster.MatchRosterToDb(r), playername_lk: r.playerName_lk }));
+      await this.matchSync.EnqueueWrite ('roster', this.matchHeader.id, { rows }, this.matchHeader.id);
    }
 
 
@@ -1206,12 +1212,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       globs.openedMatchHeaderId = this.matchHeader.id;
       if (this.matchHeader)
       {
-         const dataForDb: string = JSON.stringify (this.servMatchHeader.MatchHeaderToDb (this.matchHeader), null, -1);
-         let rrr = await firstValueFrom (this.servMatchHeader.updateData (this.matchHeader.id, dataForDb));
-         if (rrr)
-         {
-            await this.InitializeComponent();
-         }
+         // in coda: salvata anche senza connessione, e la rilettura vede comunque la modifica
+         await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
+                                            this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
+         await this.matchSync.WaitForWrites ();
+         await this.InitializeComponent();
       }
    }
 
@@ -1295,8 +1300,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          this.matchHeader.myCoach2Id_link = Number(mH.myCoach2Id_link);
          this.matchHeader.oppoCoach1Id_link = Number(mH.oppoCoach1Id_link);
          this.matchHeader.oppoCoach2Id_link = Number(mH.oppoCoach2Id_link);
-         const dataForDb: string = JSON.stringify (this.servMatchHeader.MatchHeaderToDb (this.matchHeader), null, -1);
-         let rrr = await firstValueFrom (this.servMatchHeader.updateData (this.matchHeader.id, dataForDb));
+         await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
+                                            this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
+         await this.matchSync.WaitForWrites ();
          if (this.currSeason)
          {
             await this.InitializeComponent();
@@ -2741,31 +2747,17 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
          ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
       ].map(p => [p.playerRecID, p]));
-      let errori = 0;
+      let changed = false;
       for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
       {
          const plr = byId.get(entry.playerId_link);
          if ((!plr) || (plr.playNumber() === entry.playNumber))
             continue;
-         const vecchio = entry.playNumber;
          entry.playNumber = plr.playNumber();
-         try
-         {
-            const strJson = JSON.stringify(this.servMatchRoster.MatchRosterToDb(entry));
-            const rrr: any = await firstValueFrom (this.servMatchRoster.updateData (entry.id, strJson));
-            if (rrr && (rrr.ok === false))
-               throw new Error(rrr.message);
-         }
-         catch (err)
-         {
-            console.error('Errore nel salvataggio del numero di maglia:', err);
-            entry.playNumber = vecchio;
-            errori++;
-         }
+         changed = true;
       }
-      if (errori > 0)
-         this.msgService.add({ severity: 'error', summary: 'Numeri di maglia',
-                               detail: `${errori} numeri non salvati sul server: ricaricando la partita tornerebbero quelli precedenti` });
+      if (changed)
+         await this.EnqueueRosterSnapshot();
    }
 
 

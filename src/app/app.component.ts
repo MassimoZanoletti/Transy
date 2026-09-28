@@ -25,7 +25,9 @@ import {
    CommonModule,
    NgIf
 } from '@angular/common';
-import {MenuItem, PrimeIcons } from 'primeng/api';
+import {MenuItem, MessageService, PrimeIcons } from 'primeng/api';
+import {ToastModule} from 'primeng/toast';
+import {MatchSyncService} from './services/match-sync.service';
 import {MenuModule} from 'primeng/menu';
 import {Menu} from 'primeng/menu';
 import { PrimeNGConfig } from 'primeng/api';
@@ -57,8 +59,11 @@ import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
                   CommonModule,
                   TimerCompComponent,
                   PlayerCompComponent,
-                  TeamCompComponent
+                  TeamCompComponent,
+                  ToastModule
                ],
+               // MessageService proprio: solo per gli avvisi globali (toast "sync"), le pagine hanno il loro
+               providers:       [MessageService],
                templateUrl:     './app.component.html',
                styleUrl:        './app.component.css',
                changeDetection: ChangeDetectionStrategy.OnPush
@@ -86,7 +91,9 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
                 private cdr: ChangeDetectorRef,
                 private primengConfig: PrimeNGConfig,
                 private logService: LogService,
-                private swUpdate: SwUpdate)
+                private swUpdate: SwUpdate,
+                private matchSync: MatchSyncService,
+                private msgService: MessageService)
    {
       if (utils.IsDevMode == null)
          utils.IsDevMode = isDevMode();
@@ -174,6 +181,10 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    {
       window.addEventListener('beforeunload', this.beforeUnloadHandler);
       this.InitServiceWorkerUpdates ();
+      // Modifiche (intestazione, roster, nomi) rifiutate dal server all'invio dalla coda: possono arrivare
+      // in qualunque momento e su qualunque pagina, quindi l'avviso è qui
+      this.swSubs.push (this.matchSync.writeRejected.subscribe (msg =>
+         this.msgService.add ({ key: 'sync', severity: 'error', summary: 'Salvataggio non riuscito', detail: msg, sticky: true })));
       //
       this.router.events
          .pipe(

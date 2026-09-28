@@ -1,6 +1,7 @@
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, catchError, switchMap} from 'rxjs';
+import {MatchSyncService} from './match-sync.service';
 import {
    TDSMatchRosterDb,
    TDSMatchRoster,
@@ -20,10 +21,40 @@ import { utils,
 export class MatchrosterService
 {
    private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_matchroster.php';
+   // inject() e non parametro del costruttore: MatchSyncService a sua volta usa questo service
+   private matchSync = inject(MatchSyncService);
 
 
    constructor (private http: HttpClient)
    {
+   }
+
+
+   // Le modifiche ancora in coda (es. fatte offline) prevalgono su quanto letto dal server/cache: roster
+   // completo della partita (se ne è stato salvato uno) e nome visualizzato dei giocatori
+   // (playername_lk = player.nomedisp)
+   private async WithPendingWrites<T> (data: T,
+                                       matchHeaderId: number | null = null): Promise<T>
+   {
+      const resp: any = data;
+      if (!resp || !resp.elements)
+         return data;
+      const overlay = async (rows: any[]) =>
+      {
+         const pendingRoster = (matchHeaderId != null) ? await this.matchSync.PendingRoster(matchHeaderId) : undefined;
+         const res = [...(pendingRoster ?? rows)];
+         for (let i = 0; i < res.length; i++)
+         {
+            const nome = await this.matchSync.PendingPlayerName(Number(res[i].playerid_link));
+            if (nome !== undefined)
+               res[i] = { ...res[i], playername_lk: nome };
+         }
+         return res;
+      };
+      if (Array.isArray(resp.elements))
+         return { ...resp, elements: await overlay(resp.elements) } as T;
+      const [row] = await overlay([resp.elements]);
+      return { ...resp, elements: row } as T;
    }
 
 
@@ -35,6 +66,15 @@ export class MatchrosterService
          qryTenant = `&match=${matchHeaderId}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
       return this.http.get<TDSMatchRosterData>(url).pipe (
+         // offline, senza copia in cache (es. partita mai aperta prima): basta il roster salvato in coda
+         catchError (async err =>
+         {
+            const pending = (matchHeaderId != null) ? await this.matchSync.PendingRoster(matchHeaderId) : undefined;
+            if (!pending)
+               throw err;
+            return { ok: true, message: '', elements: [] } as any as TDSMatchRosterData;
+         }),
+         switchMap (resp => this.WithPendingWrites (resp, matchHeaderId)),
          tap (value => {  }),
          map ((dataFromDb) => {
                  return {
@@ -57,7 +97,7 @@ export class MatchrosterService
    {
       const operation: string = "single";
       const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}`;
-      return this.http.get<any> (url);
+      return this.http.get<any> (url).pipe (switchMap (resp => this.WithPendingWrites (resp)));
    }
 
 

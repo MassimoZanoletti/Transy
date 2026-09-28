@@ -1,11 +1,12 @@
 import {map} from 'rxjs/operators';
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, catchError, switchMap} from 'rxjs';
 import {
    IDSTeam,
    TDSCoach
 } from "../models/datamod";
+import {MatchSyncService} from './match-sync.service';
 
 
 
@@ -15,6 +16,8 @@ import {
 export class CoachService
 {
    private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_coach.php';
+   // inject() e non parametro del costruttore: MatchSyncService a sua volta usa questo service
+   private matchSync = inject(MatchSyncService);
 
    constructor (private http: HttpClient)
    {
@@ -28,7 +31,21 @@ export class CoachService
       if (team != null)
          qryTenant = `&team=${team}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
-      return this.http.get<any>(url);
+      return this.http.get<any>(url).pipe (
+         // offline senza copia in cache: almeno gli allenatori creati localmente
+         catchError (async err =>
+         {
+            if ((team == null) || ((await this.matchSync.PendingCreated('createcoach', team)).length === 0))
+               throw err;
+            return { ok: true, message: '', elements: [] };
+         }),
+         switchMap (async resp =>
+         {
+            // allenatori creati localmente (in palestra) e non ancora arrivati al server, con l'id provvisorio
+            if ((team != null) && resp && Array.isArray(resp.elements))
+               resp = { ...resp, elements: [...resp.elements, ...await this.matchSync.PendingCreated('createcoach', team)] };
+            return resp;
+         }));
    }
 
 

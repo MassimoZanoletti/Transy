@@ -8,8 +8,8 @@ import {ButtonModule} from 'primeng/button';
 import {InputTextModule} from 'primeng/inputtext';
 import {TMatchPlayer} from "../../models/datamod";
 import {matchGlobs} from "../../common/curr-match";
-import {PlayerService} from "../../services/player.service";
-import {firstValueFrom} from "rxjs";
+import {MatchSyncService} from "../../services/match-sync.service";
+import {globs} from "../../common/utils";
 
 
 // "numeroEdit"/"nomeEdit" sono i valori editabili (su cui l'utente digita); "origNumero"/"origNome" sono
@@ -43,7 +43,7 @@ export class NumeriNomiDlgComponent
    @Output() annulla = new EventEmitter<void>();
 
 
-   constructor (private playerService: PlayerService)
+   constructor (private matchSync: MatchSyncService)
    {
    }
 
@@ -70,8 +70,8 @@ export class NumeriNomiDlgComponent
    // Il numero di maglia si applica solo alla partita in corso (non tocca l'anagrafica giocatore): basta
    // scriverlo sul TMatchPlayer. Il nome invece è un dato anagrafico condiviso: va corretto anche sul
    // database giocatori, altrimenti la modifica sparirebbe alla prossima apertura/nuova partita dello
-   // stesso giocatore. Per non perdere gli altri campi dell'anagrafica (cognome, ruolo, altezza, ecc.),
-   // rileggiamo il record completo dal server e lo riscriviamo cambiando solo "nomedisp".
+   // stesso giocatore. Per non perdere gli altri campi dell'anagrafica (cognome, ruolo, altezza, ecc.), al
+   // momento dell'invio si rilegge il record completo dal server e lo si riscrive cambiando solo "nomedisp".
    async BtnOk ()
    {
       this.salvando = true;
@@ -100,25 +100,14 @@ export class NumeriNomiDlgComponent
    }
 
 
+   // In coda (salvato anche offline): la rilettura dell'anagrafica completa avviene al momento dell'invio
+   // (vedi MatchSyncService.ExecuteWrite); gli eventuali rifiuti del server sono segnalati da AppComponent
    private async SalvaNomeSulDatabase (player: TMatchPlayer,
                                        nuovoNome: string): Promise<void>
    {
       if (!player.playerRecID)
          return;
-      try
-      {
-         const resp = await firstValueFrom (this.playerService.getSingleData (player.playerRecID));
-         const el = resp?.elements;
-         if (!resp?.ok || !el)
-            return;
-         await firstValueFrom (this.playerService.updateData (
-            el.id, el.cognome, el.nome, nuovoNome, el.anno, el.ruolo, el.numero, el.altezza, el.foto, el.teamid_link
-         ));
-      }
-      catch (e)
-      {
-         console.error('Errore salvataggio nome giocatore sul database', e);
-      }
+      await this.matchSync.EnqueueWrite ('playername', player.playerRecID, { nomedisp: nuovoNome }, globs.openedMatchHeaderId);
    }
 
 

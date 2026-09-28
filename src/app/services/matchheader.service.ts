@@ -1,6 +1,7 @@
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, switchMap} from 'rxjs';
+import {MatchSyncService} from './match-sync.service';
 import {
    IDSMatchHeaderDb,
    IDSMatchHeader, IDSMatchHeadersData
@@ -19,10 +20,25 @@ import { utils,
 export class MatchheaderService
 {
    private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_matchheader.php';
+   // inject() e non parametro del costruttore: MatchSyncService a sua volta usa questo service
+   private matchSync = inject(MatchSyncService);
 
 
    constructor (private http: HttpClient)
    {
+   }
+
+
+   // Le modifiche ancora in coda (es. fatte offline) prevalgono su quanto letto dal server/cache
+   private async WithPendingWrites<T> (data: T): Promise<T>
+   {
+      const resp: any = data;
+      if (!resp || !resp.elements)
+         return data;
+      if (Array.isArray(resp.elements))
+         return { ...resp, elements: await this.matchSync.OverlayRows('matchheader', resp.elements, r => Number(r.id)) } as T;
+      const [row] = await this.matchSync.OverlayRows('matchheader', [resp.elements], r => Number(r.id));
+      return { ...resp, elements: row } as T;
    }
 
 
@@ -34,6 +50,7 @@ export class MatchheaderService
          qryTenant = `&phase=${phase}`;
       const url: string = `${this.apiUrl}?operation=${operation}` + qryTenant;
       return this.http.get<IDSMatchHeadersData>(url).pipe (
+         switchMap (resp => this.WithPendingWrites (resp)),
          tap (value => {  }),
          map ((dataFromDb) => {
             return {
@@ -56,7 +73,7 @@ export class MatchheaderService
    {
       const operation: string = "single";
       const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}`;
-      return this.http.get<any> (url);
+      return this.http.get<any> (url).pipe (switchMap (resp => this.WithPendingWrites (resp)));
    }
 
 
