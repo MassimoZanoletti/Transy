@@ -1,0 +1,64 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/media/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-letture",
+      "urls": [
+        "https://www.basketsarezzo.com/code/backend/bbs/api_champs.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_champs.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_coach.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_coach.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_matchheader.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_matchheader.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_matchroster.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_matchroster.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_phase.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_phase.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_player.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_player.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_quarto.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_quarto.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_seasons.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_seasons.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_team.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_team.php?operation=single*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_tenant.php?operation=all*",
+        "https://www.basketsarezzo.com/code/backend/bbs/api_tenant.php?operation=single*"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "5s",
+        "maxSize": 500,
+        "maxAge": "60d"
+      }
+    }
+  ]
+}

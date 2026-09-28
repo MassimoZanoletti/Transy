@@ -22,8 +22,9 @@ bootstrapApplication (AppComponent, {
 
 import {bootstrapApplication} from '@angular/platform-browser';
 import {AppComponent} from './app/app.component';
-import {importProvidersFrom} from '@angular/core';
+import {importProvidersFrom, isDevMode} from '@angular/core';
 import {provideRouter} from '@angular/router';
+import {provideServiceWorker} from '@angular/service-worker';
 import {routes} from './app/app.routes';
 import {BrowserModule, provideClientHydration} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -38,6 +39,11 @@ bootstrapApplication (AppComponent, {
       importProvidersFrom (BrowserAnimationsModule, BrowserModule),
       provideClientHydration (),
       provideHttpClient(), // Usa la funzione al posto del modulo
+      // Service worker (PWA): app utilizzabile anche senza connessione (solo build di produzione)
+      provideServiceWorker ('ngsw-worker.js', {
+         enabled: !isDevMode (),
+         registrationStrategy: 'registerWhenStable:30000'
+      }),
       DialogService
    ]
 }).catch (err => console.error (err));

@@ -71,6 +71,25 @@
       </ng-container>
    </p-toolbar>
 
+   <div class="update-banner" *ngIf="updateDisponibile">
+      <i class="pi pi-download"></i>
+      <span>E' disponibile una nuova versione di Transy. Aggiorna quando non stai registrando una partita (i dati non inviati restano salvati).</span>
+      <button pButton
+              type="button"
+              label="Aggiorna ora"
+              icon="pi pi-refresh"
+              class="p-button-sm p-button-warning"
+              (click)="AggiornaApp()">
+      </button>
+      <button pButton
+              type="button"
+              icon="pi pi-times"
+              class="p-button-sm p-button-text"
+              title="Piu' tardi"
+              (click)="updateDisponibile = false">
+      </button>
+   </div>
+
    <div id="router-container"
         class="router-container">
       <router-outlet></router-outlet>

@@ -38,6 +38,8 @@ import {TimerCompComponent} from "./common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "./common/player-comp/player-comp.component";
 import {TeamCompComponent} from "./common/team-comp/team-comp.component";
 import { filter } from 'rxjs/operators';
+import { interval, Subscription } from 'rxjs';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 
 
@@ -72,6 +74,9 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    //appTitle: string = "RS";
    //appCopyrights: string = "";
    separatore: string = "   ::     ";
+   // PWA: nuova versione dell'app scaricata dal service worker, pronta all'uso
+   updateDisponibile: boolean = false;
+   private swSubs: Subscription[] = [];
 
    // Rimuovi la dichiarazione diretta tabelleMenuRef!: Menu;
    // Useremo un setter privato per gestirlo
@@ -80,7 +85,8 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
                 public authService: AuthService,
                 private cdr: ChangeDetectorRef,
                 private primengConfig: PrimeNGConfig,
-                private logService: LogService)
+                private logService: LogService,
+                private swUpdate: SwUpdate)
    {
       if (utils.IsDevMode == null)
          utils.IsDevMode = isDevMode();
@@ -167,6 +173,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    ngOnInit ()
    {
       window.addEventListener('beforeunload', this.beforeUnloadHandler);
+      this.InitServiceWorkerUpdates ();
       //
       this.router.events
          .pipe(
@@ -273,6 +280,39 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 
    ngOnDestroy() {
       window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+      this.swSubs.forEach (sub => sub.unsubscribe ());
+   }
+
+
+   // PWA: la nuova versione viene solo segnalata, mai attivata automaticamente
+   // (un reload improvviso durante una partita dal vivo non e' accettabile)
+   private InitServiceWorkerUpdates (): void
+   {
+      if (!this.swUpdate.isEnabled)
+         return;
+      this.swSubs.push (this.swUpdate.versionUpdates
+         .pipe (filter ((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+         .subscribe (() => {
+            this.updateDisponibile = true;
+            this.cdr.markForCheck ();
+         }));
+      this.swSubs.push (this.swUpdate.unrecoverable.subscribe (evt => {
+         console.error ('Service worker in stato non recuperabile:', evt.reason);
+         this.updateDisponibile = true;
+         this.cdr.markForCheck ();
+      }));
+      // Controllo periodico (ogni 15 minuti) se l'app resta aperta a lungo
+      this.swSubs.push (interval (15 * 60 * 1000).subscribe (() => {
+         if (navigator.onLine)
+            this.swUpdate.checkForUpdate ().catch (err => console.warn ('checkForUpdate:', err));
+      }));
+   }
+
+
+   AggiornaApp (): void
+   {
+      window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+      window.location.reload ();
    }
 
 

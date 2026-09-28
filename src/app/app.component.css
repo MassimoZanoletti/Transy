@@ -66,3 +66,21 @@
 ::ng-deep .icona-azzurra .p-menuitem-icon {
    color: #00ffff !important;
 }
+
+
+.update-banner {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   margin: 0 5px 5px 5px;
+   padding: 6px 12px;
+   border-radius: 5px;
+   background-color: #3b3415;
+   border: 1px solid #facc15;
+   color: #fde68a;
+   flex: 0 0 auto;
+}
+
+.update-banner span {
+   flex: 1 1 auto;
+}

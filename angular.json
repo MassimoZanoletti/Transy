@@ -27,6 +27,7 @@
                 "output": "/assets/"
               },
                "src/assets",
+               "src/manifest.webmanifest",
               {
                 "glob": "*.png",
                 "input": "./node_modules/primeng/resources/images",
@@ -49,6 +50,7 @@
           },
           "configurations": {
             "production": {
+              "serviceWorker": "ngsw-config.json",
               "baseHref": "./",
               "budgets": [
                 {
