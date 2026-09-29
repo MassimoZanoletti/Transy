@@ -573,7 +573,12 @@
    <p-tabPanel id="tab-match-anagrafica-statistiche"
                header="Statistiche">
       <div id="div-match-statistiche">
-         Statistiche
+         <app-statistiche-comp [matchHeader]="matchHeader"
+                               [myCoach1]="matchHeader.atHome ? homeCoach1 : awayCoach1"
+                               [myCoach2]="matchHeader.atHome ? homeCoach2 : awayCoach2"
+                               [oppoCoach1]="matchHeader.atHome ? awayCoach1 : homeCoach1"
+                               [oppoCoach2]="matchHeader.atHome ? awayCoach2 : homeCoach2"
+                               [getContestoLive]="GetContestoLive"></app-statistiche-comp>
       </div>
    </p-tabPanel>
 </p-tabView>

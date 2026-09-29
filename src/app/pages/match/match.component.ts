@@ -95,6 +95,8 @@ import { AZIONI_MODIFICABILI, EditAzioneDlgComponent, TModificaAzione } from "..
 import { TiroPosDlgComponent, TPosizioneTiro, TTiroPrecedente } from "../../dialogs/tiro-pos-dlg/tiro-pos-dlg.component";
 import { ConfigService } from "../../services/config.service";
 import { MappaTiriDlgComponent } from "../../dialogs/mappa-tiri-dlg/mappa-tiri-dlg.component";
+import { StatisticheCompComponent } from "./statistiche-comp/statistiche-comp.component";
+import { TContestoLive } from "../../common/statistiche";
 import { TOperation, TOperationList, TOperationType } from "../../common/operation";
 import { MatchSyncService } from "../../services/match-sync.service";
 
@@ -149,6 +151,7 @@ type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
                  EditAzioneDlgComponent,
                  TiroPosDlgComponent,
                  MappaTiriDlgComponent,
+                 StatisticheCompComponent,
                  ToastModule
               ],
   providers: [
@@ -171,6 +174,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(EditAzioneDlgComponent) editAzioneComp!: EditAzioneDlgComponent;
    @ViewChild(TiroPosDlgComponent) tiroPosComp!: TiroPosDlgComponent;
    @ViewChild(MappaTiriDlgComponent) mappaTiriComp!: MappaTiriDlgComponent;
+   @ViewChild(StatisticheCompComponent) statisticheComp!: StatisticheCompComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -435,7 +439,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    // prima è ancora in corso) aspetta la fine della precedente, invece di ricostruire il roster in parallelo
    InitializeComponent (): Promise<void>
    {
-      this.initChain = this.initChain.then(() => this.DoInitializeComponent(), () => this.DoInitializeComponent());
+      this.initChain = this.initChain.then(() => this.DoInitializeComponent(), () => this.DoInitializeComponent())
+                                     .then(() => this.AggiornaStatistiche());
       return this.initChain;
    }
 
@@ -1162,7 +1167,33 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       this.tabActiveIndex = event.index;
       matchGlobs.currSavedMatch.lastTabIndex = event.index;
       await matchGlobs.currSavedMatch.SaveToStorage();
+      this.AggiornaStatistiche();
    }
+
+
+   // Tab "Statistiche" (indice 2): i dati si ricalcolano quando il tab è visibile
+   private static readonly TAB_STATISTICHE = 2;
+
+   AggiornaStatistiche (): void
+   {
+      if (this.tabActiveIndex === MatchComponent.TAB_STATISTICHE)
+      {
+         // prima si propagano al componente gli input appena cambiati (intestazione, nomi degli allenatori),
+         // altrimenti il calcolo subito dopo il caricamento della partita userebbe i valori precedenti
+         this.cdr.detectChanges();
+         this.statisticheComp?.Aggiorna();
+         this.cdr.detectChanges();
+      }
+   }
+
+
+   // Situazione del cronometro per le statistiche (minuti e andamento del quarto in corso). Arrow function:
+   // viene passata al componente delle statistiche e chiamata da lì.
+   GetContestoLive = (): TContestoLive => ({
+      quarto:        this.compTimer ? this.compTimer.GetQuarterNumber() : 1,
+      tempo:         this.compTimer ? this.compTimer.GetTimeSeconds() : globs.DurationRegulTime,
+      quartoGiocato: (q: number) => this.compTimer?.IsQuarterStarted(this.QuarterNumberToKey(q)) ?? false
+   });
 
 
    MatchNotStarted(): boolean
@@ -1337,10 +1368,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
                                             this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
          await this.matchSync.WaitForWrites ();
-         if (this.currSeason)
-         {
-            await this.InitializeComponent();
-         }
+         // si rilegge sempre la partita (roster, allenatori): prima succedeva solo se era noto currSeason, cioè
+         // aprendo la partita dalla Dashboard; da "MATCH", da un preferito o dopo F5 le modifiche non comparivano
+         await this.RicostruisciPartita();
       }
    }
 

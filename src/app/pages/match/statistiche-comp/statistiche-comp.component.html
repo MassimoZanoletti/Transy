@@ -1,0 +1,173 @@
+<div class="div-statistiche">
+   <div class="stat-comandi">
+      <p-button label="Aggiorna"
+                icon="pi pi-refresh"
+                severity="secondary"
+                size="small"
+                (onClick)="Aggiorna()"></p-button>
+      @if (aggiornatoAlle)
+      {
+         <span class="stat-aggiornato">aggiornate alle {{ aggiornatoAlle }}</span>
+      }
+   </div>
+
+   <!-- intestazione della partita -->
+   <div class="match-header-data-grid">
+      <span class="match-header-label">Data:</span>
+      <span class="match-header-value">{{ matchHeader?.matchDateStr }}</span>
+      <span class="match-header-label">Casa/Trasferta:</span>
+      <span class="match-header-value">{{ CasaTrasferta() }}</span>
+      <span class="match-header-label">Giornata:</span>
+      <span class="match-header-value">{{ Giornata() }}</span>
+      <span class="match-header-label">Arbitri:</span>
+      <span class="match-header-value">{{ Arbitri() }}</span>
+   </div>
+   <div class="match-title">
+      <span>{{ titolo }}</span>
+      <span class="match-title-punteggio">{{ punteggio }}</span>
+   </div>
+
+   <!-- andamento per quarto -->
+   @if (andamento.length > 0)
+   {
+      <div class="punteggi-grid" [style.--cols]="andamento.length">
+         <span class="row-label"></span>
+         @for (q of andamento; track q.label) { <span class="value value-label">{{ q.label }}</span> }
+         <span class="row-label">Parziali:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.parziale }}</span> }
+         <span class="row-label">Progressivi:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.progressivo }}</span> }
+         <span class="row-label">Max vantaggio:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.maxVantaggio }}</span> }
+         <span class="row-label">Max svantaggio:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.maxSvantaggio }}</span> }
+         <span class="row-label">Max senza segnare:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.maxSenzaSegnare }}</span> }
+         <span class="row-label">Max senza subire:</span>
+         @for (q of andamento; track q.label) { <span class="value">{{ q.maxSenzaSubire }}</span> }
+      </div>
+   }
+
+   <!-- tabelle per giocatore: MyTeam e OppoTeam -->
+   @for (tab of tabelle; track tab.squadra)
+   {
+      <p-divider />
+      <p-table class="custom-header-table custom-footer-table"
+               styleClass="custom-table p-datatable-gridlines"
+               [value]="tab.righe"
+               [tableStyle]="{ 'min-width': '0px', 'width': 'max-content', 'table-layout': 'fixed' }">
+         <ng-template pTemplate="header">
+            <tr>
+               <th style="width: 180px;">{{ tab.squadra }}</th>
+               <th style="width: 40px; text-align: right;">Pti</th>
+               <th style="width: 60px; text-align: center;">Min.</th>
+               <th style="width: 70px; text-align: center;">TL</th>
+               <th style="width: 70px; text-align: center;">T2</th>
+               <th style="width: 70px; text-align: center;">T3</th>
+               <th style="width: 70px; text-align: center;">TdC</th>
+               <th style="width: 44px; text-align: center;">FF</th>
+               <th style="width: 44px; text-align: center;">FS</th>
+               <th style="width: 44px; text-align: center;">RD</th>
+               <th style="width: 44px; text-align: center;">RA</th>
+               <th style="width: 50px; text-align: center;">RTot</th>
+               <th style="width: 44px; text-align: center;">PP</th>
+               <th style="width: 44px; text-align: center;">PR</th>
+               <th style="width: 44px; text-align: center;">As</th>
+               <th style="width: 48px; text-align: center;">St.F</th>
+               <th style="width: 48px; text-align: center;">St.S</th>
+               <th style="width: 50px; text-align: center;">Q1</th>
+               <th style="width: 50px; text-align: center;">Q2</th>
+               <th style="width: 50px; text-align: center;">Q3</th>
+               <th style="width: 50px; text-align: center;">Q4</th>
+               <th style="width: 50px; text-align: center;">ET</th>
+               <th style="width: 66px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipPir" [escape]="false" tooltipPosition="top">PIR <i class="pi pi-question-circle stat-help"></i></th>
+               <th style="width: 72px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipOer" [escape]="false" tooltipPosition="top">OER <i class="pi pi-question-circle stat-help"></i></th>
+               <th style="width: 84px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipEfg" [escape]="false" tooltipPosition="top">eFG% <i class="pi pi-question-circle stat-help"></i></th>
+               <th style="width: 72px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipTs" [escape]="false" tooltipPosition="top">TS% <i class="pi pi-question-circle stat-help"></i></th>
+            </tr>
+         </ng-template>
+         <ng-template pTemplate="body" let-r>
+            <tr>
+               <td class="stat-nome">
+                  <span class="stat-quintetto">{{ r.quintetto ? '🔶' : '' }}</span>
+                  {{ r.numero }}) <b>{{ r.nome }}</b>
+                  @if (r.capitano) { <span title="Capitano"> ⛹🏻‍♂️</span> }
+               </td>
+               @if (r.nonEntrato)
+               {
+                  <td></td>
+                  <td style="text-align: center;">n.e.</td>
+                  <td colspan="23"></td>
+               }
+               @else
+               {
+                  <td style="text-align: right;">{{ r.punti }}</td>
+                  <td style="text-align: center;">{{ r.min }}</td>
+                  @for (t of [r.tl, r.t2, r.t3, r.tdc]; track $index)
+                  {
+                     <td style="text-align: center;"><b>{{ TiriStr(t) }}</b><span class="percentuale-piccola">{{ TiriPerc(t) }}</span></td>
+                  }
+                  <td style="text-align: center;" class="stat-falli">{{ r.ff }}</td>
+                  <td style="text-align: center;">{{ r.fs }}</td>
+                  <td style="text-align: center;">{{ r.rd }}</td>
+                  <td style="text-align: center;">{{ r.ra }}</td>
+                  <td style="text-align: center;">{{ r.rtot }}</td>
+                  <td style="text-align: center;">{{ r.pp }}</td>
+                  <td style="text-align: center;">{{ r.pr }}</td>
+                  <td style="text-align: center;">{{ r.as }}</td>
+                  <td style="text-align: center;">{{ r.stf }}</td>
+                  <td style="text-align: center;">{{ r.sts }}</td>
+                  @for (q of r.quarti; track $index)
+                  {
+                     <td style="text-align: center;">
+                        @if (q) { {{ q.punti }}<span class="percentuale-piccola">{{ q.min }}</span> }
+                     </td>
+                  }
+                  <td style="text-align: center;">{{ r.pir }}</td>
+                  <td style="text-align: center;">{{ r.oer }}</td>
+                  <td style="text-align: center;">{{ r.efg }}</td>
+                  <td style="text-align: center;">{{ r.ts }}</td>
+               }
+            </tr>
+         </ng-template>
+         <ng-template pTemplate="footer">
+            <tr>
+               <td>
+                  <span style="font-size: 0.8rem;">Totali team</span><br>
+                  <span style="font-size: 1.25rem; color: #ffaa00;">{{ tab.squadra }}</span>
+               </td>
+               <td style="text-align: center;">{{ tab.totali.punti }}</td>
+               <td style="text-align: center;">{{ tab.totali.min }}</td>
+               @for (t of [tab.totali.tl, tab.totali.t2, tab.totali.t3, tab.totali.tdc]; track $index)
+               {
+                  <td style="text-align: center;">{{ TiriStr(t) }}<span class="percentuale-piccola">{{ TiriPerc(t) }}</span></td>
+               }
+               <td style="text-align: center;">{{ tab.totali.ff }}</td>
+               <td style="text-align: center;">{{ tab.totali.fs }}</td>
+               <td style="text-align: center;">{{ tab.totali.rd }}</td>
+               <td style="text-align: center;">{{ tab.totali.ra }}</td>
+               <td style="text-align: center;">{{ tab.totali.rtot }}</td>
+               <td style="text-align: center;">{{ tab.totali.pp }}</td>
+               <td style="text-align: center;">{{ tab.totali.pr }}</td>
+               <td style="text-align: center;">{{ tab.totali.as }}</td>
+               <td style="text-align: center;">{{ tab.totali.stf }}</td>
+               <td style="text-align: center;">{{ tab.totali.sts }}</td>
+               @for (q of tab.totali.quarti; track $index)
+               {
+                  <td style="text-align: center;">{{ q?.punti ?? '' }}</td>
+               }
+               <td style="text-align: center;">{{ tab.totali.pir }}</td>
+               <td style="text-align: center;">{{ tab.totali.oer }}</td>
+               <td style="text-align: center;">{{ tab.totali.efg }}</td>
+               <td style="text-align: center;">{{ tab.totali.ts }}</td>
+            </tr>
+         </ng-template>
+      </p-table>
+      <div class="match-header-data-grid stat-coach">
+         <span class="match-header-label">Head coach:</span>
+         <span class="match-header-value">{{ tab.coach1 }}</span>
+         <span class="match-header-label">1° Assistente:</span>
+         <span class="match-header-value">{{ tab.coach2 }}</span>
+      </div>
+   }
+</div>

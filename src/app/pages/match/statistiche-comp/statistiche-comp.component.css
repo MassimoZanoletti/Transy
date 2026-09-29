@@ -1,0 +1,128 @@
+/* Stile ripreso dalla pagina "Tabelle" di nebula */
+.div-statistiche {
+   padding: 4px 8px;
+}
+
+.stat-comandi {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   margin-bottom: 6px;
+}
+
+.stat-aggiornato {
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.match-header-data-grid {
+   display: grid;
+   grid-template-columns: max-content 1fr;
+   gap: 4px 12px;
+}
+
+.match-header-label {
+   font-style: italic;
+}
+
+.match-header-value {
+   font-weight: bold;
+}
+
+.match-title {
+   display: flex;
+   align-items: baseline;
+   gap: 80px;
+   font-size: 3rem;
+   font-weight: bold;
+   margin: 5px 0;
+}
+
+.punteggi-grid {
+   display: grid;
+   grid-template-columns: 10rem repeat(var(--cols), 6rem);
+   gap: 0.4rem 0.5rem;
+}
+
+.punteggi-grid .row-label {
+   font-weight: bold;
+}
+
+.punteggi-grid .value {
+   text-align: center;
+   white-space: nowrap;
+}
+
+.punteggi-grid .value-label {
+   color: #94a3b8;
+   font-size: 0.85rem;
+}
+
+.stat-coach {
+   margin-top: 6px;
+}
+
+.stat-nome {
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.stat-quintetto {
+   display: inline-block;
+   width: 1.4em;
+}
+
+.stat-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+/* falli fatti dei giocatori (colonna FF) */
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td.stat-falli {
+   color: #ff6666 !important;
+}
+
+.percentuale-piccola {
+   font-size: 0.7rem;
+   display: block;
+}
+
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td,
+:host ::ng-deep .custom-table .p-datatable-thead > tr > th,
+:host ::ng-deep .custom-table .p-datatable-tfoot > tr > td {
+   padding: 0.3rem 0.3rem !important;
+}
+
+/* players-comp e roster-comp impostano con ::ng-deep non limitato "font-size: 2em/28px" per TUTTE le celle
+   delle tabelle PrimeNG: qui si torna alla dimensione normale */
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td {
+   font-size: 1rem !important;
+   line-height: 1.3 !important;
+}
+
+:host ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+   background-color: #422d6b !important;
+   color: #ffe378 !important;
+   font-weight: bold;
+   font-size: 1.2em;
+   border-bottom: 2px solid #3949ab;
+}
+
+:host ::ng-deep .custom-footer-table .p-datatable-tfoot > tr > td {
+   color: #ffffff !important;
+   background-color: #52410d !important;
+   font-weight: bold;
+   font-size: 1.2em;
+}
+
+:host ::ng-deep .custom-table .p-datatable-tbody > tr:nth-child(3n+1) {
+   background-color: #1f2938 !important;
+}
+
+:host ::ng-deep .custom-table .p-datatable-tbody > tr:nth-child(3n+2) {
+   background-color: #273345 !important;
+}
+
+:host ::ng-deep .custom-table .p-datatable-tbody > tr:nth-child(3n) {
+   background-color: #2f3e53 !important;
+}

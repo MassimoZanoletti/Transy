@@ -103,6 +103,14 @@
    display: none !important;
 }
 
+/* Tab Statistiche: il pannello (overflow hidden, per il tab Gioco che deve stare tutto nello schermo) non
+   scorre; scorre il contenuto, che è più alto e spesso più largo della finestra (due tabelle di giocatori) */
+#div-match-statistiche {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: auto;
+}
+
 ::ng-deep #tab-match .p-tabview-nav li .p-tabview-nav-link {
    padding: 4px 12px !important;
    height: 40px !important;
