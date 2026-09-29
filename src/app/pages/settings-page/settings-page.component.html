@@ -1,8 +1,10 @@
 
 <div id="main_container">
    <div id="div-tabella-bottoni">
+      <!-- gestione utenti: il riquadro compare solo se c'è almeno un pulsante per l'utente collegato -->
       <div class="card flex justify-content-start"
-           id="bottoni">
+           id="bottoni"
+           *ngIf="CfgUtentiEnabled() || CfgUtenteEnabled()">
          <p-card [style]="{ width: '100vw' }"
                  contentStyleClass="card-contenuto-ridotto">
             <div class="bottoni-container">
@@ -23,5 +25,29 @@
             </div>
          </p-card>
       </div>
+   </div>
+
+   <!-- Impostazioni salvate su questo dispositivo (vedi ConfigService) -->
+   <div class="card flex justify-content-start">
+      <p-card header="Tiri"
+              [style]="{ width: '100vw' }"
+              contentStyleClass="card-contenuto-ridotto">
+         <div class="cfg-descrizione">Chiedi la posizione in campo dei tiri da 2 e da 3 (per la mappa di tiro):</div>
+         <div class="cfg-riga">
+            <p-checkbox inputId="cfg-tiri-my"
+                        [binary]="true"
+                        [ngModel]="config.posizioneTiriMyTeam()"
+                        (ngModelChange)="config.SetPosizioneTiri(true, $event)"></p-checkbox>
+            <label for="cfg-tiri-my">MyTeam</label>
+         </div>
+         <div class="cfg-riga">
+            <p-checkbox inputId="cfg-tiri-oppo"
+                        [binary]="true"
+                        [ngModel]="config.posizioneTiriOppoTeam()"
+                        (ngModelChange)="config.SetPosizioneTiri(false, $event)"></p-checkbox>
+            <label for="cfg-tiri-oppo">OppoTeam</label>
+         </div>
+         <div class="cfg-nota">Impostazione salvata su questo dispositivo.</div>
+      </p-card>
    </div>
 </div>

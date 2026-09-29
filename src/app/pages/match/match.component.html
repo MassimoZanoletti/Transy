@@ -193,6 +193,7 @@
                   [matchTeamData]="GetMyTeamData()"
                   (timeoutsChanged)="onTimeoutsChanged(true, $event)"
                   (componentClicked)="TeamClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaSquadra($event)"
                   [isSelected]="'compmyteam' == currTeam"
                ></app-team-comp>
                <!-- Punteggi progressivi per quarto (MyTeam sempre per primo), a destra della squadra -->
@@ -235,6 +236,7 @@
                   [matchTeamData]="GetOppoTeamData()"
                   (timeoutsChanged)="onTimeoutsChanged(false, $event)"
                   (componentClicked)="TeamClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaSquadra($event)"
                   [isSelected]="'compoppoteam' == currTeam"
                ></app-team-comp>
             </div>
@@ -248,35 +250,40 @@
                   #compMyField1
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl2"
                   #compMyField2
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl3"
                   #compMyField3
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl4"
                   #compMyField4
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="pl5"
                   #compMyField5
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
             </div>
             <div id="div-gioco-commands"
@@ -453,35 +460,40 @@
                   #compOppoField1
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl2"
                   #compOppoField2
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl3"
                   #compOppoField3
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl4"
                   #compOppoField4
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
                <app-player-comp
                   componentId="oppopl5"
                   #compOppoField5
                   colorSelected="#007700"
                   [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)">
+                  (componentClicked)="PlayerClicked($event)"
+                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
                </app-player-comp>
             </div>
          </div>
@@ -693,6 +705,43 @@
    </app-edit-azione-dlg>
 </p-dialog>
 <!--   FINE DIALOG MODIFICA AZIONE   -->
+
+
+<!-----------------------------------------------------------------
+               DIALOG POSIZIONE DEL TIRO
+------------------------------------------------------------------>
+<p-dialog id="dialog-tiro-pos"
+          [modal]="true"
+          [(visible)]="dialogVisible_TiroPos"
+          [closable]="false"
+          [showHeader]="false"
+          (onShow)="onTiroPosDialogShow()"
+          [style]="{ padding: '10px', 'background-color': '#1f2937' }">
+   <app-tiro-pos-dlg
+      (posizione)="onTiroPosizione($event)"
+      (senzaPosizione)="onTiroPosizione(null)"
+      (annulla)="onTiroAnnulla()">
+   </app-tiro-pos-dlg>
+</p-dialog>
+<!--   FINE DIALOG POSIZIONE DEL TIRO   -->
+
+
+<!-----------------------------------------------------------------
+               DIALOG MAPPA DI TIRO
+------------------------------------------------------------------>
+<p-dialog id="dialog-mappa-tiri"
+          [modal]="true"
+          [(visible)]="dialogVisible_MappaTiri"
+          [closable]="false"
+          [showHeader]="false"
+          [dismissableMask]="true"
+          (onShow)="onMappaTiriDialogShow()"
+          [style]="{ padding: '10px', 'background-color': '#1f2937' }">
+   <app-mappa-tiri-dlg
+      (chiudi)="dialogVisible_MappaTiri = false">
+   </app-mappa-tiri-dlg>
+</p-dialog>
+<!--   FINE DIALOG MAPPA DI TIRO   -->
 
 
 <!-----------------------------------------------------------------

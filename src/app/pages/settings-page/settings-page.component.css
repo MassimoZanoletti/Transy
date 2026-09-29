@@ -64,3 +64,22 @@
    /* Oppure semplicemente: */
    /* box-shadow: none !important; */
 }
+
+
+/* Sezione "Tiri" */
+.cfg-descrizione {
+   margin-bottom: 8px;
+}
+
+.cfg-riga {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   margin: 6px 0 6px 12px;
+}
+
+.cfg-nota {
+   margin-top: 8px;
+   font-size: 0.85rem;
+   color: #94a3b8;
+}

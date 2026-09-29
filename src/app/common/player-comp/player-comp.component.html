@@ -27,7 +27,9 @@
          Min.: <span style="font-size: 1.2em; font-weight: 700; color: white;">{{GetMinutiPrecedente()}}</span> + <span style="font-size: 1.2em; font-weight: 700; color: #a0e77f;">{{GetMinutiInCampo()}}</span>
       </div>
       <div id="div-pc-points"
-           class="div-points">
+           class="div-points"
+           title="Doppio click: mappa di tiro"
+           (dblclick)="onPuntiDoubleClick()">
          {{GetPunti()}}
       </div>
    </div>

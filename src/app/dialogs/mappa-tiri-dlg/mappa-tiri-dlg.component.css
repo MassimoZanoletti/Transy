@@ -1,0 +1,29 @@
+.div-mappatiri-content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+}
+
+.mappatiri-titolo {
+   font-size: 1.2rem;
+   font-weight: 700;
+}
+
+.mappatiri-riepilogo {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   gap: 18px;
+   font-size: 0.95rem;
+}
+
+.mappatiri-nota {
+   color: #94a3b8;
+}
+
+.mappatiri-bottoni {
+   display: flex;
+   justify-content: flex-end;
+   width: 100%;
+}

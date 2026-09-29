@@ -51,6 +51,8 @@ export class TeamCompComponent implements OnInit, OnDestroy
 
    @Output() componentClicked = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
+   // doppio click sui punti: mappa di tiro di tutta la squadra
+   @Output() puntiDoubleClicked = new EventEmitter<TMatchTeam>();
    // OK nella dialog timeout con almeno una modifica: fotografie dei timeout prima e dopo (vedi
    // TMatchTeam.GetTimeoutSnapshot). Li applica la pagina della partita, registrando l'operazione.
    @Output() timeoutsChanged = new EventEmitter<{ prima: string, dopo: string }>();
@@ -110,6 +112,13 @@ export class TeamCompComponent implements OnInit, OnDestroy
    onDoubleClick()
    {
       this.componentDoubleClicked.emit(this.componentId);
+   }
+
+
+   onPuntiDoubleClick()
+   {
+      if (this.matchTeamData)
+         this.puntiDoubleClicked.emit(this.matchTeamData);
    }
 
 

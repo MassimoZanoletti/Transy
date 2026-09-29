@@ -92,6 +92,9 @@ import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioc
 import { FalliTotaliDlgComponent } from "../../dialogs/falli-totali-dlg/falli-totali-dlg.component";
 import { NumeriNomiDlgComponent } from "../../dialogs/numeri-nomi-dlg/numeri-nomi-dlg.component";
 import { AZIONI_MODIFICABILI, EditAzioneDlgComponent, TModificaAzione } from "../../dialogs/edit-azione-dlg/edit-azione-dlg.component";
+import { TiroPosDlgComponent, TPosizioneTiro, TTiroPrecedente } from "../../dialogs/tiro-pos-dlg/tiro-pos-dlg.component";
+import { ConfigService } from "../../services/config.service";
+import { MappaTiriDlgComponent } from "../../dialogs/mappa-tiri-dlg/mappa-tiri-dlg.component";
 import { TOperation, TOperationList, TOperationType } from "../../common/operation";
 import { MatchSyncService } from "../../services/match-sync.service";
 
@@ -144,6 +147,8 @@ type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
                  FalliTotaliDlgComponent,
                  NumeriNomiDlgComponent,
                  EditAzioneDlgComponent,
+                 TiroPosDlgComponent,
+                 MappaTiriDlgComponent,
                  ToastModule
               ],
   providers: [
@@ -164,6 +169,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(FalliTotaliDlgComponent) falliTotaliComp!: FalliTotaliDlgComponent;
    @ViewChild(NumeriNomiDlgComponent) numeriNomiComp!: NumeriNomiDlgComponent;
    @ViewChild(EditAzioneDlgComponent) editAzioneComp!: EditAzioneDlgComponent;
+   @ViewChild(TiroPosDlgComponent) tiroPosComp!: TiroPosDlgComponent;
+   @ViewChild(MappaTiriDlgComponent) mappaTiriComp!: MappaTiriDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -243,6 +250,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    private prevOnCourtSost: TMatchPlayer[] = [];
    public dialogVisible_Azioni: boolean = false;
    public dialogVisible_EditAzione: boolean = false;
+   public dialogVisible_TiroPos: boolean = false;
+   public dialogVisible_MappaTiri: boolean = false;
+   // contenuto della mappa di tiro da aprire (giocatore o squadra)
+   private mappaTiri: { titolo: string, giocatori: TMatchPlayer[] } | null = null;
    // Azione in modifica dal dialog Azioni; per una modifica che la trasforma in "Fallo fatto", quella vecchia
    // si toglie solo dopo che il fallo è stato registrato nel dialog falli (vedi salvaPlayerFalli)
    private azioneInModifica: TOperation | null = null;
@@ -276,7 +287,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                private zone: NgZone,
                public fltrDialogService: DialogService,
                public msgService: MessageService,
-               public matchSync: MatchSyncService)
+               public matchSync: MatchSyncService,
+               private config: ConfigService)
 
                /*
                            private seasonServ: SeasonsService,
@@ -1627,7 +1639,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             this.compT2.Flash();
             await this.AddRimbalzoAttaccoOperation();
-            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, false);
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, false, this.PosizioneTap());
          }
       }
       else if (id == "t3")
@@ -1657,7 +1669,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             this.compT2.Flash();
             await this.AddRimbalzoAttaccoOperation();
-            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, true);
+            await this.RegistraRealizzazione(TTipoRealizzazione.trT2, true, this.PosizioneTap());
          }
       }
       else if (id == "t3")
@@ -1682,8 +1694,16 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Tiro da 2/3 in attesa della posizione dalla finestra del campo: quarto, tempo e giocatore sono quelli del
+   // momento in cui è stato premuto il pulsante del tiro, non di quando si clicca sul campo
+   private tiroInAttesa: { oper: TOperationType, quarter: number, time: number, isMyTeam: boolean, player: TMatchPlayer } | null = null;
+
+
+   // posizione: undefined = da chiedere (se previsto dalla configurazione per la squadra), null = nessuna,
+   // altrimenti la posizione già decisa (es. tap in/out sotto canestro)
    async RegistraRealizzazione (tipo: TTipoRealizzazione,
-                                fatto: boolean): Promise<void>
+                                fatto: boolean,
+                                posizione?: TPosizioneTiro | null): Promise<void>
    {
       const player = this.currSelectedPlayer;
       if (!player || !matchGlobs.currMatch)
@@ -1703,18 +1723,108 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          default:
             return;
       }
-      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
-      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
-      const isMyTeam = (this.currSelectedPlayer?.isMyTeam() ?? false);
+      const tiro = {
+         oper,
+         quarter:  this.compTimer ? this.compTimer.GetQuarterNumber() : 0,
+         time:     this.compTimer ? this.compTimer.GetTimeSeconds() : 0,
+         isMyTeam: (this.currSelectedPlayer?.isMyTeam() ?? false),
+         player
+      };
+      // tiri da 2 e da 3: posizione dal campo, se la configurazione lo prevede per la squadra (come
+      // ShowFieldMyShoot/ShowFieldOppoShoot del Delphi)
+      if ((posizione === undefined) && (tipo !== TTipoRealizzazione.trTL) && this.config.ChiediPosizioneTiro(tiro.isMyTeam))
+      {
+         this.tiroInAttesa = tiro;
+         this.dialogVisible_TiroPos = true;
+         return;
+      }
+      await this.CompletaRealizzazione(tiro, posizione ?? null);
+   }
+
+
+   private async CompletaRealizzazione (tiro: { oper: TOperationType, quarter: number, time: number, isMyTeam: boolean, player: TMatchPlayer },
+                                        posizione: TPosizioneTiro | null): Promise<void>
+   {
+      if (!matchGlobs.currMatch)
+         return;
       const opList = await matchGlobs.currMatch.EnsureOperationList();
-      const op = new TOperation(quarter, time, oper, isMyTeam, player);
+      const op = new TOperation(tiro.quarter, tiro.time, tiro.oper, tiro.isMyTeam, tiro.player);
+      // la posizione finisce nella realizzazione del giocatore (ApplyOperation) e da lì nell'evento (courtx/courty)
+      if (posizione)
+         op.eventData = { courtx: posizione.x, courty: posizione.y };
       // realizzazione del giocatore e punti del quarto: vedi TOperationList.ApplyOperation
       opList.ApplyOperation(op);
-      this.UpdateCommandsData(player);
+      this.UpdateCommandsData(tiro.player);
       await this.compMyTeam?.Update();
       await this.compOppoTeam?.Update();
       await opList.Add(op);
       this.ScrollOperazioniToBottom();
+   }
+
+
+   // Tap in/out: tiro da sotto canestro, senza finestra del campo; posizione casuale nella zona sotto il
+   // canestro, come nel Delphi (BtnTapInClick/BtnTapOutClick), così compare comunque nella mappa di tiro
+   private PosizioneTap (): TPosizioneTiro
+   {
+      return { x: 237 + Math.floor(Math.random() * 105), y: 34 + Math.floor(Math.random() * 56) };
+   }
+
+
+   onTiroPosDialogShow (): void
+   {
+      const t = this.tiroInAttesa;
+      if (this.tiroPosComp && t)
+      {
+         const tipo = AZIONI_MODIFICABILI.find(a => a.value === t.oper)?.label ?? '';
+         // tiri da 2 e da 3 già fatti dal giocatore, con posizione (tiri liberi e tiri senza posizione esclusi)
+         const precedenti: TTiroPrecedente[] = t.player.realizzazioni()
+            .filter(r => ((r.rTipo === TTipoRealizzazione.trT2) || (r.rTipo === TTipoRealizzazione.trT3)) && ((r.rPosX !== 0) || (r.rPosY !== 0)))
+            .map(r => ({ x: r.rPosX, y: r.rPosY, segnato: (r.rPunti > 0), quarto: r.rQuarto }));
+         this.tiroPosComp.onComponentShow(`${tipo}  -  ${t.player.playNumber()} ${t.player.playName()}`, precedenti);
+      }
+   }
+
+
+   async onTiroPosizione (posizione: TPosizioneTiro | null): Promise<void>
+   {
+      this.dialogVisible_TiroPos = false;
+      const tiro = this.tiroInAttesa;
+      this.tiroInAttesa = null;
+      if (tiro)
+         await this.CompletaRealizzazione(tiro, posizione);
+      this.cdr.detectChanges();
+   }
+
+
+   // Doppio click sulla casella dei punti di un giocatore in campo: sua mappa di tiro
+   MostraMappaGiocatore (player: TMatchPlayer): void
+   {
+      this.mappaTiri = { titolo: `${player.playNumber()} ${player.playName()}`, giocatori: [player] };
+      this.dialogVisible_MappaTiri = true;
+   }
+
+
+   // Doppio click sui punti di una squadra: mappa di tiro di tutti i suoi giocatori
+   MostraMappaSquadra (team: TMatchTeam): void
+   {
+      const nome = (team === matchGlobs.currMatch?.myTeam()) ? this.matchHeader.myTeamNome_lk : this.matchHeader.oppoTeamNome_lk;
+      this.mappaTiri = { titolo: nome || 'Squadra', giocatori: [...team.Roster] };
+      this.dialogVisible_MappaTiri = true;
+   }
+
+
+   onMappaTiriDialogShow (): void
+   {
+      if (this.mappaTiriComp && this.mappaTiri)
+         this.mappaTiriComp.onComponentShow(this.mappaTiri.titolo, this.mappaTiri.giocatori);
+   }
+
+
+   onTiroAnnulla (): void
+   {
+      this.dialogVisible_TiroPos = false;
+      this.tiroInAttesa = null;
+      this.msgService.add({ severity: 'info', summary: 'Tiro', detail: 'Tiro non registrato' });
    }
 
 

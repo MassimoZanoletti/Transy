@@ -1,0 +1,21 @@
+<div class="div-mappatiri-content">
+   <div class="mappatiri-titolo">Mappa di tiro - {{ titolo }}</div>
+   <app-campo-tiri [tiri]="tiri"
+                   titoloLegenda=""></app-campo-tiri>
+   <div class="mappatiri-riepilogo">
+      @for (r of riepilogo; track r.label)
+      {
+         <span><b>{{ r.label }}</b> {{ r.segnati }}/{{ r.tentati }} ({{ Percentuale(r.segnati, r.tentati) }})</span>
+      }
+      @if (senzaPosizione > 0)
+      {
+         <span class="mappatiri-nota">{{ senzaPosizione }} {{ senzaPosizione === 1 ? 'tiro' : 'tiri' }} senza posizione (non sul campo)</span>
+      }
+   </div>
+   <div class="mappatiri-bottoni">
+      <p-button label="Chiudi"
+                icon="pi pi-check"
+                severity="secondary"
+                (onClick)="BtnChiudi()"></p-button>
+   </div>
+</div>

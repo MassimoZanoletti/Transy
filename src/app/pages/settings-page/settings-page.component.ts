@@ -16,6 +16,7 @@ import {TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
 import {Router} from "@angular/router";
 import {loggedUser} from "../../services/users.service";
+import {ConfigService} from "../../services/config.service";
 
 
 
@@ -46,7 +47,8 @@ export class SettingsPageComponent
 {
 
 
-   constructor (public router: Router)
+   constructor (public router: Router,
+                public config: ConfigService)
    {
    }
 

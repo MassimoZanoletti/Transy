@@ -73,7 +73,9 @@
          </div>
       </div>
       <div id="div-te-pti-cont"
-           class="div-pti-cont">
+           class="div-pti-cont"
+           title="Doppio click: mappa di tiro della squadra"
+           (dblclick)="onPuntiDoubleClick()">
          <div id="div-pti-tot"
               class="div-pti-tot">
             {{GetTotPunti()}}

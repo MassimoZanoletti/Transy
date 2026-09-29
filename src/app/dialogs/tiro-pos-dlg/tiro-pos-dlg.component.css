@@ -1,0 +1,23 @@
+.div-tiropos-content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+}
+
+.tiropos-titolo {
+   font-size: 1.2rem;
+   font-weight: 700;
+}
+
+.tiropos-istruzioni {
+   font-size: 0.9rem;
+   color: #cbd5e1;
+}
+
+.tiropos-bottoni {
+   display: flex;
+   justify-content: flex-end;
+   gap: 10px;
+   width: 100%;
+}

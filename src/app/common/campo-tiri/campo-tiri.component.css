@@ -1,0 +1,57 @@
+:host {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+}
+
+/* contenitore grande esattamente come l'immagine: il disegno dei tiri le si sovrappone perfettamente */
+.campotiri-box {
+   position: relative;
+   display: inline-block;
+   line-height: 0;
+}
+
+/* proporzioni sempre esatte (l'altezza arriva da altezzaMax): l'area cliccabile coincide col disegno */
+.campotiri-campo {
+   width: auto;
+   aspect-ratio: 571 / 539;
+   border: 1px solid #424b57;
+   user-select: none;
+}
+
+.campotiri-cliccabile {
+   cursor: crosshair;
+}
+
+.campotiri-tiri {
+   position: absolute;
+   inset: 0;
+   width: 100%;
+   height: 100%;
+   pointer-events: none;
+}
+
+.campotiri-legenda {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   align-items: center;
+   gap: 12px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.campotiri-legenda-voce {
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+}
+
+.campotiri-legenda-colore {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 50%;
+   border: 1px solid #000000;
+}

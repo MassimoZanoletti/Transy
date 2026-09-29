@@ -1,0 +1,39 @@
+<div class="campotiri-box">
+   <img src="assets/campo-tiri.png"
+        alt="Campo"
+        class="campotiri-campo"
+        [class.campotiri-cliccabile]="cliccabile"
+        [style.height]="altezzaMax"
+        draggable="false"
+        (click)="onCampoClick($event)"/>
+   <!-- tiri nelle coordinate dell'immagine originale (non intercetta i click) -->
+   <svg class="campotiri-tiri"
+        [attr.viewBox]="'0 0 ' + LARGHEZZA + ' ' + ALTEZZA"
+        preserveAspectRatio="none">
+      @for (tiro of tiri; track $index)
+      {
+         @if (tiro.segnato)
+         {
+            <circle [attr.cx]="tiro.x" [attr.cy]="tiro.y" r="7"
+                    [attr.fill]="Colore(tiro)" stroke="#000000" stroke-width="1.5"/>
+         }
+         @else
+         {
+            <g [attr.transform]="'translate(' + tiro.x + ' ' + tiro.y + ')'" stroke-linecap="round">
+               <path d="M -6 -6 L 6 6 M -6 6 L 6 -6" stroke="#000000" stroke-width="5.5"/>
+               <path d="M -6 -6 L 6 6 M -6 6 L 6 -6" [attr.stroke]="Colore(tiro)" stroke-width="3"/>
+            </g>
+         }
+      }
+   </svg>
+</div>
+@if (legenda.length > 0)
+{
+   <div class="campotiri-legenda">
+      <span>{{ titoloLegenda }} ● segnato, ✕ sbagliato</span>
+      @for (voce of legenda; track voce.label)
+      {
+         <span class="campotiri-legenda-voce"><span class="campotiri-legenda-colore" [style.background-color]="voce.colore"></span>{{ voce.label }}</span>
+      }
+   </div>
+}

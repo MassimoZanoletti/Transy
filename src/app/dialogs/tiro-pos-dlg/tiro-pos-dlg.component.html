@@ -1,0 +1,18 @@
+<div class="div-tiropos-content">
+   <div class="tiropos-titolo">{{ descrizione }}</div>
+   <div class="tiropos-istruzioni">Clicca sul punto da cui è stato fatto il tiro</div>
+   <app-campo-tiri [tiri]="tiriPrecedenti"
+                   [cliccabile]="true"
+                   titoloLegenda="Tiri precedenti:"
+                   (posizione)="posizione.emit($event)"></app-campo-tiri>
+   <div class="tiropos-bottoni">
+      <p-button label="Annulla"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="BtnAnnulla()"></p-button>
+      <p-button label="Senza posizione"
+                icon="pi pi-ban"
+                severity="secondary"
+                (onClick)="BtnSenzaPosizione()"></p-button>
+   </div>
+</div>

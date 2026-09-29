@@ -51,6 +51,8 @@ export class PlayerCompComponent implements OnInit, OnDestroy
 
    @Output() componentClicked = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
+   // doppio click sulla casella dei punti: mappa di tiro del giocatore
+   @Output() puntiDoubleClicked = new EventEmitter<TMatchPlayer>();
 
 
 
@@ -81,6 +83,13 @@ export class PlayerCompComponent implements OnInit, OnDestroy
    onDoubleClick()
    {
       this.componentDoubleClicked.emit(this.componentId);
+   }
+
+
+   onPuntiDoubleClick()
+   {
+      if (this.player)
+         this.puntiDoubleClicked.emit(this.player);
    }
 
 
