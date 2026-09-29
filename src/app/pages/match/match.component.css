@@ -5,6 +5,10 @@
 
 ::ng-deep #table-operazioni .p-datatable-tbody > tr > td {
    font-size: 0.8rem;
+   /* padding e interlinea arrivavano dalla regola globale di players-comp (ora limitata al suo componente) */
+   padding-top: 0.08rem;
+   padding-bottom: 0.08rem;
+   line-height: 1.5;
 }
 
 /* Il tema PrimeNG assegna a .p-dialog-content un padding-bottom fisso di 2rem, che qui è spazio

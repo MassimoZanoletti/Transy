@@ -52,7 +52,7 @@
 }
 
 
-::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+:host ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
    background-color: #422d6b !important; /* blu scuro */
    color: #ffe378 !important; /* testo bianco */
    font-weight: bold;
@@ -60,11 +60,11 @@
    border-bottom: 2px solid #3949ab; /* bordo inferiore */
 }
 
-::ng-deep .custom-header-table .p-button {
+:host ::ng-deep .custom-header-table .p-button {
    min-height: 2.5rem;
 }
 
-::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
    line-height: 1.5;

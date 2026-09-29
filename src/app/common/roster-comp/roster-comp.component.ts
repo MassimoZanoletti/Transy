@@ -103,6 +103,11 @@ export class RosterCompComponent implements OnInit, OnDestroy
    public oppoHeadCoachValue: any;
    public oppoViceValue: any;
    private nuoviGiocatori: number = 0;
+   // Altezza massima delle due tabelle dei giocatori: 680px come prima, ma non più dello spazio che lo schermo
+   // lascia libero dopo il resto del dialog (titoli, pulsanti, allenatori, bordi: 442px misurati, più margine;
+   // il dialog è alto al massimo il 90% dello schermo): così il dialog sta nello schermo senza barra di
+   // scorrimento e, se i giocatori non ci stanno, scorre solo la tabella. Minimo 150px per schermi minuscoli.
+   public readonly altezzaTabelle: string = 'min(680px, max(150px, calc(90vh - 460px)))';
 
    constructor(private cdr: ChangeDetectorRef,
                private servMatchRoster: MatchrosterService,

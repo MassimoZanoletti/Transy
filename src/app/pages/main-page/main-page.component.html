@@ -635,7 +635,8 @@
           [(visible)]="dialogVisible_Roster"
           [closable]="false"
           (onShow)="onMatchRosterDialogShow()"
-          [style]="{ width: '1050px', height: '1150px', padding: '10px', 'background-color': '#1f2937' }">
+          [contentStyle]="{ 'padding-bottom': '6px' }"
+          [style]="{ width: '1050px', padding: '10px', 'background-color': '#1f2937' }">
    <div>
       <app-roster-comp
          (salvaMatchRoster)="SalvaMatchRosterDiag($event)"

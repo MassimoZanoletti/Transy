@@ -93,8 +93,8 @@
    padding: 0.3rem 0.3rem !important;
 }
 
-/* players-comp e roster-comp impostano con ::ng-deep non limitato "font-size: 2em/28px" per TUTTE le celle
-   delle tabelle PrimeNG: qui si torna alla dimensione normale */
+/* dimensione delle celle delle statistiche (in passato serviva anche a neutralizzare le regole globali di
+   players-comp/roster-comp, ora limitate al proprio componente) */
 :host ::ng-deep .custom-table .p-datatable-tbody > tr > td {
    font-size: 1rem !important;
    line-height: 1.3 !important;

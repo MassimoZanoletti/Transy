@@ -27,7 +27,7 @@
                   class="custom-header-table"
                   styleClass="p-datatable-gridlines"
                   [scrollable]="true"
-                  scrollHeight="680px"
+                  [scrollHeight]="altezzaTabelle"
                   [value]="listaMyRoster"
                   selectionMode="single"
                   [(selection)]="selectedMy"
@@ -154,7 +154,7 @@
                   class="custom-header-table"
                   styleClass="p-datatable-gridlines"
                   [scrollable]="true"
-                  scrollHeight="680px"
+                  [scrollHeight]="altezzaTabelle"
                   [value]="listaOppoRoster"
                   selectionMode="single"
                   [(selection)]="selectedOppo"
@@ -301,7 +301,7 @@
           [modal]="true"
           [(visible)]="dialogVisible_PlayNumber"
           [closable]="false"
-          [style]="{ width: '35rem', height: '19rem', padding: '10px', 'background-color': '#1f2937' }">
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
    <div class="match-status-dialog-container">
       <p-card header="">
          <ng-template pTemplate="content">

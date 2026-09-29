@@ -1,4 +1,4 @@
-::ng-deep .p-button-table .p-button {
+:host ::ng-deep .p-button-table .p-button {
    max-height: 28px !important;
    min-height: 28px !important;
    height: 28px !important;
@@ -8,7 +8,7 @@
    margin-right: 8px !important;
 }
 
-::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+:host ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
    background-color: #422d6b !important; /* blu scuro */
    color: #ffe378 !important; /* testo bianco */
    font-weight: bold;
@@ -17,7 +17,7 @@
 }
 
 
-::ng-deep .custom-header-table .p-button {
+:host ::ng-deep .custom-header-table .p-button {
    min-height: 2.5rem;
 }
 
@@ -45,10 +45,12 @@
    color: white;
 }
 
-::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
    line-height: 1.0;
+   /* prima arrivava (per contagio) dalla regola globale di players-comp: ora è esplicita */
+   font-size: 2em;
 }
 
 ::ng-deep .p-card .p-card-body {

@@ -5,9 +5,9 @@
    display: flex;
    /*justify-content: center;*/
    align-items: start;
-   height: 800px;
+   /* nessuna altezza fissa: il dialog si adatta allo schermo (vedi altezzaTabelle) */
    width: 1000px !important;
-   margin-top: 15px !important;
+   margin-top: 0 !important;
    border: solid 1px black;
 
    mat-card {
@@ -88,7 +88,7 @@
 */
 
 /*
-::ng-deep .custom-header-table .p-datatable-thead > tr > th {
+:host ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
    background-color: #422d6b !important;
    color: #ffe378 !important;
    font-weight: bold;
@@ -97,7 +97,7 @@
 }
 */
 
-::ng-deep .custom-header-table .p-button {
+:host ::ng-deep .custom-header-table .p-button {
    min-height: 2.0rem;
    padding-left: 3px !important;
    padding-right: 3px !important;
@@ -105,7 +105,7 @@
    margin-right: 3px !important;
 }
 
-::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
    line-height: 1.5;
@@ -198,4 +198,22 @@
    height: 1400px !important;
    max-height: 1400px !important;
    overflow: hidden !important;
+}
+
+/* Margini interni del riquadro ridotti: il dialog deve stare nello schermo del notebook senza barra di
+   scorrimento (lo spazio che resta va alle tabelle dei giocatori, vedi altezzaTabelle) */
+:host ::ng-deep .form-container .p-card-body {
+   padding: 4px 10px;
+}
+
+:host ::ng-deep .form-container .p-card-title {
+   margin-bottom: 2px;
+}
+
+:host ::ng-deep .form-container .p-card-content {
+   padding: 2px 0;
+}
+
+:host ::ng-deep .form-container .p-card-footer {
+   padding-top: 4px;
 }

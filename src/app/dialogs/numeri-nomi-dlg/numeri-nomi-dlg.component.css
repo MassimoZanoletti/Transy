@@ -55,13 +55,16 @@
    min-height: 0;
 }
 
-/* players-comp/roster-comp.component.css definiscono una regola ::ng-deep
-   ".p-datatable .p-datatable-tbody > tr > td { font-size: 2em; line-height: 1.5; ... }" senza scoping,
-   quindi globale a tutte le tabelle PrimeNG dell'app (vedi la stessa nota in falli-totali-dlg.component.css
-   — stesso font-size scelto lì, 26px, per coerenza fra le due dialog). */
+/* Dimensione e spaziatura delle celle di questa dialog. Fino al 2026-09-29 players-comp/roster-comp avevano
+   una regola ::ng-deep non limitata al proprio componente (font-size 2em/28px su tutte le tabelle): questa
+   regola la neutralizzava; ora quelle regole sono limitate con :host e questa definisce semplicemente
+   l'aspetto della tabella (26px come prima; padding reso esplicito, prima arrivava da quella regola). */
 ::ng-deep .numerinomi-table .p-datatable-tbody > tr > td {
    font-size: 26px !important;
    line-height: normal !important;
+   /* arrivava dalla regola globale di players-comp (ora limitata al suo componente) */
+   padding-top: 0.08rem;
+   padding-bottom: 0.08rem;
 }
 
 .numerinomi-numero-input {

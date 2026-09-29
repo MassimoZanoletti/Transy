@@ -7,6 +7,8 @@
 ::ng-deep #table-azioni .p-datatable-tbody > tr > td {
    font-size: 0.8rem;
    padding: 2px 8px;
+   /* arrivava dalla regola globale di players-comp (ora limitata al suo componente) */
+   line-height: 1.5;
 }
 
 ::ng-deep #table-azioni .p-datatable-tbody > tr > td .p-button {

@@ -63,15 +63,16 @@
    height: 2rem;
 }
 
-/* players-comp/roster-comp.component.css definiscono una regola ::ng-deep
-   ".p-datatable .p-datatable-tbody > tr > td { font-size: 2em; line-height: 1.5; ... }" senza scoping,
-   quindi globale a tutte le tabelle PrimeNG dell'app — anche alla cella del bottone di espansione (colonna
-   1), che pur non avendo testo visibile riserva comunque 2em*1.5=48px di line-height, ed è quello a
-   dettare l'altezza della riga (non il font-size delle altre due celle). !important necessario perché a
-   parità di specificità vincerebbe l'ordine di caricamento dei bundle, non affidabile. */
+/* Dimensione e spaziatura delle celle di questa dialog. Fino al 2026-09-29 players-comp/roster-comp avevano
+   una regola ::ng-deep non limitata al proprio componente (font-size 2em/28px su tutte le tabelle): questa
+   regola la neutralizzava; ora quelle regole sono limitate con :host e questa definisce semplicemente
+   l'aspetto della tabella (26px come prima; padding reso esplicito, prima arrivava da quella regola). */
 ::ng-deep .fallitotali-table .p-datatable-tbody > tr > td {
    font-size: 26px !important;
    line-height: normal !important;
+   /* arrivava dalla regola globale di players-comp (ora limitata al suo componente) */
+   padding-top: 0.08rem;
+   padding-bottom: 0.08rem;
 }
 
 .div-fallitotali-footer {
