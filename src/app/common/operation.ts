@@ -462,7 +462,7 @@ export class TOperation
             case TOperationType.totT2No:        s2 = `${tm}|${p1Num}|(${p1Na})|[]|${this.desc()}|${this.desc2()}`; break
             case TOperationType.totT3Yes:       s2 = `${tm}|${p1Num}|(${p1Na})|[]|${this.desc()}|${this.desc2()}`; break
             case TOperationType.totT3No:        s2 = `${tm}|${p1Num}|(${p1Na})|[]|${this.desc()}|${this.desc2()}`; break
-            case TOperationType.totFalloFatto:  s2 = `${tm}|${p1Num}|(${p1Na})|${this.desc()}}`; break
+            case TOperationType.totFalloFatto:  s2 = `${tm}|${p1Num}|(${p1Na})|${this.desc()}`; break
             case TOperationType.totFalloSubito: s2 = `${tm}|${p1Num}|(${p1Na})`; break
             case TOperationType.totRimbDifesa:  s2 = `${tm}|${p1Num}|(${p1Na})`; break
             case TOperationType.totRimbAttacco: s2 = `${tm}|${p1Num}|(${p1Na})`; break

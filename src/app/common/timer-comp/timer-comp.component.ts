@@ -405,6 +405,17 @@ export class TimerCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Stato attuale del cronometro (quarto e tempo rimanente di ogni quarto toccato), da ripassare a
+   // RestoreState: serve per ricostruire la partita dagli eventi senza spostare il cronometro
+   public GetState (): { currQuarter: string, quarterTimes: Record<string, number> }
+   {
+      return {
+         currQuarter:  this.currQuarter,
+         quarterTimes: { ...this.quarterTimes, [this.currQuarter]: this.GetTimeSeconds () }
+      };
+   }
+
+
    // Ripristina il cronometro (fermo) dallo stato ricostruito dagli eventi della partita: quarto corrente e
    // ultimo tempo rimanente registrato per ciascun quarto giocato
    public RestoreState (currQuarter: string,

@@ -1,0 +1,55 @@
+.div-editazione-content {
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.editazione-originale {
+   font-size: 0.95rem;
+   color: #cbd5e1;
+}
+
+.editazione-originale span {
+   font-family: monospace;
+   font-weight: 700;
+   color: #ffffff;
+   white-space: pre;
+}
+
+.editazione-griglia {
+   display: grid;
+   grid-template-columns: 110px 1fr;
+   align-items: center;
+   row-gap: 12px;
+   column-gap: 12px;
+}
+
+.editazione-griglia label {
+   font-weight: 700;
+}
+
+::ng-deep .editazione-campo {
+   width: 100%;
+}
+
+::ng-deep .editazione-tempo {
+   width: 110px;
+   text-align: center;
+   font-size: 1.1rem;
+}
+
+.editazione-nota {
+   font-size: 0.9rem;
+   color: #fde68a;
+}
+
+.editazione-errore {
+   font-weight: 700;
+   color: #f87171;
+}
+
+.editazione-bottoni {
+   display: flex;
+   justify-content: flex-end;
+   gap: 10px;
+}

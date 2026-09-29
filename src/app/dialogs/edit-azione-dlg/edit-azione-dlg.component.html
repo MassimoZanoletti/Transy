@@ -1,0 +1,66 @@
+<div class="div-editazione-content">
+   <div class="editazione-originale">Azione originale: <span>{{descOriginale}}</span></div>
+
+   <div class="editazione-griglia">
+      <label>Quarto</label>
+      <p-dropdown [options]="quarti"
+                  [(ngModel)]="quarter"
+                  optionLabel="label"
+                  optionValue="value"
+                  appendTo="body"
+                  styleClass="editazione-campo"></p-dropdown>
+
+      <label>Tempo</label>
+      <p-inputMask mask="99:99"
+                   [(ngModel)]="tempo"
+                   slotChar="0"
+                   styleClass="editazione-tempo"></p-inputMask>
+
+      <label>Azione</label>
+      <p-dropdown [options]="azioni"
+                  [(ngModel)]="oper"
+                  optionLabel="label"
+                  optionValue="value"
+                  appendTo="body"
+                  [scrollHeight]="'400px'"
+                  styleClass="editazione-campo"></p-dropdown>
+
+      <label>Squadra</label>
+      <p-selectButton [options]="squadre"
+                      [(ngModel)]="myTeam"
+                      optionLabel="label"
+                      optionValue="value"
+                      [allowEmpty]="false"
+                      (onChange)="AggiornaGiocatori()"></p-selectButton>
+
+      <label>Giocatore</label>
+      <p-dropdown [options]="giocatori"
+                  [(ngModel)]="player"
+                  optionLabel="label"
+                  optionValue="value"
+                  appendTo="body"
+                  placeholder="Scegli il giocatore"
+                  [scrollHeight]="'400px'"
+                  styleClass="editazione-campo"></p-dropdown>
+   </div>
+
+   @if (oper === FALLO_FATTO)
+   {
+      <div class="editazione-nota">Per un fallo fatto, tipo e tiri liberi si scelgono nella finestra dei falli
+         che si apre dopo "Salva" (se l'azione era già un fallo fatto, restano quelli originali).</div>
+   }
+   @if (errore)
+   {
+      <div class="editazione-errore">{{errore}}</div>
+   }
+
+   <div class="editazione-bottoni">
+      <p-button label="Annulla"
+                icon="pi pi-times"
+                severity="secondary"
+                (onClick)="BtnAnnulla()"></p-button>
+      <p-button label="Salva"
+                icon="pi pi-check"
+                (onClick)="BtnSalva()"></p-button>
+   </div>
+</div>

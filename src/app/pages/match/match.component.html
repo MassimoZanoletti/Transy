@@ -678,6 +678,24 @@
 
 
 <!-----------------------------------------------------------------
+               DIALOG MODIFICA AZIONE
+------------------------------------------------------------------>
+<p-dialog id="dialog-edit-azione"
+          header="Modifica azione"
+          [modal]="true"
+          [(visible)]="dialogVisible_EditAzione"
+          [closable]="false"
+          (onShow)="onEditAzioneDialogShow()"
+          [style]="{ width: '560px', padding: '10px', 'background-color': '#1f2937' }">
+   <app-edit-azione-dlg
+      (salva)="onEditAzioneSalva($event)"
+      (annulla)="onEditAzioneAnnulla()">
+   </app-edit-azione-dlg>
+</p-dialog>
+<!--   FINE DIALOG MODIFICA AZIONE   -->
+
+
+<!-----------------------------------------------------------------
                DIALOG TEMPI DI GIOCO
 ------------------------------------------------------------------>
 <p-dialog id="dialog-tempigioco"

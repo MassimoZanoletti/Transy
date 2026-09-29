@@ -64,3 +64,32 @@
 .oper-bg-quintetto {
    background-color: #007070;
 }
+
+
+/* Riga dei filtri per colonna */
+::ng-deep #table-azioni .p-datatable-thead > tr.riga-filtri > th {
+   padding: 2px 4px;
+   font-weight: normal;
+}
+
+::ng-deep #table-azioni .filtro-campo {
+   width: 100%;
+   min-width: 0;
+   font-size: 0.8rem;
+}
+
+::ng-deep #table-azioni .filtro-campo .p-dropdown-label,
+::ng-deep #table-azioni .filtro-campo .p-multiselect-label {
+   padding: 4px 6px;
+   font-size: 0.8rem;
+}
+
+::ng-deep #table-azioni input.filtro-tempo {
+   padding: 4px 6px;
+}
+
+.azioni-conteggio {
+   margin-left: auto;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}

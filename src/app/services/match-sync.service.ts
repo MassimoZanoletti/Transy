@@ -516,6 +516,12 @@ export class MatchSyncService
             ev.courtx = rz.rPosX;
             ev.courty = rz.rPosY;
          }
+         else if ((op.eventData?.courtx != null) || (op.eventData?.courty != null))
+         {
+            // posizione già fissata sull'operazione (tiro corretto da "Modifica azione", non ancora applicato)
+            ev.courtx = op.eventData.courtx;
+            ev.courty = op.eventData.courty;
+         }
       }
       if (op.oper() === TOperationType.totTimeout)
          ev.subtype = TOperation.TimeoutAfter(op.desc2());

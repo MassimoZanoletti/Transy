@@ -91,6 +91,7 @@ import { AzioniDlgComponent } from "../../dialogs/azioni-dlg/azioni-dlg.componen
 import { TempiGiocoDlgComponent } from "../../dialogs/tempi-gioco-dlg/tempi-gioco-dlg.component";
 import { FalliTotaliDlgComponent } from "../../dialogs/falli-totali-dlg/falli-totali-dlg.component";
 import { NumeriNomiDlgComponent } from "../../dialogs/numeri-nomi-dlg/numeri-nomi-dlg.component";
+import { AZIONI_MODIFICABILI, EditAzioneDlgComponent, TModificaAzione } from "../../dialogs/edit-azione-dlg/edit-azione-dlg.component";
 import { TOperation, TOperationList, TOperationType } from "../../common/operation";
 import { MatchSyncService } from "../../services/match-sync.service";
 
@@ -142,6 +143,7 @@ type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
                  TempiGiocoDlgComponent,
                  FalliTotaliDlgComponent,
                  NumeriNomiDlgComponent,
+                 EditAzioneDlgComponent,
                  ToastModule
               ],
   providers: [
@@ -161,6 +163,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(TempiGiocoDlgComponent) tempiGiocoComp!: TempiGiocoDlgComponent;
    @ViewChild(FalliTotaliDlgComponent) falliTotaliComp!: FalliTotaliDlgComponent;
    @ViewChild(NumeriNomiDlgComponent) numeriNomiComp!: NumeriNomiDlgComponent;
+   @ViewChild(EditAzioneDlgComponent) editAzioneComp!: EditAzioneDlgComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -239,6 +242,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    // (vedi onSostituzioneSave/ConsolidateOutgoingPlayers).
    private prevOnCourtSost: TMatchPlayer[] = [];
    public dialogVisible_Azioni: boolean = false;
+   public dialogVisible_EditAzione: boolean = false;
+   // Azione in modifica dal dialog Azioni; per una modifica che la trasforma in "Fallo fatto", quella vecchia
+   // si toglie solo dopo che il fallo è stato registrato nel dialog falli (vedi salvaPlayerFalli)
+   private azioneInModifica: TOperation | null = null;
+   private azioneVersoFallo: TOperation | null = null;
    public dialogVisible_TempiGioco: boolean = false;
    public dialogVisible_FalliTotali: boolean = false;
    public dialogVisible_NumeriNomi: boolean = false;
@@ -1259,13 +1267,28 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async salvaPlayerFalli(event: {player: TMatchPlayer | null, nuovoFallo: boolean})
    {
       this.dialogVisible_Falli = false;
+      const azioneVersoFallo = this.azioneVersoFallo;
+      this.azioneVersoFallo = null;
       if ((event.player != null) && (this.playerForFalli != null))
       {
          this.playerForFalli.falliFatti.set(event.player.falliFatti());
          // falli nuovi, tolti o corretti -> eventi "Fallo fatto" (vedi RegistraModificheFalli)
-         await this.RegistraModificheFalli();
+         const falliAggiunti = await this.RegistraModificheFalli();
          this.UpdateCommandsData(this.playerForFalli);
          this.cdr.detectChanges();
+         if (azioneVersoFallo)
+         {
+            // "Modifica azione" verso un fallo fatto: registrato il fallo, si toglie l'azione originale
+            if (falliAggiunti > 0)
+            {
+               await this.matchSync.EnqueueDeleteEvent(azioneVersoFallo, this.matchHeader.id);
+               await this.RicostruisciPartita();
+               this.msgService.add({ severity: 'success', summary: 'Modifica azione', detail: 'Azione modificata' });
+            }
+            else
+               this.msgService.add({ severity: 'warn', summary: 'Modifica azione',
+                                     detail: 'Nessun fallo aggiunto: l\'azione originale non è stata modificata' });
+         }
       }
    }
 
@@ -1273,6 +1296,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    annullaPlayerFalli()
    {
       this.dialogVisible_Falli = false;
+      if (this.azioneVersoFallo)
+      {
+         this.azioneVersoFallo = null;
+         this.msgService.add({ severity: 'info', summary: 'Modifica azione', detail: 'Modifica annullata: l\'azione originale non è cambiata' });
+      }
    }
 
 
@@ -2489,6 +2517,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          }
          lastTime = op.time();
          opList.ApplyOperation (op);
+         // punteggio in fondo alla descrizione (vedi TOperationList.AppendPunteggioToDesc): ricalcolato, così
+         // resta giusto anche dopo la modifica di un'azione precedente
+         const punteggio = `${myTeam?.CalcPunti() ?? 0}-${oppTeam?.CalcPunti() ?? 0}`;
+         const desc = op.desc();
+         if (desc === '')
+            op.desc.set(punteggio);
+         else if (/(^|\s)\d+-\d+$/.test(desc))
+            op.desc.set(desc.replace(/\d+-\d+$/, punteggio));
 
          const p1 = op.player1();
          const p2 = op.player2();
@@ -2652,9 +2688,121 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // "Modifica" di una riga del dialog Azioni: solo le azioni statistiche legate a un giocatore (tiri, falli,
+   // rimbalzi, palle, stoppate, assist), come nel Delphi; le altre si possono solo eliminare
    BtnModificaAzione (op: TOperation): void
    {
-      this.msgService.add({ severity: 'info', summary: 'Modifica azione', detail: 'Non ancora implementato' });
+      if (!AZIONI_MODIFICABILI.some(a => a.value === op.oper()))
+      {
+         this.msgService.add({ severity: 'warn', summary: 'Modifica azione',
+                               detail: 'Sostituzioni, quintetti, timeout, cronometro e checkpoint si possono solo eliminare' });
+         return;
+      }
+      // la partita viene ricostruita dagli eventi: col cronometro in corsa si perderebbe il tempo che scorre
+      if (this.compTimer?.isRunning)
+      {
+         this.msgService.add({ severity: 'warn', summary: 'Modifica azione', detail: 'Ferma il cronometro prima di modificare un\'azione' });
+         return;
+      }
+      this.azioneInModifica = op;
+      this.dialogVisible_EditAzione = true;
+   }
+
+
+   onEditAzioneDialogShow (): void
+   {
+      if (this.editAzioneComp && this.azioneInModifica)
+         this.editAzioneComp.onComponentShow(this.azioneInModifica,
+                                             matchGlobs.currMatch?.myTeam() ?? null,
+                                             matchGlobs.currMatch?.oppTeam() ?? null,
+                                             this.matchHeader.myTeamNome_lk,
+                                             this.matchHeader.oppoTeamNome_lk);
+   }
+
+
+   onEditAzioneAnnulla (): void
+   {
+      this.dialogVisible_EditAzione = false;
+      this.azioneInModifica = null;
+   }
+
+
+   async onEditAzioneSalva (m: TModificaAzione): Promise<void>
+   {
+      this.dialogVisible_EditAzione = false;
+      const vecchia = this.azioneInModifica;
+      this.azioneInModifica = null;
+      if (!vecchia)
+         return;
+      const invariata = (vecchia.quarter() === m.quarter) && (vecchia.time() === m.time) && (vecchia.oper() === m.oper) &&
+                        (vecchia.myTeam() === m.myTeam) && (vecchia.player1() === m.player);
+      if (invariata)
+         return;
+      if ((m.oper === TOperationType.totFalloFatto) && (vecchia.oper() !== TOperationType.totFalloFatto))
+      {
+         // Nuovo fallo fatto: tipo e tiri liberi si scelgono nel dialog falli, come dal vivo, al quarto/tempo
+         // indicati; l'azione vecchia si toglie solo se lì il fallo viene davvero registrato
+         this.azioneVersoFallo = vecchia;
+         this.playerForFalli = m.player;
+         this.quartoForFalli = m.quarter;
+         this.tempoForFalli = m.time;
+         this.dialogVisible_Falli = true;
+         return;
+      }
+      await this.ApplicaModificaAzione(vecchia, m);
+   }
+
+
+   // L'azione vecchia viene tolta e quella corretta registrata come se fosse stata fatta dal vivo (entrambe in
+   // coda per il server); poi la partita viene ricostruita dagli eventi, così statistiche, punteggi, falli,
+   // tempi di gioco, plus/minus e parziali tornano coerenti anche se sono cambiati quarto o tempo.
+   private async ApplicaModificaAzione (vecchia: TOperation,
+                                        m: TModificaAzione): Promise<void>
+   {
+      const matchId = this.matchHeader.id;
+      // dettagli della vecchia azione da conservare (posizione del tiro, tipo e liberi del fallo)
+      const evVecchio = this.matchSync.OperationToEvent(vecchia, matchId);
+      const isTiro = (t: TOperationType) => (t >= TOperationType.totTLYes) && (t <= TOperationType.totT3No);
+      const nuova = new TOperation(m.quarter, m.time, m.oper, m.myTeam, m.player, undefined,
+                                   (m.oper === vecchia.oper()) ? vecchia.desc() : '');
+      const dettagli: any = {};
+      if (isTiro(m.oper) && isTiro(vecchia.oper()) && ((evVecchio.courtx != null) || (evVecchio.courty != null)))
+      {
+         dettagli.courtx = evVecchio.courtx;
+         dettagli.courty = evVecchio.courty;
+      }
+      if ((m.oper === TOperationType.totFalloFatto) && (vecchia.oper() === TOperationType.totFalloFatto))
+      {
+         dettagli.subtype = evVecchio.subtype;
+         dettagli.ftawarded = evVecchio.ftawarded ?? 0;
+      }
+      if (Object.keys(dettagli).length > 0)
+         nuova.eventData = dettagli;
+      await this.matchSync.EnqueueDeleteEvent(vecchia, matchId);
+      await this.matchSync.EnqueueAddEvent(nuova, matchId);
+      await this.RicostruisciPartita();
+      this.msgService.add({ severity: 'success', summary: 'Modifica azione', detail: 'Azione modificata' });
+   }
+
+
+   // Ricostruisce la partita dagli eventi (come ricaricandola) lasciando il cronometro dov'era
+   private async RicostruisciPartita (): Promise<void>
+   {
+      const statoTimer = this.compTimer?.GetState();
+      await this.InitializeComponent();
+      if (this.compTimer && statoTimer)
+      {
+         const quartoRicostruito = this.compTimer.currQuarter;
+         this.compTimer.RestoreState(statoTimer.currQuarter, statoTimer.quarterTimes);
+         if (statoTimer.currQuarter !== quartoRicostruito)
+            this.ApplyLineupForQuarter(statoTimer.currQuarter);
+         this.UpdateFieldPlayers();
+         this.RefreshFrozenClock();
+      }
+      await this.compMyTeam?.Update();
+      await this.compOppoTeam?.Update();
+      this.UpdateCommandsData(this.currSelectedPlayer);
+      this.cdr.detectChanges();
    }
 
 
@@ -2716,11 +2864,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    //  - fallo corretto (quarto, tempo, tipo, liberi) -> evento vecchio tolto e sostituito da quello corretto.
    // Il confronto è casella per casella (le 5 caselle falli del giocatore). I falli del giocatore sono già
    // stati aggiornati dalla dialog: qui si allinea solo la lista delle operazioni, senza riapplicare effetti.
-   async RegistraModificheFalli (): Promise<void>
+   // Restituisce quanti falli sono stati aggiunti (nuovi o corretti)
+   async RegistraModificheFalli (): Promise<number>
    {
+      let aggiunti = 0;
       const cm = matchGlobs.currMatch;
       if (!cm)
-         return;
+         return 0;
       const opList = await cm.EnsureOperationList();
       const uguali = (a: TFallo, b: TFallo) =>
          (a.fCommesso === b.fCommesso) &&
@@ -2752,11 +2902,13 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                const op = new TOperation(fd.fQuarto, fd.fTempo, TOperationType.totFalloFatto, player.isMyTeam(), player);
                op.eventData = { subtype: MatchSyncService.FalloSubtype(fd), ftawarded: fd.numLiberi };
                await opList.Add(op);
+               aggiunti++;
             }
          }
       }
       this.falliPrima = new Map();
       this.ScrollOperazioniToBottom();
+      return aggiunti;
    }
 
 
