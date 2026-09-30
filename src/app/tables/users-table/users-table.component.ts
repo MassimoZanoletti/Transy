@@ -71,7 +71,10 @@ export class UsersTableComponent implements OnInit
                                                      {
                                                         if (data.ok)
                                                         {
-                                                           this.tblData = data.elements;
+                                                           // solo superuser/amministratore vedono tutti gli utenti, gli altri solo se stessi
+                                                           this.tblData = this.IsAdmin()
+                                                              ? data.elements
+                                                              : (data.elements as IDSUser[]).filter(u => Number(u.id) == loggedUser.id);
                                                         }
                                                         else
                                                         {
@@ -102,21 +105,27 @@ export class UsersTableComponent implements OnInit
    }
 
 
+   IsAdmin (): boolean
+   {
+      return (loggedUser.attributo >= 255);
+   }
+
+
    AddEnabled (): boolean
    {
-      return (loggedUser.attributo == 255);
+      return this.IsAdmin();
    }
 
 
    EditEnabled (row: any): boolean
    {
-      return (loggedUser.attributo > 0);
+      return this.IsAdmin() || (Number(row.id) == loggedUser.id);      // un utente normale modifica solo se stesso
    }
 
 
    DeleteEnabled (row: any): boolean
    {
-      return (loggedUser.attributo == 255);
+      return this.IsAdmin();
    }
 
 

@@ -23,7 +23,7 @@ export class AuthService
                 private logService: LogService)
    {
       const lu = utils.GetFromSessionStorage<IDSUser>("BBS_Logged_User");
-      if (lu)
+      if (lu && (lu.ruolo != "Guest"))      // una sessione Guest di prima (login a credenziali vuote, non più ammesso) non vale
       {
          loggedUser.id = lu?.id,
          loggedUser.nome = lu?.nome,
@@ -48,18 +48,12 @@ export class AuthService
       let superUserName: string = `bbs`;
       let superUserPassword: string = `${oggi.getMonth() + 1}${oggi.getDate()}`;
 
-      if (username === '' && password === '')
+      // credenziali vuote (anche solo una delle due): nessun accesso
+      if ((username.trim() === '') || (password === ''))
       {
-         loggedUser.id = 0;
-         loggedUser.nome = "Guest";
-         loggedUser.password = "";
-         loggedUser.ruolo = "Guest";
-         loggedUser.ruolo_id = 0;
-         loggedUser.attributo = 0;
-         this.loggedIn = true;
-         utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
-         await this.logService.AddToLog(loggedUser, "Login");
-         return true;
+         this.loggedIn = false;
+         utils.removeFromSessionStorage("BBS_Logged_User");
+         return false;
       }
       else if ((username == superUserName) && (password == superUserPassword))
       {
@@ -76,17 +70,28 @@ export class AuthService
       }
       else
       {
-         const dataEvnt = await firstValueFrom(this.userServ.CheckUser(username, password));
+         let dataEvnt: any = null;
+         try
+         {
+            dataEvnt = await firstValueFrom(this.userServ.CheckUser(username, password));
+         }
+         catch (error)
+         {
+            console.error("Login: errore di comunicazione col server", error);   // rete assente o errore 500
+         }
          if (dataEvnt)
          {
-            if (dataEvnt.ok)
+            // elements deve essere il singolo utente trovato: un array (es. api non aggiornata che risponde con
+            // l'elenco completo) o un id mancante NON devono mai dare accesso
+            const el = dataEvnt.elements;
+            if (dataEvnt.ok && el && !Array.isArray(el) && (Number(el.id) > 0))
             {
-               loggedUser.id = dataEvnt.elements.id;
-               loggedUser.nome = dataEvnt.elements.nome;
-               loggedUser.password = dataEvnt.elements.password;
-               loggedUser.ruolo = dataEvnt.elements.ruolo;
-               loggedUser.ruolo_id = dataEvnt.elements.ruolo_id;
-               loggedUser.attributo = dataEvnt.elements.attributo;
+               loggedUser.id = Number(el.id);
+               loggedUser.nome = el.nome;
+               loggedUser.password = el.password;
+               loggedUser.ruolo = el.ruolo || "Utente";   // non vuoto: il costruttore considera loggato solo chi ha un ruolo
+               loggedUser.ruolo_id = Number(el.ruolo_id ?? 0);
+               loggedUser.attributo = Number(el.attributo ?? 0);
                this.loggedIn = true;
                utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
                await this.logService.AddToLog(loggedUser, "Login");

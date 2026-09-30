@@ -74,6 +74,12 @@ export class UserEditComponent implements OnInit
       if (history.state.from)
          this.fromWhere = history.state.from;
       //
+      // un utente normale può modificare solo se stesso (non aggiungere né modificare altri)
+      if (!this.ShowRuolo() && ((this.id ?? 0) <= 0 || this.id != loggedUser.id))
+      {
+         await this.Annulla();
+         return;
+      }
       //
       if (this.id > 0)
       {
