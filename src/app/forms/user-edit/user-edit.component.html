@@ -7,21 +7,37 @@
                    id="nome"
                    [(ngModel)]="nome"
                    pInputText
-                   required
-                   #theError="ngModel"/>
+                   required/>
          </div>
 
          <div class="form-group">
-            <label for="nome">Password:</label>
+            <label for="password">Password:</label>
             <input type="text"
                    id="password"
                    [(ngModel)]="password"
                    pInputText
-                   required
-                   #theError="ngModel"/>
+                   required/>
          </div>
 
-         <div *ngIf="theError.invalid && theError.touched" class="error-message">{{ errorMessage }}</div>
+         <!-- ruolo e livello di permessi: modificabili solo dall'amministratore -->
+         <div *ngIf="ShowRuolo()" class="form-group">
+            <label for="ruolo">Ruolo:</label>
+            <input type="text"
+                   id="ruolo"
+                   [(ngModel)]="ruoloDesc"
+                   pInputText/>
+         </div>
+
+         <div *ngIf="ShowRuolo()" class="form-group">
+            <label for="attributo">Attributo:</label>
+            <p-inputNumber inputId="attributo"
+                           [(ngModel)]="ruoloAttrib"
+                           [min]="0"
+                           [max]="255"
+                           [showButtons]="true"></p-inputNumber>
+         </div>
+
+         <div *ngIf="theError" class="error-message">{{ errorMessage }}</div>
       </ng-template>
 
       <ng-template pTemplate="footer">
@@ -38,6 +54,8 @@
                type="button"
                label="OK"
                class="p-button-primary"
+               [disabled]="isLoading || isSaving"
+               [loading]="isSaving"
                (click)="Salva()"
             ></button>
          </div>

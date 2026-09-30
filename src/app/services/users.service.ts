@@ -56,23 +56,26 @@ export class UserService
    }
 
 
+   // api_users.php legge ruolo_desc e ruolo_attrib: se mancano, l'UPDATE li scrive a NULL
    updateData (aId: number,
                aName: string,
                aPassword: string,
-               aRole: number): Observable<any>
+               aRuoloDesc: string,
+               aRuoloAttrib: number): Observable<any>
    {
       const operation: string = "edit";
-      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${aName}&password=${aPassword}&ruoloid=${aRole}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&id=${aId}&nome=${encodeURIComponent(aName)}&password=${encodeURIComponent(aPassword)}&ruolo_desc=${encodeURIComponent(aRuoloDesc)}&ruolo_attrib=${aRuoloAttrib}`;
       return this.http.get<any>(url);
    }
 
 
    addNewData (aName: string,
                aPassword: string,
-               aRole: number): Observable<any>
+               aRuoloDesc: string,
+               aRuoloAttrib: number): Observable<any>
    {
       const operation: string = "add";
-      const url: string = `${this.apiUrl}?operation=${operation}&nome=${aName}&password=${aPassword}&ruoloid=${aRole}`;
+      const url: string = `${this.apiUrl}?operation=${operation}&nome=${encodeURIComponent(aName)}&password=${encodeURIComponent(aPassword)}&ruolo_desc=${encodeURIComponent(aRuoloDesc)}&ruolo_attrib=${aRuoloAttrib}`;
       return this.http.get<any>(url);
    }
 

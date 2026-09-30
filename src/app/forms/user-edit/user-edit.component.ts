@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
 import {loggedUser, UserService} from "../../services/users.service";
+import {firstValueFrom} from "rxjs";
 import { MessDlgData,
    IDSUser } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
@@ -29,6 +30,7 @@ import { LogService } from "../../services/log.service";
   selector:    'app-user-edit',
   standalone:  true,
               imports: [
+                 FormsModule,
                  ButtonDirective,
                  InputNumberModule,
                  CardModule,
@@ -48,6 +50,9 @@ export class UserEditComponent implements OnInit
    id: number = 0;
    nome = '';
    password: string = "";
+   ruoloDesc: string = "Utente";      // valori di default per un nuovo utente
+   ruoloAttrib: number = 1;
+   isSaving: boolean = false;
 
    theError = false;
    errorMessage: string = "Il campo non può essere vuoto";
@@ -82,6 +87,8 @@ export class UserEditComponent implements OnInit
                                                                        {
                                                                           this.nome = (data.elements as IDSUser).nome; // data.elements NON è un array ma invece è semplicemente il solo elementp selezionato
                                                                           this.password = (data.elements as IDSUser).password;
+                                                                          this.ruoloDesc = data.elements.ruolo_desc ?? "";      // l'api restituisce i nomi delle colonne del db
+                                                                          this.ruoloAttrib = Number(data.elements.ruolo_attrib ?? 0);
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -98,22 +105,65 @@ export class UserEditComponent implements OnInit
 
    async Salva()
    {
-      if (this.nome.trim() == "")
+      this.nome = this.nome.trim();
+      if (this.nome == "")
       {
          this.errorMessage = "Il nome non può essere vuoto.";
          this.theError = true;
+         return;
       }
-      else
+      if (this.password == "")
       {
-         if (this.id > 0)
+         this.errorMessage = "La password non può essere vuota.";
+         this.theError = true;
+         return;
+      }
+      this.theError = false;
+      //
+      this.isSaving = true;
+      const subtitle: string = (this.id > 0) ? "Errore nell'aggiornamento dei dati" : "Errore nella scrittura dei dati";
+      try
+      {
+         const response = (this.id > 0)
+            ? await firstValueFrom(this.resourceService.updateData(this.id, this.nome, this.password, this.ruoloDesc, this.ruoloAttrib))
+            : await firstValueFrom(this.resourceService.addNewData(this.nome, this.password, this.ruoloDesc, this.ruoloAttrib));
+         if (response?.ok)
          {
-            // EDIT
+            // se l'utente ha modificato se stesso, aggiorno anche i dati della sessione
+            if ((this.id > 0) && (this.id == loggedUser.id))
+            {
+               loggedUser.nome = this.nome;
+               loggedUser.password = this.password;
+               utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
+            }
+            await this.Annulla();      // torna alla pagina di provenienza
          }
          else
-         {
-            // ADD NEW
-         }
+            this.MostraErrore(subtitle, response?.message ?? "Nessun dato ritornato");
       }
+      catch (error: any)
+      {
+         this.MostraErrore(subtitle, error?.message ?? `${error}`);
+      }
+      finally
+      {
+         this.isSaving = false;
+         this.cdr.detectChanges();
+      }
+   }
+
+
+   private MostraErrore(subtitle: string,
+                        message: string)
+   {
+      const dlgData: MessDlgData = {
+         title:      'ERRORE',
+         subtitle:   subtitle,
+         message:    message,
+         messtype:   'error',
+         btncaption: 'Chiudi'
+      };
+      this.messageDialogService.showMessage(dlgData, '600px');
    }
 
 

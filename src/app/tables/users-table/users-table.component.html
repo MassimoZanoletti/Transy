@@ -56,7 +56,8 @@
          <tr [ngClass]="getRowColorClass(rowIndex)">
             <td><span style="font-size: 0.6em;">{{ elemento.id }}</span></td>
             <td>{{ elemento.nome }}</td>
-            <td>{{ elemento.ruolo }}</td>
+            <td>{{ elemento.ruolo_desc }}</td>   <!-- l'api restituisce i nomi delle colonne del db -->
+
             <td>{{ MaskPassword(elemento.password) }}</td>
             <td>
                <p-button
