@@ -17,12 +17,16 @@ export interface TModificaAzione
    time: number;                 // secondi rimanenti
    oper: TOperationType;
    myTeam: boolean;
-   player: TMatchPlayer;
+   player: TMatchPlayer | null;  // null = azione attribuita alla squadra (vedi TOperation.AZIONI_DI_SQUADRA)
 }
 
 
-// Azioni "statistiche" legate a un giocatore: le sole modificabili (come nel Delphi, dove sostituzioni,
-// quintetti e cronometro si possono solo eliminare)
+// valore della voce "Squadra" nell'elenco dei giocatori: rimbalzi e palle perse/recuperate di squadra
+const SQUADRA = 'squadra';
+
+
+// Azioni "statistiche" legate a un giocatore (o alla squadra, per rimbalzi e palle perse/recuperate): le sole
+// modificabili (come nel Delphi, dove sostituzioni, quintetti e cronometro si possono solo eliminare)
 export const AZIONI_MODIFICABILI: { value: TOperationType, label: string }[] = [
    { value: TOperationType.totTLYes,       label: 'TL segnato' },
    { value: TOperationType.totTLNo,        label: 'TL sbagliato' },
@@ -62,13 +66,13 @@ export class EditAzioneDlgComponent
    public readonly FALLO_FATTO = TOperationType.totFalloFatto;
    public quarti: { value: number, label: string }[] = [];
    public squadre: { value: boolean, label: string }[] = [];
-   public giocatori: { value: TMatchPlayer, label: string }[] = [];
+   public giocatori: { value: TMatchPlayer | typeof SQUADRA, label: string }[] = [];
 
    public quarter: number = 1;
    public tempo: string = '10:00';
    public oper: TOperationType = TOperationType.totT2Yes;
    public myTeam: boolean = true;
-   public player: TMatchPlayer | null = null;
+   public player: TMatchPlayer | typeof SQUADRA | null = null;
    public errore: string = '';
    public descOriginale: string = '';
 
@@ -100,18 +104,25 @@ export class EditAzioneDlgComponent
       this.myTeam = op.myTeam();
       this.errore = '';
       this.descOriginale = op.toString();
+      this.player = op.IsAzioneDiSquadra() ? SQUADRA : null;
       this.AggiornaGiocatori();
-      this.player = this.giocatori.find(g => g.value === op.player1())?.value ?? null;
+      if (!op.IsAzioneDiSquadra())
+         this.player = this.giocatori.find(g => g.value === op.player1())?.value ?? null;
    }
 
 
-   // Cambiando squadra cambia l'elenco dei giocatori; il giocatore scelto resta solo se è della squadra
+   // Cambiando squadra cambia l'elenco dei giocatori; il giocatore scelto resta solo se è della squadra.
+   // Per rimbalzi e palle perse/recuperate in cima c'è anche la voce "Squadra" (azione senza giocatore).
    AggiornaGiocatori (): void
    {
       const team = this.myTeam ? this.myTeamData : this.oppTeamData;
-      this.giocatori = [...(team?.Roster ?? [])]
-         .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0))
-         .map(p => ({ value: p, label: `(${p.playNumber()}) ${p.playName()}` }));
+      const diSquadra = TOperation.AZIONI_DI_SQUADRA.has(this.oper);
+      this.giocatori = [
+         ...(diSquadra ? [{ value: SQUADRA as typeof SQUADRA, label: 'Squadra' }] : []),
+         ...[...(team?.Roster ?? [])]
+            .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0))
+            .map(p => ({ value: p, label: `(${p.playNumber()}) ${p.playName()}` }))
+      ];
       if (this.player && (!this.giocatori.some(g => g.value === this.player)))
          this.player = null;
    }
@@ -132,7 +143,8 @@ export class EditAzioneDlgComponent
          this.errore = 'Scegli il giocatore';
          return;
       }
-      this.salva.emit({ quarter: this.quarter, time: secondi, oper: this.oper, myTeam: this.myTeam, player: this.player });
+      this.salva.emit({ quarter: this.quarter, time: secondi, oper: this.oper, myTeam: this.myTeam,
+                        player: (this.player === SQUADRA) ? null : this.player });
    }
 
 

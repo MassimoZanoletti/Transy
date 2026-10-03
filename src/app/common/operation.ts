@@ -332,11 +332,27 @@ export class TOperation
    });
 
 
+   // Azioni che si possono attribuire alla squadra anziché a un giocatore (selezionando la squadra): si
+   // registrano senza giocatore e vanno nei contatori della squadra (TMatchTeam.rimbDifesa, ecc.)
+   public static readonly AZIONI_DI_SQUADRA: ReadonlySet<TOperationType> = new Set([
+      TOperationType.totRimbDifesa,
+      TOperationType.totRimbAttacco,
+      TOperationType.totPPersa,
+      TOperationType.totPRecuperata
+   ]);
+
+
+   public IsAzioneDiSquadra (): boolean
+   {
+      return !this.player1() && TOperation.AZIONI_DI_SQUADRA.has(this.oper());
+   }
+
+
    public readonly Player1Str = computed(() =>
    {
       const p1 = this.player1();
       if (!p1)
-         return "";
+         return TOperation.AZIONI_DI_SQUADRA.has(this.oper()) ? "Squadra" : "";
 
       let result = `${p1.PlayNumber2()} (${p1.playName()})`;
       switch (this.oper())
@@ -817,10 +833,23 @@ export class TOperationList
          case TOperationType.totT2No:  tipo = TTipoRealizzazione.trT2; fatto = false; break;
          case TOperationType.totT3Yes: tipo = TTipoRealizzazione.trT3; fatto = true;  break;
          case TOperationType.totT3No:  tipo = TTipoRealizzazione.trT3; fatto = false; break;
-         case TOperationType.totRimbDifesa:  if (pl) pl.rimbDifesa.set(pl.rimbDifesa() + 1);   break;
-         case TOperationType.totRimbAttacco: if (pl) pl.rimbAttacco.set(pl.rimbAttacco() + 1); break;
-         case TOperationType.totPPersa:      if (pl) pl.pPerse.set(pl.pPerse() + 1);           break;
-         case TOperationType.totPRecuperata: if (pl) pl.pRecuperate.set(pl.pRecuperate() + 1); break;
+         // senza giocatore: azione attribuita alla squadra
+         case TOperationType.totRimbDifesa:
+            if (pl) pl.rimbDifesa.set(pl.rimbDifesa() + 1);
+            else if (team) team.rimbDifesa.set(team.rimbDifesa() + 1);
+            break;
+         case TOperationType.totRimbAttacco:
+            if (pl) pl.rimbAttacco.set(pl.rimbAttacco() + 1);
+            else if (team) team.rimbAttacco.set(team.rimbAttacco() + 1);
+            break;
+         case TOperationType.totPPersa:
+            if (pl) pl.pPerse.set(pl.pPerse() + 1);
+            else if (team) team.pPerse.set(team.pPerse() + 1);
+            break;
+         case TOperationType.totPRecuperata:
+            if (pl) pl.pRecuperate.set(pl.pRecuperate() + 1);
+            else if (team) team.pRecuperate.set(team.pRecuperate() + 1);
+            break;
          case TOperationType.totStopSubita:  if (pl) pl.stoppSubite.set(pl.stoppSubite() + 1); break;
          case TOperationType.totStopFatta:   if (pl) pl.stoppFatte.set(pl.stoppFatte() + 1);   break;
          case TOperationType.totAssist:      if (pl) pl.assist.set(pl.assist() + 1);           break;
@@ -871,6 +900,15 @@ export class TOperationList
                qrt.punti = qrt.punti + realizz.rPunti;
          }
       }
+   }
+
+
+   // squadra a cui appartiene un'operazione (MyTeam o OppoTeam della partita corrente)
+   private TeamOf (aItem: TOperation): TMatchTeam | null
+   {
+      if (matchGlobs.currMatch == null)
+         return null;
+      return aItem.myTeam() ? matchGlobs.currMatch.myTeam() : matchGlobs.currMatch.oppTeam();
    }
 
 
@@ -975,6 +1013,16 @@ export class TOperationList
                         toDelete = true;
                      }
                   }
+                  else
+                  {
+                     // azione attribuita alla squadra
+                     const team = this.TeamOf(aItem);
+                     if (team && (team.rimbDifesa() > 0))
+                     {
+                        team.rimbDifesa.set(team.rimbDifesa() - 1);
+                        toDelete = true;
+                     }
+                  }
                   break;
                case TOperationType.totRimbAttacco:
                   pl = aItem.player1();
@@ -984,6 +1032,16 @@ export class TOperationList
                      if (ra > 0)
                      {
                         pl.rimbAttacco.set(ra-1);
+                        toDelete = true;
+                     }
+                  }
+                  else
+                  {
+                     // azione attribuita alla squadra
+                     const team = this.TeamOf(aItem);
+                     if (team && (team.rimbAttacco() > 0))
+                     {
+                        team.rimbAttacco.set(team.rimbAttacco() - 1);
                         toDelete = true;
                      }
                   }
@@ -999,6 +1057,16 @@ export class TOperationList
                         toDelete = true;
                      }
                   }
+                  else
+                  {
+                     // azione attribuita alla squadra
+                     const team = this.TeamOf(aItem);
+                     if (team && (team.pPerse() > 0))
+                     {
+                        team.pPerse.set(team.pPerse() - 1);
+                        toDelete = true;
+                     }
+                  }
                   break;
                case TOperationType.totPRecuperata:
                   pl = aItem.player1();
@@ -1008,6 +1076,16 @@ export class TOperationList
                      if (vv > 0)
                      {
                         pl.pRecuperate.set(vv-1);
+                        toDelete = true;
+                     }
+                  }
+                  else
+                  {
+                     // azione attribuita alla squadra
+                     const team = this.TeamOf(aItem);
+                     if (team && (team.pRecuperate() > 0))
+                     {
+                        team.pRecuperate.set(team.pRecuperate() - 1);
                         toDelete = true;
                      }
                   }

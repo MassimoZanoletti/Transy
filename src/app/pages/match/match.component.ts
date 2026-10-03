@@ -1886,6 +1886,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                this.compRimb.Flash();
                await this.AddGameOperation(TOperationType.totRimbDifesa, player);
             }
+            else if (await this.AddTeamOperation(TOperationType.totRimbDifesa))
+               this.compRimb.Flash();
          }
       }
       else if (id == "data-palle")
@@ -1899,6 +1901,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                this.compPalle?.Flash();
                await this.AddGameOperation(TOperationType.totPPersa, player);
             }
+            else if (await this.AddTeamOperation(TOperationType.totPPersa))
+               this.compPalle?.Flash();
          }
       }
       else if (id == "data-stopp")
@@ -1963,6 +1967,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                this.compRimb.Flash();
                await this.AddGameOperation(TOperationType.totRimbAttacco, player);
             }
+            else if (await this.AddTeamOperation(TOperationType.totRimbAttacco))
+               this.compRimb.Flash();
          }
       }
       else if (id == "data-palle")
@@ -1976,6 +1982,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                this.compPalle?.Flash();
                await this.AddGameOperation(TOperationType.totPRecuperata, player);
             }
+            else if (await this.AddTeamOperation(TOperationType.totPRecuperata))
+               this.compPalle?.Flash();
          }
       }
       else if (id == "data-stopp")
@@ -2034,6 +2042,38 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await opList.Add(op);
       this.UpdateCommandsData(player);
       this.ScrollOperazioniToBottom();
+   }
+
+
+   // Squadra selezionata (click sul componente squadra anziché su un giocatore): true = MyTeam, false =
+   // OppoTeam, null = nessuna squadra selezionata
+   SelectedTeamIsMy (): boolean | null
+   {
+      if (this.compMyTeam?.isSelected)
+         return true;
+      if (this.compOppoTeam?.isSelected)
+         return false;
+      return null;
+   }
+
+
+   // Rimbalzi e palle perse/recuperate con la squadra selezionata (nessun giocatore): l'azione si registra
+   // senza giocatore e va nei contatori della squadra (vedi TOperationList.ApplyOperation). Restituisce false
+   // se non c'è una squadra selezionata.
+   async AddTeamOperation (oper: TOperationType): Promise<boolean>
+   {
+      const isMyTeam = this.SelectedTeamIsMy();
+      if ((isMyTeam === null) || !TOperation.AZIONI_DI_SQUADRA.has(oper) || !matchGlobs.currMatch)
+         return false;
+      const opList = await matchGlobs.currMatch.EnsureOperationList();
+      const quarter = this.compTimer ? this.compTimer.GetQuarterNumber() : 0;
+      const time = this.compTimer ? this.compTimer.GetTimeSeconds() : 0;
+      const op = new TOperation(quarter, time, oper, isMyTeam, undefined, undefined, '');
+      opList.ApplyOperation(op);
+      await opList.Add(op);
+      this.UpdateCommandsData(null);
+      this.ScrollOperazioniToBottom();
+      return true;
    }
 
 
@@ -2114,16 +2154,20 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    UpdateCommandsData(player: TMatchPlayer | null)
    {
+      // senza giocatore ma con una squadra selezionata: rimbalzi e palle attribuiti alla squadra
+      const teamIsMy = player ? null : this.SelectedTeamIsMy();
+      const team = (teamIsMy === null) ? null : (teamIsMy ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam()) ?? null;
+      const conta = player ?? team;
       if (this.compPalle)
       {
-         this.compPalle.dato1 = player ? player.pPerse().toString()      : "0";
-         this.compPalle.dato2 = player ? player.pRecuperate().toString() : "0";
+         this.compPalle.dato1 = conta ? conta.pPerse().toString()      : "0";
+         this.compPalle.dato2 = conta ? conta.pRecuperate().toString() : "0";
       }
       if (this.compRimb)
       {
-         this.compRimb.dato1 = player ? player.rimbDifesa().toString()  : "0";
-         this.compRimb.dato2 = player ? player.rimbAttacco().toString() : "0";
-         this.compRimb.dato  = player ? `Totali ${player.rimbDifesa() + player.rimbAttacco()}` : "";
+         this.compRimb.dato1 = conta ? conta.rimbDifesa().toString()  : "0";
+         this.compRimb.dato2 = conta ? conta.rimbAttacco().toString() : "0";
+         this.compRimb.dato  = conta ? `Totali ${conta.rimbDifesa() + conta.rimbAttacco()}` : "";
       }
       if (this.compStopp)
       {
@@ -2188,9 +2232,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       this.currBench = "";
       this.currPlayer = "";
       this.currTeam = "";
-      this.UpdateCommandsData(null);
       this.compMyTeam.isSelected = false;
       this.compOppoTeam.isSelected = false;
+      this.UpdateCommandsData(null);
       for (let iii=0;   iii<5;   iii++)
       {
          this.MyFieldPlayers[iii].isSelected = false;
@@ -2223,6 +2267,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             this.compOppoTeam.isSelected = true;
          }
+         // rimbalzi e palle della squadra
+         this.UpdateCommandsData(null);
       }
       /*
       {
@@ -2844,7 +2890,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
 
    // "Modifica" di una riga del dialog Azioni: solo le azioni statistiche legate a un giocatore (tiri, falli,
-   // rimbalzi, palle, stoppate, assist), come nel Delphi; le altre si possono solo eliminare
+   // rimbalzi, palle, stoppate, assist) o alla squadra (rimbalzi, palle), come nel Delphi; le altre si possono
+   // solo eliminare
    BtnModificaAzione (op: TOperation): void
    {
       if (!AZIONI_MODIFICABILI.some(a => a.value === op.oper()))
@@ -2918,7 +2965,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       // dettagli della vecchia azione da conservare (posizione del tiro, tipo e liberi del fallo)
       const evVecchio = this.matchSync.OperationToEvent(vecchia, matchId);
       const isTiro = (t: TOperationType) => (t >= TOperationType.totTLYes) && (t <= TOperationType.totT3No);
-      const nuova = new TOperation(m.quarter, m.time, m.oper, m.myTeam, m.player, undefined,
+      const nuova = new TOperation(m.quarter, m.time, m.oper, m.myTeam, m.player ?? undefined, undefined,
                                    (m.oper === vecchia.oper()) ? vecchia.desc() : '');
       const dettagli: any = {};
       if (isTiro(m.oper) && isTiro(vecchia.oper()) && ((evVecchio.courtx != null) || (evVecchio.courty != null)))

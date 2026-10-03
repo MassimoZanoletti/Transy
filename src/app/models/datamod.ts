@@ -1332,6 +1332,11 @@ export class TMatchTeam
    {
       this.SetTimeoutSnapshot('');
       this.currQuarter.set(0);
+      // rimbalzi e palle perse/recuperate attribuiti alla squadra: li ricalcolano gli eventi
+      this.rimbAttacco.set(0);
+      this.rimbDifesa.set(0);
+      this.pPerse.set(0);
+      this.pRecuperate.set(0);
       this.QuintettoQuarto.fill(false);
       this.quarti().forEach(q => q.Reset());
    }
@@ -1893,7 +1898,8 @@ export class TMatchTeam
    public CalcPIR: Signal<number> = computed(() =>
    {
       this.rosterTick();
-      let result = 0;
+      // rimbalzi e palle perse/recuperate attribuiti alla sola squadra
+      let result = this.rimbDifesa() + this.rimbAttacco() + this.pRecuperate() - this.pPerse();
       for (let xxx=0;   xxx<this.Roster.length;   xxx++)
       {
          const pl: TMatchPlayer | null = this.PlayerByIdx(xxx);

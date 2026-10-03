@@ -323,7 +323,8 @@ export class TeamCompComponent implements OnInit, OnDestroy
    GetStatPPer(): string
    {
       if (!this.matchTeamData) return "";
-      let total = 0;
+      // giocatori più palle perse attribuite alla sola squadra
+      let total = this.matchTeamData.pPerse();
       for (const pl of this.matchTeamData.Roster)
          total += pl.pPerse();
       return `${total}`;
@@ -333,7 +334,8 @@ export class TeamCompComponent implements OnInit, OnDestroy
    GetStatPRec(): string
    {
       if (!this.matchTeamData) return "";
-      let total = 0;
+      // giocatori più palle recuperate attribuite alla sola squadra
+      let total = this.matchTeamData.pRecuperate();
       for (const pl of this.matchTeamData.Roster)
          total += pl.pRecuperate();
       return `${total}`;
@@ -363,7 +365,9 @@ export class TeamCompComponent implements OnInit, OnDestroy
    GetStatRimb(): string
    {
       if (!this.matchTeamData) return "";
-      let d = 0, a = 0;
+      // giocatori più rimbalzi attribuiti alla sola squadra
+      let d = this.matchTeamData.rimbDifesa();
+      let a = this.matchTeamData.rimbAttacco();
       for (const pl of this.matchTeamData.Roster)
       {
          d += pl.rimbDifesa();

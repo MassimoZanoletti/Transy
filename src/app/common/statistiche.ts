@@ -315,6 +315,8 @@ export function TabellaSquadra (team: TMatchTeam | null,
    tot.rtot = tot.rd + tot.ra;
    tot.pp += team?.pPerse() ?? 0;
    tot.pr += team?.pRecuperate() ?? 0;
+   // il PIR di squadra conta anche le azioni attribuite alla sola squadra (come nel PIR del giocatore)
+   tot.pir += (team?.rimbDifesa() ?? 0) + (team?.rimbAttacco() ?? 0) + (team?.pRecuperate() ?? 0) - (team?.pPerse() ?? 0);
    tot.min = TempoStr(secondiTot);
    // punti di squadra per quarto (colonna ET = somma dei supplementari)
    for (const q of quartiGiocati)
