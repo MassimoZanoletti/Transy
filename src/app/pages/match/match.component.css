@@ -123,7 +123,8 @@
    min-height: unset !important;
    line-height: 1 !important;
    font-size: 0.85rem;
-   border: none !important;
+   /* bordo attorno a ciascun tab */
+   border: 1px solid #6b7280 !important;
    border-radius: 4px 4px 0 0 !important;
    background-color: transparent !important;
    color: #aaa !important;
@@ -134,15 +135,21 @@
    min-height: unset !important;
 }
 
+/* un po' di spazio fra i tab, così i bordi restano separati */
+::ng-deep #tab-match .p-tabview-nav li {
+   margin-right: 4px;
+}
+
 ::ng-deep #tab-match .p-tabview-nav li.p-highlight .p-tabview-nav-link {
    background-color: #6f3cc2 !important;
    color: #ffe378 !important;
-   border-bottom-color: #422d6b !important;
+   border-color: #ffe378 !important;
 }
 
 ::ng-deep #tab-match .p-tabview-nav li:not(.p-highlight):hover .p-tabview-nav-link {
    background-color: rgba(59, 130, 246, 0.15) !important;
    color: #ffffff !important;
+   border-color: #ffffff !important;
 }
 
 .div-match-anag-title {
