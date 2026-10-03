@@ -33,6 +33,7 @@ interface TEtichettaPbp
    tipo: 'fallo' | 'sostit';
    xValue: number;
    yValue: number;
+   ordine: number;          // 0 = prima etichetta del suo istante; dalla seconda in poi va sotto la precedente
    content: string;
 }
 
@@ -57,6 +58,12 @@ interface TQuartoPbp
 
 // distanza orizzontale (pixel) delle etichette sfalsate di eventi allo stesso minuto
 const LABEL_OFFSET = 220;
+
+// etichette di falli/sostituzioni dello stesso istante: distanza verticale fra una e l'altra e rientro dalla
+// seconda in poi (pixel). Altezza dell'etichetta: font 14 (riga 16.8) + spazio interno 2 x 6 + bordo 2 x 2
+// = 32.8, più 1 pixel di stacco
+const ETICHETTA_ALTEZZA = 34;
+const ETICHETTA_RIENTRO = 20;
 
 // chart.js e plugin caricati (e registrati) una sola volta, al primo grafico
 let chartJsPromise: Promise<typeof Chart> | null = null;
@@ -206,7 +213,10 @@ export class PlaybyplayCompComponent implements OnDestroy
          quarto.xMin = valoreMinimo;
          quarto.xMax = punti + 6;
 
-         // MyTeam: falli e sostituzioni (etichette a sinistra, all'altezza del minuto)
+         // MyTeam: falli e sostituzioni (etichette a sinistra, all'altezza del minuto); quelle dello stesso
+         // istante (es. sostituzioni multiple) si impilano una sotto l'altra
+         prevMin = -1;
+         sposta = 0;
          opsQ.filter(o => o.myTeam()).forEach((op, j) =>
          {
             const sostit = (op.oper() === TOperationType.totSostituz);
@@ -217,8 +227,9 @@ export class PlaybyplayCompComponent implements OnDestroy
             sposta = (min === prevMin) ? sposta + 1 : 0;
             quarto.etichette.set(`${sostit ? 'Sostit' : 'fallo'}_myteam_${j}_${tempo}`, {
                tipo:    sostit ? 'sostit' : 'fallo',
-               xValue:  valoreMinimo + ((sposta % 2) * 3),
-               yValue:  min - (Math.trunc(sposta / 2) * 2),
+               xValue:  valoreMinimo,
+               yValue:  min,
+               ordine:  sposta,
                content: sostit ? `[${tempo}] in ${nome(op.player2())} ⇄ out ${nome(op.player1())}`
                                : `[${tempo}] Fallo ${nomeTra(op.player1())}`
             });
@@ -370,6 +381,9 @@ export class PlaybyplayCompComponent implements OnDestroy
             type:            'label',
             xValue:          e.xValue,
             yValue:          e.yValue,
+            // dalla seconda etichetta dello stesso istante: sotto la precedente e un po' rientrata
+            xAdjust:         (e.ordine > 0) ? ETICHETTA_RIENTRO : 0,
+            yAdjust:         e.ordine * ETICHETTA_ALTEZZA,
             position:        { x: 'start', y: 'center' },
             backgroundColor: fallo ? '#ffd075' : '#86ffff',
             borderColor:     fallo ? '#593d00' : '#005959',
