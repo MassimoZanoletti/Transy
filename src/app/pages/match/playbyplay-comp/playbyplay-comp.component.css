@@ -1,0 +1,58 @@
+/* Stile ripreso dalla pagina "Grafici" di nebula */
+.div-pbp {
+   padding: 4px 8px;
+}
+
+.pbp-comandi {
+   display: flex;
+   align-items: center;
+   gap: 20px;
+   margin-top: 5px;
+   margin-bottom: 5px;
+}
+
+.pbp-switch {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.match-header-data-grid {
+   display: grid;
+   grid-template-columns: max-content 1fr;
+   gap: 4px 12px;
+}
+
+.match-header-label {
+   font-style: italic;
+}
+
+.match-header-value {
+   font-weight: bold;
+   white-space: pre;
+}
+
+.match-title {
+   font-size: 3rem;
+   font-weight: bold;
+   margin-top: 5px;
+   margin-bottom: 5px;
+   padding-top: 0;
+}
+
+.pbp-myteam {
+   color: red;
+}
+
+.pbp-oppoteam {
+   color: green;
+}
+
+.pbp-punteggio {
+   margin-left: 1.5em;
+}
+
+.chart-container {
+   position: relative;
+   height: max(2000px, calc(100vh - 490px));
+}

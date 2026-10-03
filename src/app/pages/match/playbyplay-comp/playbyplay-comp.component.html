@@ -1,0 +1,69 @@
+<div class="div-pbp">
+   <div class="pbp-comandi">
+      <p-button label="Esporta grafici in PDF"
+                icon="pi pi-file-pdf"
+                severity="danger"
+                size="small"
+                (onClick)="EsportaPdf()"></p-button>
+      <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showFalli" (onChange)="OnToggleFalli()"></p-inputSwitch>
+         <label>Falli</label>
+      </div>
+      <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showSostit" (onChange)="OnToggleSostit()"></p-inputSwitch>
+         <label>Sostituzioni</label>
+      </div>
+      <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showMyTeam" (onChange)="OnToggleMyTeam()"></p-inputSwitch>
+         <label>My Team</label>
+      </div>
+      <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showOppoTeam" (onChange)="OnToggleOppoTeam()"></p-inputSwitch>
+         <label>Opponent Team</label>
+      </div>
+   </div>
+
+   <!-- intestazione della partita -->
+   <div class="match-header-data-grid">
+      <span class="match-header-label">Data:</span>
+      <span class="match-header-value">{{ matchHeader?.matchDateStr }}</span>
+      <span class="match-header-label">Casa/Trasferta:</span>
+      <span class="match-header-value">{{ CasaTrasferta() }}</span>
+      <span class="match-header-label">Giornata:</span>
+      <span class="match-header-value">{{ Giornata() }}</span>
+      <span class="match-header-label">Arbitri:</span>
+      <span class="match-header-value">{{ Arbitri() }}</span>
+   </div>
+   <p class="match-title">
+      @if (matchHeader?.atHome)
+      {
+         <span class="pbp-myteam">{{ myTeamNome }}</span> - <span class="pbp-oppoteam">{{ oppoTeamNome }}</span>
+         <span class="pbp-punteggio">{{ myTeamPunti }} - {{ oppoTeamPunti }}</span>
+      }
+      @else
+      {
+         <span class="pbp-oppoteam">{{ oppoTeamNome }}</span> - <span class="pbp-myteam">{{ myTeamNome }}</span>
+         <span class="pbp-punteggio">{{ oppoTeamPunti }} - {{ myTeamPunti }}</span>
+      }
+   </p>
+
+   <!-- un grafico per quarto giocato -->
+   <p-tabView [activeIndex]="activeQuartoIndex"
+              (activeIndexChange)="onQuartoChange($event)">
+      @for (quarto of quartiGiocati; track quarto.numero)
+      {
+         <p-tabPanel [header]="quarto.titolo">
+            <div class="match-header-data-grid">
+               <span class="match-header-label">Punteggio:</span>
+               <span class="match-header-value">{{ GetQuartoPunteggio(quarto) }}</span>
+               <span class="match-header-label">Parziale:</span>
+               <span class="match-header-value">{{ GetQuartoParziale(quarto) }}</span>
+            </div>
+            <p-divider />
+            <div class="chart-container">
+               <canvas #canvasPbp [attr.data-quarto]="quarto.numero"></canvas>
+            </div>
+         </p-tabPanel>
+      }
+   </p-tabView>
+</div>

@@ -97,6 +97,7 @@ import { ConfigService } from "../../services/config.service";
 import { MappaTiriDlgComponent } from "../../dialogs/mappa-tiri-dlg/mappa-tiri-dlg.component";
 import { StatisticheCompComponent } from "./statistiche-comp/statistiche-comp.component";
 import { MappaTiroCompComponent } from "./mappa-tiro-comp/mappa-tiro-comp.component";
+import { PlaybyplayCompComponent } from "./playbyplay-comp/playbyplay-comp.component";
 import { TContestoLive } from "../../common/statistiche";
 import { TOperation, TOperationList, TOperationType } from "../../common/operation";
 import { MatchSyncService } from "../../services/match-sync.service";
@@ -154,6 +155,7 @@ type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
                  MappaTiriDlgComponent,
                  StatisticheCompComponent,
                  MappaTiroCompComponent,
+                 PlaybyplayCompComponent,
                  ToastModule
               ],
   providers: [
@@ -178,6 +180,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    @ViewChild(MappaTiriDlgComponent) mappaTiriComp!: MappaTiriDlgComponent;
    @ViewChild(StatisticheCompComponent) statisticheComp!: StatisticheCompComponent;
    @ViewChild(MappaTiroCompComponent) mappaTiroComp!: MappaTiroCompComponent;
+   @ViewChild(PlaybyplayCompComponent) playbyplayComp!: PlaybyplayCompComponent;
    @ViewChild('compTimer') compTimer!: TimerCompComponent;
    @ViewChild('tableOperazioni') tableOperazioni!: Table;
    @ViewChild('compMyTeam') compMyTeam!: TeamCompComponent;
@@ -1174,21 +1177,26 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   // Tab "Statistiche" (indice 2) e "Mappa tiro" (indice 3): i dati si ricalcolano quando il tab è visibile
+   // Tab "Statistiche" (indice 2), "Mappa tiro" (indice 3) e "Play-by-play" (indice 4): i dati si
+   // ricalcolano quando il tab è visibile
    private static readonly TAB_STATISTICHE = 2;
    private static readonly TAB_MAPPA_TIRO = 3;
+   private static readonly TAB_PLAYBYPLAY = 4;
 
    AggiornaStatistiche (): void
    {
-      if ((this.tabActiveIndex === MatchComponent.TAB_STATISTICHE) || (this.tabActiveIndex === MatchComponent.TAB_MAPPA_TIRO))
+      if ((this.tabActiveIndex === MatchComponent.TAB_STATISTICHE) || (this.tabActiveIndex === MatchComponent.TAB_MAPPA_TIRO) ||
+          (this.tabActiveIndex === MatchComponent.TAB_PLAYBYPLAY))
       {
          // prima si propagano al componente gli input appena cambiati (intestazione, nomi degli allenatori),
          // altrimenti il calcolo subito dopo il caricamento della partita userebbe i valori precedenti
          this.cdr.detectChanges();
          if (this.tabActiveIndex === MatchComponent.TAB_STATISTICHE)
             this.statisticheComp?.Aggiorna();
-         else
+         else if (this.tabActiveIndex === MatchComponent.TAB_MAPPA_TIRO)
             this.mappaTiroComp?.Aggiorna();
+         else
+            this.playbyplayComp?.Aggiorna();
          this.cdr.detectChanges();
       }
    }

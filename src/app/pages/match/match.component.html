@@ -588,6 +588,14 @@
          <app-mappa-tiro-comp [matchHeader]="matchHeader"></app-mappa-tiro-comp>
       </div>
    </p-tabPanel>
+   <!------------------ TAB PLAY-BY-PLAY -------------->
+   <p-tabPanel id="tab-match-playbyplay"
+               header="Play-by-play">
+      <div id="div-match-playbyplay">
+         <app-playbyplay-comp [matchHeader]="matchHeader"
+                              [getContestoLive]="GetContestoLive"></app-playbyplay-comp>
+      </div>
+   </p-tabPanel>
 </p-tabView>
 
 
