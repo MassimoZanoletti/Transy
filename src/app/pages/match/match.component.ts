@@ -1550,7 +1550,28 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       {
          await this.AddTimeOperation (TOperationType.totTimeStart);
          this.SaveQuarterState (this.compTimer?.currQuarter ?? '1q');
+         await this.SegnaPartitaInGioco ();
       }
+   }
+
+
+   // Al primo avvio del cronometro una partita "Non giocata" passa a "In gioco"; le partite già in gioco o
+   // terminate restano come sono
+   private async SegnaPartitaInGioco (): Promise<void>
+   {
+      if (this.MatchNotStarted())
+         await this.ImpostaStatoPartita (matchStatusType.playing);
+   }
+
+
+   // Stato della partita (Non giocato / In gioco / Terminato), salvato in coda (quindi anche senza connessione)
+   private async ImpostaStatoPartita (stato: matchStatusType.Status): Promise<void>
+   {
+      if (!(this.matchHeader?.id > 0) || (this.matchHeader.matchStatus === stato.code))
+         return;
+      this.matchHeader.matchStatus = stato.code;
+      await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
+                                         this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
    }
 
 
@@ -3187,6 +3208,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          matchGlobs.currMatch.myTeam()?.ResetMatchState();
          matchGlobs.currMatch.oppTeam()?.ResetMatchState();
       }
+      // come se la partita non fosse mai iniziata: torna "Non giocato"
+      await this.ImpostaStatoPartita (matchStatusType.notPlayed);
       //
       await this.ClearSelection();
       this.compTimer?.ResetToMatchStart();
