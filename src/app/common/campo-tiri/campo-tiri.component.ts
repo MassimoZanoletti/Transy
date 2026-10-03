@@ -48,6 +48,8 @@ export class CampoTiriComponent implements OnChanges
    @Input() cliccabile: boolean = false;
    // testo iniziale della legenda (es. "Tiri precedenti:")
    @Input() titoloLegenda: string = '';
+   // false nelle mappe piccole (es. una per giocatore), dove la legenda dei quarti sarebbe ingombrante
+   @Input() mostraLegenda: boolean = true;
    // altezza massima dell'immagine (CSS), per adattarla alla finestra che la contiene
    @Input() altezzaMax: string = 'min(539px, calc(100vh - 260px))';
 

@@ -1,0 +1,71 @@
+<div class="div-mappatiro">
+   <!-- squadra da mostrare ed esportazione della sua mappa -->
+   <div class="mappatiro-comandi">
+      <p-selectButton [options]="opzioniSquadra"
+                      [(ngModel)]="isMyTeam"
+                      (ngModelChange)="Aggiorna()"
+                      optionLabel="label"
+                      optionValue="value"
+                      [allowEmpty]="false"/>
+      @if (MappaAbilitata())
+      {
+         <p-button label="Esporta in PDF"
+                   icon="pi pi-file-pdf"
+                   severity="danger"
+                   size="small"
+                   (onClick)="EsportaPdf()"></p-button>
+      }
+   </div>
+
+   <!-- mappa di tiro di tutta la squadra (se abilitata in configurazione) -->
+   @if (!MappaAbilitata())
+   {
+      <div class="mappatiro-riquadro mappatiro-disabilitata">Mappa di tiro non abilitata per il team</div>
+   }
+   @else if (squadra)
+   {
+      <div class="mappatiro-riquadro mappatiro-squadra">
+         <div class="mappatiro-titolo">Mappa di tiro - {{ nomeSquadra }}</div>
+         <app-campo-tiri [tiri]="squadra.tiri"
+                         titoloLegenda=""
+                         [altezzaMax]="ALTEZZA_SQUADRA"></app-campo-tiri>
+         <div class="mappatiro-riepilogo">
+            @for (r of squadra.riepilogo; track r.label)
+            {
+               <span><b>{{ r.label }}</b> {{ r.segnati }}/{{ r.tentati }} ({{ Percentuale(r.segnati, r.tentati) }})</span>
+            }
+            @if (squadra.senzaPosizione > 0)
+            {
+               <span class="mappatiro-nota">{{ squadra.senzaPosizione }} {{ squadra.senzaPosizione === 1 ? 'tiro' : 'tiri' }} senza posizione (non sul campo)</span>
+            }
+         </div>
+      </div>
+   }
+
+   <!-- mappe dei singoli giocatori: 6 per riga, a metà dimensione -->
+   @if (MappaAbilitata() && (giocatori.length > 0))
+   {
+      <div class="mappatiro-griglia">
+         @for (g of giocatori; track $index)
+         {
+            <div class="mappatiro-giocatore">
+               <div class="mappatiro-giocatore-nome"><span class="mappatiro-numero">{{ g.numero }}</span> {{ g.nome }}</div>
+               <app-campo-tiri [tiri]="g.tiri"
+                               [mostraLegenda]="false"
+                               [altezzaMax]="ALTEZZA_GIOCATORE"></app-campo-tiri>
+               <div class="mappatiro-giocatore-stat">
+                  @for (r of g.riepilogo; track r.label)
+                  {
+                     <span><b>{{ r.label }}</b> {{ r.segnati }}/{{ r.tentati }} ({{ Percentuale(r.segnati, r.tentati) }})</span>
+                  }
+                  <span><b>TL</b> {{ g.tl.segnati }}/{{ g.tl.tentati }} ({{ Percentuale(g.tl.segnati, g.tl.tentati) }})</span>
+               </div>
+               @if (g.senzaPosizione > 0)
+               {
+                  <div class="mappatiro-nota">{{ g.senzaPosizione }} {{ g.senzaPosizione === 1 ? 'tiro' : 'tiri' }} senza posizione</div>
+               }
+            </div>
+         }
+      </div>
+   }
+</div>

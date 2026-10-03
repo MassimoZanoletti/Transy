@@ -1,0 +1,102 @@
+.div-mappatiro {
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 12px;
+   padding: 4px 8px;
+}
+
+.mappatiro-comandi {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.mappatiro-riquadro {
+   border: 1px solid #424b57;
+   border-radius: 6px;
+   padding: 10px;
+   background-color: #1f2937;
+}
+
+/* bordo dello stesso colore delle card dei giocatori */
+.mappatiro-squadra {
+   border-color: #ff66ff;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 8px;
+}
+
+.mappatiro-disabilitata {
+   color: #94a3b8;
+   font-style: italic;
+}
+
+.mappatiro-titolo {
+   font-size: 1.2rem;
+   font-weight: 700;
+}
+
+.mappatiro-riepilogo {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   gap: 18px;
+   font-size: 0.95rem;
+}
+
+.mappatiro-nota {
+   color: #94a3b8;
+   font-size: 0.8rem;
+}
+
+/* 6 campi per riga; le righe sono quante servono per tutti i giocatori */
+.mappatiro-griglia {
+   display: grid;
+   grid-template-columns: repeat(6, max-content);
+   gap: 6px;
+}
+
+.mappatiro-giocatore {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 4px;
+   border: 1px solid #ff66ff;
+   border-radius: 6px;
+   padding: 4px;
+   background-color: #1f2937;
+}
+
+/* nome e statistiche si adattano alla larghezza del campo (andando a capo) invece di allargare la card */
+.mappatiro-giocatore-nome,
+.mappatiro-giocatore-stat {
+   width: 0;
+   min-width: 100%;
+}
+
+.mappatiro-giocatore-nome {
+   font-weight: 700;
+   text-align: center;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.mappatiro-numero {
+   display: inline-block;
+   min-width: 1.6em;
+   padding: 0 4px;
+   border-radius: 4px;
+   background-color: #374151;
+   text-align: center;
+}
+
+.mappatiro-giocatore-stat {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   column-gap: 6px;
+   font-size: 0.8rem;
+}

@@ -107,9 +107,10 @@
    display: none !important;
 }
 
-/* Tab Statistiche: il pannello (overflow hidden, per il tab Gioco che deve stare tutto nello schermo) non
+/* Tab Statistiche e Mappa tiro: il pannello (overflow hidden, per il tab Gioco che deve stare tutto nello schermo) non
    scorre; scorre il contenuto, che è più alto e spesso più largo della finestra (due tabelle di giocatori) */
-#div-match-statistiche {
+#div-match-statistiche,
+#div-match-mappatiro {
    flex: 1 1 auto;
    min-height: 0;
    overflow: auto;

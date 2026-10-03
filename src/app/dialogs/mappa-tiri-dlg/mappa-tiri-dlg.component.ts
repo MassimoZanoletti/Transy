@@ -2,7 +2,8 @@ import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule} from 'primeng/button';
 import {CampoTiriComponent, TTiroPrecedente} from "../../common/campo-tiri/campo-tiri.component";
-import {TMatchPlayer, TTipoRealizzazione} from "../../models/datamod";
+import {TMatchPlayer} from "../../models/datamod";
+import {CalcolaMappaTiri, PercentualeTiri} from "../../common/mappa-tiri";
 
 
 // Mappa di tiro (Delphi: ShowShoots) di un giocatore o di tutta una squadra: tiri da 2 e da 3 con posizione,
@@ -32,26 +33,17 @@ export class MappaTiriDlgComponent
                     giocatori: TMatchPlayer[]): void
    {
       this.titolo = titolo;
-      const tiri = giocatori.flatMap(p => p.realizzazioni())
-         .filter(r => (r.rTipo === TTipoRealizzazione.trT2) || (r.rTipo === TTipoRealizzazione.trT3));
-      const conPosizione = tiri.filter(r => (r.rPosX !== 0) || (r.rPosY !== 0));
-      this.tiri = conPosizione.map(r => ({ x: r.rPosX, y: r.rPosY, segnato: (r.rPunti > 0), quarto: r.rQuarto }));
-      this.senzaPosizione = tiri.length - conPosizione.length;
-      this.riepilogo = [
-         { tipo: TTipoRealizzazione.trT2, label: 'T2' },
-         { tipo: TTipoRealizzazione.trT3, label: 'T3' }
-      ].map(t =>
-      {
-         const delTipo = tiri.filter(r => r.rTipo === t.tipo);
-         return { label: t.label, segnati: delTipo.filter(r => r.rPunti > 0).length, tentati: delTipo.length };
-      });
+      const mappa = CalcolaMappaTiri(giocatori);
+      this.tiri = mappa.tiri;
+      this.riepilogo = mappa.riepilogo;
+      this.senzaPosizione = mappa.senzaPosizione;
    }
 
 
    Percentuale (segnati: number,
                 tentati: number): string
    {
-      return (tentati > 0) ? `${Math.round(100 * segnati / tentati)}%` : '-';
+      return PercentualeTiri(segnati, tentati);
    }
 
 
