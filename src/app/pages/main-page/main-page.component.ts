@@ -69,6 +69,7 @@ import { MatchheaderCompComponent } from "../../common/matchheader-comp/matchhea
 import { PlayersCompComponent } from "../../common/players-comp/players-comp.component";
 import { RosterCompComponent } from "../../common/roster-comp/roster-comp.component";
 import { MatchSyncService } from "../../services/match-sync.service";
+import { TStatCampionatoParams } from "../stat-campionato-page/stat-campionato-page.component";
 
 
 
@@ -963,6 +964,22 @@ export class MainPageComponent implements OnInit, OnDestroy
    DialogStatCampChiudi ()
    {
       this.dialogVisible_StatCamp = false;
+   }
+
+
+   DialogStatCampCalcola ()
+   {
+      if ((!this.statCamp_Team) || (!this.currChamp) || (this.statCamp_Selected.length == 0))
+         return;
+      // le partite nell'ordine della tabella, non in quello di selezione
+      const selezionate: Array<IDSMatchHeader> = this.statCamp_Matches.filter (mh => this.statCamp_Selected.includes (mh));
+      const params: TStatCampionatoParams = {
+         team:    this.statCamp_Team,
+         champ:   this.currChamp,
+         matches: selezionate
+      };
+      this.dialogVisible_StatCamp = false;
+      this.router.navigate (['/statcampionato'], { state: params });
    }
 
 

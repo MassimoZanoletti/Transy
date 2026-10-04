@@ -1,0 +1,150 @@
+
+<div id="stat-camp-container">
+
+   <div id="stat-camp-titolo">
+      <h2>Statistiche di <span class="evidenziato">{{ team?.nome }}</span> per il campionato <span class="evidenziato">{{ champ?.nome }}</span></h2>
+   </div>
+
+   <p-divider
+      layout="horizontal"
+      styleClass="my-1"></p-divider>
+
+   <div id="stat-camp-comandi">
+      <p-button label="Elabora statistiche"
+                severity="primary"
+                icon="pi pi-chart-bar"
+                class="btn-fisso"
+                [loading]="elaborazione"
+                (click)="ElaboraStatistiche()">
+      </p-button>
+   </div>
+
+   <div id="stat-camp-contenuto">
+      @if (totali && medie)
+      {
+         <p-table id="tabellaStatCampionato"
+                  class="custom-header-table"
+                  styleClass="custom-table p-datatable-gridlines"
+                  [value]="righe"
+                  [scrollable]="true"
+                  scrollHeight="flex"
+                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th colspan="5"></th>
+                  <th colspan="3" class="sep gruppo">Risultato</th>
+                  <th colspan="3" class="sep gruppo">Liberi</th>
+                  <th colspan="3" class="sep gruppo">T2</th>
+                  <th colspan="3" class="sep gruppo">T3</th>
+                  <th colspan="2" class="sep gruppo">Falli</th>
+                  <th colspan="7" class="sep gruppo">Varie</th>
+               </tr>
+               <tr>
+                  <th style="width: 50px;">Fase</th>
+                  <th style="width: 50px;"></th>
+                  <th style="width: 100px;">Data</th>
+                  <th style="width: 160px;">Squadra</th>
+                  <th style="width: 40px;" class="centro">C/T</th>
+                  <th class="sep num">F</th>
+                  <th class="num">S</th>
+                  <th class="num">Dif</th>
+                  <th class="sep num">S</th>
+                  <th class="num">T</th>
+                  <th class="num">%</th>
+                  <th class="sep num">S</th>
+                  <th class="num">T</th>
+                  <th class="num">%</th>
+                  <th class="sep num">S</th>
+                  <th class="num">T</th>
+                  <th class="num">%</th>
+                  <th class="sep num">F</th>
+                  <th class="num">S</th>
+                  <th class="sep num">RD</th>
+                  <th class="num">RA</th>
+                  <th class="num">RT</th>
+                  <th class="num">PP</th>
+                  <th class="num">PR</th>
+                  <th class="num">Ass</th>
+                  <th class="num">PIR</th>
+               </tr>
+               <!-- totali e medie sopra l'elenco delle partite (restano visibili scorrendo) -->
+               @for (r of [totali, medie]; track r.squadra)
+               {
+                  <tr class="riga-totali" [class.riga-medie]="r === medie">
+                     <th colspan="5" class="etichetta-totali">{{ r.squadra }}</th>
+                     <th class="sep num">{{ Num(r.puntiF) }}</th>
+                     <th class="num">{{ Num(r.puntiS) }}</th>
+                     <th class="num">{{ Num(r.dif) }}</th>
+                     <th class="sep num">{{ Num(r.tl.realizzati) }}</th>
+                     <th class="num">{{ Num(r.tl.tentati) }}</th>
+                     <th class="num">{{ Perc(r.tl) }}</th>
+                     <th class="sep num">{{ Num(r.t2.realizzati) }}</th>
+                     <th class="num">{{ Num(r.t2.tentati) }}</th>
+                     <th class="num">{{ Perc(r.t2) }}</th>
+                     <th class="sep num">{{ Num(r.t3.realizzati) }}</th>
+                     <th class="num">{{ Num(r.t3.tentati) }}</th>
+                     <th class="num">{{ Perc(r.t3) }}</th>
+                     <th class="sep num">{{ Num(r.ff) }}</th>
+                     <th class="num">{{ Num(r.fs) }}</th>
+                     <th class="sep num">{{ Num(r.rd) }}</th>
+                     <th class="num">{{ Num(r.ra) }}</th>
+                     <th class="num">{{ Num(r.rt) }}</th>
+                     <th class="num">{{ Num(r.pp) }}</th>
+                     <th class="num">{{ Num(r.pr) }}</th>
+                     <th class="num">{{ Num(r.as) }}</th>
+                     <th class="num">{{ Num(r.pir) }}</th>
+                  </tr>
+               }
+               <!-- stacco tra le medie e le partite -->
+               <tr class="riga-stacco">
+                  <th colspan="26"></th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-r>
+               <tr>
+                  <td>{{ r.fase }}</td>
+                  <td>{{ r.giornata }}</td>
+                  <td>{{ r.data }}</td>
+                  <td>{{ r.squadra }}</td>
+                  <td class="centro">{{ r.casaTrasf }}</td>
+                  <td class="sep num" [class]="ColoreMinMax(r.puntiF, 'puntiF', true)">{{ r.puntiF }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.puntiS, 'puntiS', false)">{{ r.puntiS }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.dif, 'dif', true)">{{ r.dif }}</td>
+                  <td class="sep num">{{ r.tl.realizzati }}</td>
+                  <td class="num">{{ r.tl.tentati }}</td>
+                  <td class="num" [class]="ColorePerc(r.tl, 'tl')">{{ Perc(r.tl) }}</td>
+                  <td class="sep num">{{ r.t2.realizzati }}</td>
+                  <td class="num">{{ r.t2.tentati }}</td>
+                  <td class="num" [class]="ColorePerc(r.t2, 't2')">{{ Perc(r.t2) }}</td>
+                  <td class="sep num">{{ r.t3.realizzati }}</td>
+                  <td class="num">{{ r.t3.tentati }}</td>
+                  <td class="num" [class]="ColorePerc(r.t3, 't3')">{{ Perc(r.t3) }}</td>
+                  <td class="sep num" [class]="ColoreMinMax(r.ff, 'ff', false)">{{ r.ff }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.fs, 'fs', true)">{{ r.fs }}</td>
+                  <td class="sep num" [class]="ColoreMinMax(r.rd, 'rd', true)">{{ r.rd }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.ra, 'ra', true)">{{ r.ra }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.rt, 'rt', true)">{{ r.rt }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.pp, 'pp', false)">{{ r.pp }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.pr, 'pr', true)">{{ r.pr }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.as, 'as', true)">{{ r.as }}</td>
+                  <td class="num" [class]="ColoreMinMax(r.pir, 'pir', true)">{{ r.pir }}</td>
+               </tr>
+            </ng-template>
+         </p-table>
+         <div id="stat-camp-legenda">
+            <span class="legenda-migliore">■ valore migliore</span>
+            <span class="legenda-peggiore">■ valore peggiore</span>
+         </div>
+      }
+   </div>
+
+   <div id="stat-camp-bottoni">
+      <p-button label="Torna alla Dashboard"
+                severity="secondary"
+                icon="pi pi-arrow-left"
+                class="btn-fisso"
+                (click)="TornaDashboard()">
+      </p-button>
+   </div>
+
+</div>

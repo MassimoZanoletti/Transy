@@ -735,6 +735,15 @@
          <button
             pButton
             type="button"
+            label="Calcola Statistiche"
+            icon="pi pi-chart-bar"
+            class="p-button-primary"
+            [disabled]="!statCamp_Team || (statCamp_Selected.length == 0)"
+            (click)="DialogStatCampCalcola()"
+         ></button>
+         <button
+            pButton
+            type="button"
             label="Chiudi"
             class="p-button-secondary"
             (click)="DialogStatCampChiudi()"
