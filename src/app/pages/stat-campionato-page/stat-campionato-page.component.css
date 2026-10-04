@@ -16,20 +16,24 @@
 
 #stat-camp-comandi {
    flex: 0 0 auto;
+   display: flex;
+   gap: 10px;
    padding: 6px 0 10px 0;
 }
 
-/* area delle statistiche: occupa tutto lo spazio tra comandi e bottoni (la tabella scorre al suo interno) */
+/* area delle statistiche (squadra e giocatori): occupa tutto lo spazio tra comandi e bottoni e scorre */
 #stat-camp-contenuto {
    flex: 1 1 auto;
    min-height: 0;
-   display: flex;
-   flex-direction: column;
+   overflow: auto;
+}
+
+.titolo-sezione {
+   margin: 0 0 8px 0;
 }
 
 /* legenda dei colori, appena sotto la tabella */
 #stat-camp-legenda {
-   flex: 0 0 auto;
    display: flex;
    gap: 20px;
    margin-top: 6px;

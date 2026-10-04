@@ -17,6 +17,13 @@
                 [loading]="elaborazione"
                 (click)="ElaboraStatistiche()">
       </p-button>
+      <p-button label="Esporta in PDF"
+                severity="danger"
+                icon="pi pi-file-pdf"
+                class="btn-fisso"
+                [disabled]="elaborazione"
+                (click)="EsportaPdf()">
+      </p-button>
    </div>
 
    <div id="stat-camp-contenuto">
@@ -26,8 +33,6 @@
                   class="custom-header-table"
                   styleClass="custom-table p-datatable-gridlines"
                   [value]="righe"
-                  [scrollable]="true"
-                  scrollHeight="flex"
                   [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
             <ng-template pTemplate="header">
                <tr>
@@ -135,6 +140,122 @@
             <span class="legenda-migliore">■ valore migliore</span>
             <span class="legenda-peggiore">■ valore peggiore</span>
          </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- statistiche dei giocatori a referto nelle partite selezionate -->
+         <h3 class="titolo-sezione">Statistiche giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <p-table id="tabellaStatGiocatori"
+                  class="custom-header-table"
+                  styleClass="custom-table p-datatable-gridlines"
+                  [value]="giocatori"
+                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th style="width: 160px;"></th>
+                  <th class="sep num">Part</th>
+                  <th class="sep num">Min</th>
+                  <th class="num">Min/Par</th>
+                  <th class="sep num">Pti</th>
+                  <th class="num">P/Par</th>
+                  <th class="sep num">TLR</th>
+                  <th class="num">TLT</th>
+                  <th class="num">TL%</th>
+                  <th class="sep num">T2R</th>
+                  <th class="num">T2T</th>
+                  <th class="num">T2%</th>
+                  <th class="sep num">T3R</th>
+                  <th class="num">T3T</th>
+                  <th class="num">T3%</th>
+                  <th class="sep num">TdcR</th>
+                  <th class="num">TdcT</th>
+                  <th class="num">Tdc%</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-g>
+               <tr>
+                  <td>{{ g.nome }}</td>
+                  <td class="sep num">{{ g.partite }}</td>
+                  <td class="sep num" [class]="ColoreMaxGioc(g, 'min')">{{ MinTot(g) }}</td>
+                  <td class="num" [class]="ColoreMaxGioc(g, 'minPar')">{{ MinPar(g) }}</td>
+                  <td class="sep num" [class]="ColoreMaxGioc(g, 'pti')">{{ Pti(g) }}</td>
+                  <td class="num" [class]="ColoreMaxGioc(g, 'pPar')">{{ PPar(g) }}</td>
+                  @for (t of [g.tl, g.t2, g.t3, g.tdc]; track $index)
+                  {
+                     <td class="sep num">{{ TiroNum(t, t.realizzati) }}</td>
+                     <td class="num">{{ TiroNum(t, t.tentati) }}</td>
+                     <td class="num" [class]="ColoreMaxGioc(g, colonneTiri[$index])">{{ TiroPerc(t) }}</td>
+                  }
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+               <tr>
+                  <td colspan="18">Nessun giocatore a referto.</td>
+               </tr>
+            </ng-template>
+         </p-table>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- altre statistiche dei giocatori: totali e medie per partita (/P) -->
+         <p-table id="tabellaStatGiocatori2"
+                  class="custom-header-table"
+                  styleClass="custom-table p-datatable-gridlines"
+                  [value]="giocatori"
+                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th style="width: 160px;"></th>
+                  <th class="sep num">Part</th>
+                  <th class="sep num">FF</th>
+                  <th class="num">FF/P</th>
+                  <th class="sep num">FS</th>
+                  <th class="num">FS/P</th>
+                  <th class="sep num">RD</th>
+                  <th class="num">RA</th>
+                  <th class="num">RTot</th>
+                  <th class="num">R/P</th>
+                  <th class="sep num">PP</th>
+                  <th class="num">PP/P</th>
+                  <th class="sep num">PR</th>
+                  <th class="num">PR/P</th>
+                  <th class="sep num">Ass</th>
+                  <th class="num">As/P</th>
+                  <th class="sep num">PIR</th>
+                  <th class="num">PIR/P</th>
+                  <th class="sep num">+/-</th>
+                  <th class="num">+/-/P</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-g>
+               <tr>
+                  <td>{{ g.nome }}</td>
+                  <td class="sep num">{{ g.partite }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'ff')">{{ NumVuoto(g.ff) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'ffP')">{{ PerPartita(g, g.ff) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'fs')">{{ NumVuoto(g.fs) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'fsP')">{{ PerPartita(g, g.fs) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'rd')">{{ NumVuoto(g.rd) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'ra')">{{ NumVuoto(g.ra) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'rt')">{{ NumVuoto(g.rd + g.ra) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'rP')">{{ PerPartita(g, g.rd + g.ra) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'pp')">{{ NumVuoto(g.pp) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'ppP')">{{ PerPartita(g, g.pp) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'pr')">{{ NumVuoto(g.pr) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'prP')">{{ PerPartita(g, g.pr) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'as')">{{ NumVuoto(g.as) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'asP')">{{ PerPartita(g, g.as) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'pir')">{{ NumVuoto(g.pir) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'pirP')">{{ PerPartita(g, g.pir) }}</td>
+                  <td class="sep num" [class]="ColoreGioc2(g, 'pm')">{{ NumVuoto(g.pm) }}</td>
+                  <td class="num" [class]="ColoreGioc2(g, 'pmP')">{{ PerPartita(g, g.pm) }}</td>
+               </tr>
+            </ng-template>
+         </p-table>
       }
    </div>
 
