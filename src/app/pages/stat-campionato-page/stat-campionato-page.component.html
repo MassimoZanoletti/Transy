@@ -24,6 +24,12 @@
                 [disabled]="elaborazione"
                 (click)="EsportaPdf()">
       </p-button>
+      <p-button label="Torna alla Dashboard"
+                severity="secondary"
+                icon="pi pi-arrow-left"
+                class="btn-fisso btn-destra"
+                (click)="TornaDashboard()">
+      </p-button>
    </div>
 
    <div id="stat-camp-contenuto">
@@ -257,15 +263,6 @@
             </ng-template>
          </p-table>
       }
-   </div>
-
-   <div id="stat-camp-bottoni">
-      <p-button label="Torna alla Dashboard"
-                severity="secondary"
-                icon="pi pi-arrow-left"
-                class="btn-fisso"
-                (click)="TornaDashboard()">
-      </p-button>
    </div>
 
 </div>

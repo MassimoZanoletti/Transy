@@ -21,7 +21,7 @@
    padding: 6px 0 10px 0;
 }
 
-/* area delle statistiche (squadra e giocatori): occupa tutto lo spazio tra comandi e bottoni e scorre */
+/* area delle statistiche (squadra e giocatori): occupa tutto lo spazio sotto i comandi e scorre */
 #stat-camp-contenuto {
    flex: 1 1 auto;
    min-height: 0;
@@ -48,11 +48,9 @@
    color: #ff6666;
 }
 
-#stat-camp-bottoni {
-   flex: 0 0 auto;
-   display: flex;
-   justify-content: flex-end;
-   padding: 10px 0;
+/* "Torna alla Dashboard": stessa riga degli altri bottoni, allineato al bordo destro */
+.btn-destra {
+   margin-left: auto;
 }
 
 
