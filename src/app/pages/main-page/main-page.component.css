@@ -311,3 +311,10 @@
 }
 
 /* ----------------------------------------- */
+
+
+/* tabella partite della finestra "Statistiche campionato": dati al 70% dei 2em della regola generale
+   delle celle (sopra); l'header resta invariato */
+:host ::ng-deep .stat-camp-table .p-datatable .p-datatable-tbody > tr > td {
+   font-size: 1.4em;
+}

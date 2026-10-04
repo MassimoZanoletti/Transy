@@ -122,7 +122,6 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          {
             label: "",
             items: [
-               {label: "Statistiche", icon: 'pi pi-chart-line', styleClass: 'icona-default', routerLink: ['/']},
                {label: "Database", icon: 'pi pi-table', styleClass: 'icona-default', routerLink: ['/database']}
             ]
          },

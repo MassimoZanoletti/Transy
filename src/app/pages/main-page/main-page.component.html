@@ -274,6 +274,18 @@
                      </tr>
                   </ng-template>
                </p-table>
+               <div id="div-camp-stat"
+                    style="margin-top: 10px; border: 1px;">
+                  <p-button label="Statistiche campionato"
+                            id="btn-camp-stat"
+                            *ngIf="AddEnabled()"
+                            [disabled]="!currChamp"
+                            severity="primary"
+                            icon="pi pi-chart-bar"
+                            class="btn-fisso"
+                            (click)="OnStatisticheCampionato()">
+                  </p-button>
+               </div>
             </ng-template>
          </p-card>
          <p-card [style]="{ 'width': '350px', 'padding': '2px', 'margin-left': '30px' }"
@@ -645,5 +657,91 @@
    </div>
 </p-dialog>
 <!--   FINE DIALOG PLAYERS   --->
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG STATISTICHE CAMPIONATO
+------------------------------------------------------------------>
+<p-dialog id="dialog-stat-campionato"
+          [header]="'Statistiche campionato: ' + (currChamp ? currChamp.nome : '')"
+          [modal]="true"
+          [(visible)]="dialogVisible_StatCamp"
+          [closable]="false"
+          [style]="{ width: '60rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div>
+      <p-card header="">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="cbstatcampteam">Squadra:</label>
+               <p-dropdown
+                  id="cbstatcampteam"
+                  [style]="{'min-width': '300px'}"
+                  [options]="statCamp_Teams"
+                  optionLabel="nome"
+                  placeholder="Seleziona una squadra"
+                  [(ngModel)]="statCamp_Team"
+                  [filter]="true"
+                  filterBy="nome"
+                  [checkmark]="true"
+                  [showClear]="false"
+                  [scrollHeight]="'400px'"
+                  appendTo="body"
+                  (onChange)="OnStatCampTeamChange()"/>
+            </div>
+            <p-table
+               id="tabellaStatCampPartite"
+               class="custom-header-table stat-camp-table"
+               [value]="statCamp_Matches"
+               [(selection)]="statCamp_Selected"
+               dataKey="id"
+               [scrollable]="true"
+               scrollHeight="450px"
+               [style]="{ 'margin-top': '10px' }">
+               <ng-template pTemplate="header">
+                  <tr>
+                     <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                     <th>Fase</th>
+                     <th>Giornata</th>
+                     <th>Data</th>
+                     <th>Partita</th>
+                     <th>Risultato</th>
+                     <th>Stato</th>
+                  </tr>
+               </ng-template>
+               <ng-template pTemplate="body" let-mh>
+                  <tr>
+                     <td><p-tableCheckbox [value]="mh"></p-tableCheckbox></td>
+                     <td>{{ mh.phaseAbbrev_lk }}</td>
+                     <td>{{ mh.giornata }}</td>
+                     <td>{{ mh.matchDateStr }}</td>
+                     <td>{{ StatCampPartita(mh) }}</td>
+                     <td>{{ StatCampRisultato(mh) }}</td>
+                     <td>{{ MatchStatusToString(mh) }}</td>
+                  </tr>
+               </ng-template>
+               <ng-template pTemplate="emptymessage">
+                  <tr>
+                     <td colspan="7">{{ statCamp_Team ? 'Nessuna partita trovata.' : 'Seleziona una squadra.' }}</td>
+                  </tr>
+               </ng-template>
+            </p-table>
+            <div style="margin-top: 6px;">Partite selezionate: {{ statCamp_Selected.length }} / {{ statCamp_Matches.length }}</div>
+         </ng-template>
+      </p-card>
+      <div id="div-stat-camp-bottoni"
+           class="dialog-footer-buttons"
+           style="margin-top: 10px;">
+         <button
+            pButton
+            type="button"
+            label="Chiudi"
+            class="p-button-secondary"
+            (click)="DialogStatCampChiudi()"
+         ></button>
+      </div>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG STATISTICHE CAMPIONATO   --->
 
 

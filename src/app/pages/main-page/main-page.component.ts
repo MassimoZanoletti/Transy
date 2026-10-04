@@ -170,6 +170,12 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogVisible_Players: boolean = false;
    public dialogVisible_Roster: boolean = false;
    private selectedMatchHeader: IDSMatchHeader = CreateEmptyMatchHeader();
+   public dialogVisible_StatCamp: boolean = false;
+   public statCamp_Teams: Array<IDSTeam> = [];
+   public statCamp_Team: IDSTeam | null = null;
+   private statCamp_AllMatches: Array<IDSMatchHeader> = [];
+   public statCamp_Matches: Array<IDSMatchHeader> = [];
+   public statCamp_Selected: Array<IDSMatchHeader> = [];
 
    constructor (public router: Router,
                 private seasonServ: SeasonsService,
@@ -866,6 +872,97 @@ export class MainPageComponent implements OnInit, OnDestroy
       }
       this.diagMatchHeader_IsNew = false;
       this.dialogVisible_MatchHeader = true;
+   }
+
+
+   async OnStatisticheCampionato ()
+   {
+      if (!this.currChamp)
+         return;
+      this.statCamp_Teams = [];
+      this.statCamp_Team = null;
+      this.statCamp_AllMatches = [];
+      this.statCamp_Matches = [];
+      this.statCamp_Selected = [];
+      try
+      {
+         await this.SetLoading (1);
+         const champId: number = this.currChamp.id;
+         const dataTeams = await firstValueFrom (this.teamService.getAllData (champId));
+         if ((dataTeams) && (dataTeams.ok))
+            this.statCamp_Teams = [...dataTeams.elements].sort ((a: IDSTeam, b: IDSTeam) => a.nome.localeCompare (b.nome));
+         // tutte le fasi del campionato, non solo quella selezionata
+         const dataPhases = await firstValueFrom (this.phaseService.getAllData (champId));
+         const fasi: Array<IDSPhase> = ((dataPhases) && (dataPhases.ok)) ? dataPhases.elements : [];
+         const perFase = await Promise.all (fasi.map (fase => firstValueFrom (this.matchHeaderServ.getAllData (fase.id))));
+         perFase.forEach ((data, idx) =>
+                          {
+                             if ((data) && (data.ok))
+                                this.statCamp_AllMatches.push (...data.elements.map ((mh: IDSMatchHeader) => ({
+                                   ...mh,
+                                   phaseNome_lk:   mh.phaseNome_lk || fasi[idx].nome,
+                                   phaseAbbrev_lk: mh.phaseAbbrev_lk || fasi[idx].abbrev
+                                })));
+                          });
+         this.statCamp_AllMatches.sort ((a, b) => (a.matchDate.getTime () - b.matchDate.getTime ()) || (a.matchNumber - b.matchNumber));
+         this.dialogVisible_StatCamp = true;
+      }
+      catch (err)
+      {
+         await this.logService.AddToLog (loggedUser, `Exception [OnStatisticheCampionato]: '${JSON.stringify(err,null,-1)}'`);
+         const dlgData: MessDlgData = {
+            title:      'ERRORE',
+            subtitle:   'Errore durante la lettura delle partite del campionato',
+            message:    `${JSON.stringify(err,null,3)}`,
+            messtype:   'error',
+            btncaption: 'Chiudi'
+         };
+         this.messageDialogService.showMessage (dlgData, '600px');
+      }
+      finally
+      {
+         await this.SetLoading (0);
+         this.cdr.detectChanges ();
+      }
+   }
+
+
+   OnStatCampTeamChange ()
+   {
+      if (this.statCamp_Team)
+      {
+         const teamId: number = Number(this.statCamp_Team.id);
+         this.statCamp_Matches = this.statCamp_AllMatches.filter (mh => (mh.myTeamId_link === teamId) || (mh.oppoTeamId_link === teamId));
+      }
+      else
+         this.statCamp_Matches = [];
+      // per default selezionate tutte le partite tranne quelle non giocate
+      this.statCamp_Selected = this.statCamp_Matches.filter (mh => mh.matchStatus !== matchStatusType.notPlayed.code);
+   }
+
+
+   // squadra di casa sempre per prima
+   StatCampPartita (mh: IDSMatchHeader): string
+   {
+      if (mh.atHome)
+         return `${mh.myTeamNome_lk} - ${mh.oppoTeamNome_lk}`;
+      else
+         return `${mh.oppoTeamNome_lk} - ${mh.myTeamNome_lk}`;
+   }
+
+
+   StatCampRisultato (mh: IDSMatchHeader): string
+   {
+      if (mh.atHome)
+         return `${mh.myTeamPoints} - ${mh.oppoTeamPoints}`;
+      else
+         return `${mh.oppoTeamPoints} - ${mh.myTeamPoints}`;
+   }
+
+
+   DialogStatCampChiudi ()
+   {
+      this.dialogVisible_StatCamp = false;
    }
 
 
