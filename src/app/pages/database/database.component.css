@@ -1,139 +1,163 @@
-.card-container {
+/* La pagina occupa esattamente lo spazio del router-container (che ha già un'altezza definita): le due
+   tabelle in basso si prendono lo spazio che resta e scorrono al loro interno, così sul monitor del
+   notebook non compare la barra di scorrimento della pagina */
+:host {
+   display: block;
+   height: 100%;
+}
+
+.db-pagina {
+   height: 100%;
+   box-sizing: border-box;
+   padding: 6px 8px;
    display: flex;
-   align-items: stretch;
-   gap: 0;
+   flex-direction: column;
+   gap: 8px;
 }
 
-.custom-card-tabelle {
-   flex: 1;
-   margin: 0px;
-   padding: 0px;
-   max-width: 400px !important;
+.db-riquadro {
+   background-color: #1f2937;
+   border: 1px solid #424b57;
+   border-radius: 6px;
 }
 
-/* Elenco delle tabelle (a sinistra): 50% più largo della card dei dati */
-.custom-card-tabelle.card-elenco-tabelle {
-   max-width: 600px !important;
-}
-
-.custom-card {
-   flex: 1;
-   margin: 0px;
-   padding: 0px;
-}
-
-.divider-wrapper {
+.db-titolo {
    display: flex;
-   align-items: stretch;
-   margin: 10px 4px;
-   padding: 0;
+   align-items: center;
+   gap: 24px;
+   padding: 4px 15px;
 }
 
-.divider-wrapper p-divider {
-   margin: 0 !important;
-   padding: 0 !important;
+.db-titolo h2 {
+   margin: 0;
+}
+
+
+/*------------------------   Combo Società / Stagione / Campionato   -----------------------*/
+
+.db-filtri {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: flex-end;
+   gap: 8px 32px;
+   padding: 6px 15px 8px;
+}
+
+.db-filtro {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.db-filtro label {
+   font-size: 0.85rem;
+   font-weight: 700;
+   color: #ffe378;
+   text-transform: uppercase;
+   letter-spacing: 0.04em;
+}
+
+.db-filtro-riga {
+   display: flex;
+   align-items: center;
+   gap: 2px;
+}
+
+:host ::ng-deep .db-combo {
+   width: 170px;
+   font-size: 1.15rem;
+   font-weight: 600;
+}
+
+:host ::ng-deep .db-combo-largo {
+   width: 260px;
+}
+
+
+/*------------------------   Colonne Squadre|Fasi e Giocatori|Allenatori   -----------------------*/
+
+.db-colonne {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 8px;
+}
+
+.db-pannello {
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+   overflow: hidden;
+}
+
+.db-schede {
+   display: flex;
+   align-items: flex-end;
+   gap: 4px;
+   background-color: #422d6b;
+   padding: 6px 8px 0;
+}
+
+.db-scheda {
+   padding: 6px 18px;
    border: none;
+   border-radius: 6px 6px 0 0;
+   background: transparent;
+   color: #c4b5fd;
+   font-size: 1.3rem;
+   font-weight: 700;
+   cursor: pointer;
+}
+
+.db-scheda:hover {
+   color: #ffe378;
+}
+
+.db-scheda-attiva {
+   background-color: #1f2937;
+   color: #ffe378;
+}
+
+.db-schede-info {
+   margin-left: auto;
+   padding: 0 6px 8px;
+   color: #e5e7eb;
+}
+
+.db-schede-info b {
+   color: yellow;
+}
+
+/* scrollHeight="flex": la tabella deve stare in un contenitore flessibile che le dà l'altezza */
+:host ::ng-deep .db-tabella {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
 }
 
 .no-header-table ::ng-deep thead {
    display: none;
 }
 
-.bottoni-container {
+.db-vuoto {
+   color: #9ca3af;
+   font-size: 1.2rem !important;
+   font-style: italic;
+}
+
+.db-bottoni {
    display: flex;
    gap: 1rem;
    align-items: center;
-   justify-content: flex-start;
-   margin: 1px !important;
-   padding: 1px !important;
-   /*background-color: red;*/
+   padding: 6px 8px;
+   border-top: 1px solid #424b57;
 }
 
-.card-header-personalizzato {
-   background-color: #422d6b;
-   padding: 0.7rem;
-   border-top-left-radius: 6px;
-   border-top-right-radius: 6px;
+.db-bottoni > :last-child {
+   margin-left: auto;
 }
-
-.card-header-personalizzato h3 {
-   font-size: 1.5rem;
-   font-weight: 700;
-   margin: 0;
-}
-
-:host ::ng-deep .highlight-text {
-   color: yellow !important;
-}
-
-:host ::ng-deep .white-text {
-   color: white !important;
-}
-
-
-:host ::ng-deep .p-button-table .p-button {
-   max-height: 28px !important;
-   min-height: 28px !important;
-   height: 28px !important;
-   line-height: 28px !important;
-   margin-top: 1px !important;
-   margin-bottom: 1px !important;
-   margin-right: 8px !important;
-}
-
-
-:host ::ng-deep .custom-header-table .p-datatable-thead > tr > th {
-   background-color: #422d6b !important;
-   color: #ffe378 !important;
-   font-weight: bold;
-   font-size: 1.2em;
-   border-bottom: 2px solid #3949ab;
-   border-right: none !important;
-}
-
-
-.dynamic-vert-pos {
-   position: relative;
-   transition: top 0.25s ease;
-}
-
-
-
-
-
-:host ::ng-deep .custom-header-table .p-button {
-   min-height: 2.5rem;
-}
-
-
-::ng-deep .action-button {
-   width: 2.5rem;
-   height: 2.5rem;
-   padding: 0;
-   display: inline-flex;
-   align-items: center;
-   justify-content: center;
-   font-size: 1.2rem;
-   border: none;
-   border-radius: 50%;
-   cursor: pointer;
-}
-
-::ng-deep .edit-button {
-   color: white;
-}
-
-::ng-deep .delete-button {
-   color: white;
-}
-
-/*
-::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-   padding-top: 0.08rem;
-   padding-bottom: 0.08rem;
-   line-height: 1.0;
-}
-*/
 
 /* Celle delle tabelle: finora arrivavano (per contagio) dalla regola globale di players-comp, ora limitata al
    suo componente; qui gli stessi valori, espliciti e validi solo per questa pagina */
@@ -144,56 +168,16 @@
    font-size: 2em;
 }
 
-::ng-deep .p-card .p-card-body {
-   padding: 1px !important;
-   margin-top: 12px !important;
-   margin-bottom: 6px !important;
-}
-
-
-::ng-deep .p-card .p-card-content {
-   padding-top: 1px !important;
-   padding-bottom: 1px !important;
-   margin-top: 1px !important;
-   margin-bottom: 1px !important;
-}
-
-.row-bck-0 {
-   background-color: #161c2d; /* Un rosso chiaro */
-}
-
-.row-bck-1 {
-   background-color: #1a2136; /* Un verde chiaro */
-}
-
-.row-bck-2 {
-   background-color: #1e273f; /* Un giallo chiaro */
-}
-
-
-
 
 /*------------------------   Dialog Specs -----------------------*/
 
-.dialog-container
-{
-   display: flex;
-   justify-content: center;   /* allineamento orizzontale centrato */
-   align-items: start;        /* allineamento verticale in alto */
-   /*height: 100vh;*/
-   margin-top: 15px !important;
+.dialog-container {
+   margin-top: 5px;
+}
 
-   mat-card {
-      width: 400px;
-      color: white;
-   }
-
-   mat-form-field {
-      width: 100%;
-      margin-bottom: 8px;
-      margin-top: 8px;
-   }
-
+.dialog-operazione {
+   margin: 0 0 1rem;
+   color: #ffe378;
 }
 
 .dialog-error-message {
@@ -204,7 +188,6 @@
    padding: 8px;
    font-weight: bold;
 }
-
 
 .form-group {
    display: flex;
@@ -218,8 +201,7 @@
    font-weight: bold;
 }
 
-.form-group input,
-.form-group p-calendar {
+.form-group input {
    flex: 1;
 }
 
@@ -227,6 +209,5 @@
    display: flex;
    justify-content: flex-end;
    gap: 0.5rem;
+   margin-top: 1.5rem;
 }
-
-/* ----------------------------------------- */
