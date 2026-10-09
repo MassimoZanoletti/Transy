@@ -28,6 +28,7 @@ import {MatchrosterService} from "../../services/matchroster.service";
 import {TeamService} from "../../services/team.service";
 import {MatchSyncService} from "../../services/match-sync.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
+import {PdfSaveService} from "../../services/pdf-save.service";
 
 
 
@@ -111,7 +112,8 @@ export class StatCampionatoPageComponent
                 private servMatchRoster: MatchrosterService,
                 private servTeam: TeamService,
                 private matchSync: MatchSyncService,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private pdfSave: PdfSaveService)
    {
       // la pagina si raggiunge solo dalla finestra di selezione delle partite: senza i suoi dati
       // (URL scritto a mano, refresh) si torna alla Dashboard
@@ -260,7 +262,11 @@ export class StatCampionatoPageComponent
 
    async EsportaPdf (): Promise<void>
    {
-      if (this.elaborazione)
+      if ((this.elaborazione) || (!this.team) || (!this.champ))
+         return;
+      // la finestra "Salva con nome" va aperta subito dopo il click, prima dell'elaborazione
+      const destinazione = await this.pdfSave.ChiediDestinazione (`C_Statistiche_${this.team.nome}_${this.champ.nome}.pdf`);
+      if (!destinazione)
          return;
       // senza elaborazione precedente si elabora adesso
       if (!this.totali)
@@ -410,7 +416,7 @@ export class StatCampionatoPageComponent
       });
       legenda ((pdf as any).lastAutoTable.finalY + 5);
 
-      pdf.save (`Statistiche_${nomeTeam}_${nomeCamp}.pdf`.replace (/[\\/:*?"<>|]/g, '_'));
+      await destinazione.Salva (pdf);
    }
 
 

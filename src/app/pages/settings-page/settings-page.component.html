@@ -50,4 +50,32 @@
          <div class="cfg-nota">Impostazione salvata su questo dispositivo.</div>
       </p-card>
    </div>
+
+   <div class="card flex justify-content-start">
+      <p-card header="Esportazione PDF"
+              [style]="{ width: '100vw' }"
+              contentStyleClass="card-contenuto-ridotto">
+         <ng-container *ngIf="sceltaCartellaSupportata; else nonSupportata">
+            <div class="cfg-descrizione">Cartella proposta quando si salva un PDF:</div>
+            <div class="cfg-riga">
+               <p-dropdown [options]="opzioniCartellaPdf"
+                           optionLabel="label"
+                           optionValue="value"
+                           [ngModel]="config.cartellaPdf()"
+                           (ngModelChange)="SetCartellaPdf($event)"></p-dropdown>
+               <ng-container *ngIf="config.cartellaPdf() === 'custom'">
+                  <span class="cfg-cartella"><i class="pi pi-folder"></i> {{ config.cartellaPdfHandle()?.name }}</span>
+                  <p-button label="Cambia..."
+                            severity="secondary"
+                            icon="pi pi-folder-open"
+                            (click)="config.ScegliCartellaPdf()"></p-button>
+               </ng-container>
+            </div>
+            <div class="cfg-nota">Impostazione salvata su questo dispositivo.</div>
+         </ng-container>
+         <ng-template #nonSupportata>
+            <div class="cfg-nota">Questo browser non permette di scegliere la cartella: il PDF viene salvato secondo le impostazioni di download del browser.</div>
+         </ng-template>
+      </p-card>
+   </div>
 </div>

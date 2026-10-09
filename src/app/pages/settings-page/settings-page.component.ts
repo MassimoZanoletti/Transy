@@ -16,7 +16,8 @@ import {TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
 import {Router} from "@angular/router";
 import {loggedUser} from "../../services/users.service";
-import {ConfigService} from "../../services/config.service";
+import {ConfigService, TCartellaPdf} from "../../services/config.service";
+import {ButtonModule} from "primeng/button";
 
 
 
@@ -38,18 +39,42 @@ import {ConfigService} from "../../services/config.service";
                   NgIf,
                   ProgressSpinnerModule,
                   TableModule,
-                  TooltipModule
+                  TooltipModule,
+                  ButtonModule
                ],
                templateUrl: './settings-page.component.html',
                styleUrl:    './settings-page.component.css'
             })
 export class SettingsPageComponent
 {
+   public readonly sceltaCartellaSupportata: boolean = ConfigService.SceltaCartellaSupportata();
+   public readonly opzioniCartellaPdf: Array<{ label: string, value: TCartellaPdf }> = [
+      { label: 'Decide il browser',    value: 'browser' },
+      { label: 'Download',             value: 'downloads' },
+      { label: 'Documenti',            value: 'documents' },
+      { label: 'Desktop',              value: 'desktop' },
+      { label: 'Cartella scelta...',   value: 'custom' }
+   ];
 
 
    constructor (public router: Router,
                 public config: ConfigService)
    {
+   }
+
+
+   // "Cartella scelta..." apre subito la scelta della cartella; se l'utente annulla resta l'impostazione precedente
+   async SetCartellaPdf (value: TCartellaPdf): Promise<void>
+   {
+      if ((value === 'custom') && (!this.config.cartellaPdfHandle()))
+      {
+         const precedente = this.config.cartellaPdf();
+         this.config.cartellaPdf.set(value);
+         if (!(await this.config.ScegliCartellaPdf()))
+            this.config.cartellaPdf.set(precedente);
+      }
+      else
+         this.config.SetCartellaPdf(value);
    }
 
 

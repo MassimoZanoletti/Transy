@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, inject, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TableModule} from 'primeng/table';
 import {TooltipModule} from 'primeng/tooltip';
@@ -7,6 +7,7 @@ import {DividerModule} from 'primeng/divider';
 import {IDSMatchHeader} from "../../../models/datamod";
 import {matchGlobs} from "../../../common/curr-match";
 import {globs} from "../../../common/utils";
+import {PdfSaveService} from "../../../services/pdf-save.service";
 import {AndamentoQuarti, MinutiPerQuarto, TabellaSquadra, TContestoLive, TQuartoAndamento, TRigaStat, TTabellaStat, TTiriStat} from "../../../common/statistiche";
 
 
@@ -28,6 +29,7 @@ import {AndamentoQuarti, MinutiPerQuarto, TabellaSquadra, TContestoLive, TQuarto
 })
 export class StatisticheCompComponent
 {
+   private readonly pdfSave = inject(PdfSaveService);
    @Input() matchHeader: IDSMatchHeader | null = null;
    @Input() myCoach1: string = '';
    @Input() myCoach2: string = '';
@@ -134,6 +136,9 @@ export class StatisticheCompComponent
    {
       this.Aggiorna();
       if ((this.tabelle.length === 0) || (!this.matchHeader))
+         return;
+      const destinazione = await this.pdfSave.ChiediDestinazione(`T_${this.matchHeader.title || 'partita'}-tabelle.pdf`);
+      if (!destinazione)
          return;
       const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
       const pdf = new jsPDF('l', 'mm', 'a4');
@@ -279,7 +284,7 @@ export class StatisticheCompComponent
          }
          y += 3.5;
       }
-      pdf.save(`T_${this.matchHeader.title || 'partita'}-tabelle.pdf`);
+      await destinazione.Salva(pdf);
    }
 
 

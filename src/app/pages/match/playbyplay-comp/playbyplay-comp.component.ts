@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnDestroy, QueryList, ViewChildren} from '@angular/core';
+import {Component, ElementRef, inject, Input, OnDestroy, QueryList, ViewChildren} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {ButtonModule} from 'primeng/button';
@@ -11,6 +11,7 @@ import {matchGlobs} from "../../../common/curr-match";
 import {globs} from "../../../common/utils";
 import {TOperationType} from "../../../common/operation";
 import {TContestoLive, TempoStr} from "../../../common/statistiche";
+import {PdfSaveService} from "../../../services/pdf-save.service";
 
 
 // Punto del grafico: x = punti della squadra, y = minuti di gioco trascorsi nel quarto
@@ -100,6 +101,7 @@ function CaricaChartJs (): Promise<typeof Chart>
 })
 export class PlaybyplayCompComponent implements OnDestroy
 {
+   private readonly pdfSave = inject(PdfSaveService);
    @Input() matchHeader: IDSMatchHeader | null = null;
    // situazione del cronometro (quarto, tempo, quarti giocati), fornita dalla pagina della partita
    @Input() getContestoLive: () => TContestoLive = () => ({ quarto: 1, tempo: globs.DurationRegulTime, quartoGiocato: () => false });
@@ -525,6 +527,9 @@ export class PlaybyplayCompComponent implements OnDestroy
       this.Aggiorna();
       if (this.quartiGiocati.length === 0)
          return;
+      const destinazione = await this.pdfSave.ChiediDestinazione(`P_${this.matchHeader?.title || 'partita'}-grafici.pdf`);
+      if (!destinazione)
+         return;
       const [{ default: jsPDF }, ChartJs] = await Promise.all([import('jspdf'), CaricaChartJs()]);
       const pdf = new jsPDF('p', 'mm', 'a3');
       const pageWidth = 297;
@@ -600,7 +605,7 @@ export class PlaybyplayCompComponent implements OnDestroy
       {
          contenitore.remove();
       }
-      pdf.save(`G_${this.matchHeader?.title || 'partita'}-grafici.pdf`);
+      await destinazione.Salva(pdf);
    }
 }
 

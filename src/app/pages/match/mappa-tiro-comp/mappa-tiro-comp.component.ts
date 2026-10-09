@@ -9,6 +9,7 @@ import {CalcolaMappaTiri, PercentualeTiri, TMappaTiri} from "../../../common/map
 import {IDSMatchHeader} from "../../../models/datamod";
 import {matchGlobs} from "../../../common/curr-match";
 import {ConfigService} from "../../../services/config.service";
+import {PdfSaveService} from "../../../services/pdf-save.service";
 
 
 // Mappa di tiro di un giocatore (un riquadro della griglia sotto la mappa di squadra)
@@ -58,7 +59,8 @@ export class MappaTiroCompComponent
    public giocatori: TMappaGiocatore[] = [];
 
 
-   constructor (private config: ConfigService)
+   constructor (private config: ConfigService,
+                private pdfSave: PdfSaveService)
    {
    }
 
@@ -108,6 +110,9 @@ export class MappaTiroCompComponent
    {
       this.Aggiorna();
       if (!this.MappaAbilitata() || !this.squadra)
+         return;
+      const destinazione = await this.pdfSave.ChiediDestinazione(`M_${this.matchHeader?.title || 'partita'}-mappa-tiro-${this.isMyTeam ? 'myteam' : 'oppoteam'}.pdf`);
+      if (!destinazione)
          return;
       const [{ default: jsPDF }, campo] = await Promise.all([import('jspdf'), this.CaricaImmagineCampo()]);
       const pdf = new jsPDF('l', 'mm', 'a4');
@@ -188,7 +193,7 @@ export class MappaTiroCompComponent
          pdf.text(tl + senza, centro, yStat + 3.5, { align: 'center' });
       });
 
-      pdf.save(`T_${mh?.title || 'partita'}-mappa-tiro-${this.isMyTeam ? 'myteam' : 'oppoteam'}.pdf`);
+      await destinazione.Salva(pdf);
    }
 
 
