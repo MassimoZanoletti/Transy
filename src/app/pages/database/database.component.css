@@ -11,6 +11,11 @@
    max-width: 400px !important;
 }
 
+/* Elenco delle tabelle (a sinistra): 50% più largo della card dei dati */
+.custom-card-tabelle.card-elenco-tabelle {
+   max-width: 600px !important;
+}
+
 .custom-card {
    flex: 1;
    margin: 0px;

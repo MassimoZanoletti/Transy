@@ -27,7 +27,7 @@
      id="div-data">
    <div class="card-container"
         id="div-camp-fasi">
-      <p-card class="custom-card-tabelle">
+      <p-card class="custom-card-tabelle card-elenco-tabelle">
          <ng-template pTemplate="header">
             <div class="card-header-personalizzato">
                <h3>Tabelle</h3>
@@ -523,3 +523,55 @@
    </div>
 </p-dialog>
 <!--   FINE DIALOG PLAYER   --->
+
+
+
+
+
+<!-----------------------------------------------------------------
+               DIALOG COACH
+------------------------------------------------------------------>
+<p-dialog id="dialog-coach"
+          header="{{dialogTitle}}"
+          [modal]="true"
+          [(visible)]="dialogVisible_Coach"
+          [closable]="false"
+          [style]="{ width: '35rem', padding: '10px', 'background-color': '#1f2937' }">
+   <div class="dialog-container">
+      <p-card header="{{dialogOperazione}}">
+         <ng-template pTemplate="content">
+            <div class="form-group">
+               <label for="nome">Nome:</label>
+               <input type="text"
+                      id="nome"
+                      [(ngModel)]="dialogValue_Nome"
+                      pInputText
+                      required
+                      #dialogError="ngModel"/>
+            </div>
+
+            <div *ngIf="dialogError.invalid && dialogError.touched" class="dialog-error-message">{{ dialogErrorMessage }}</div>
+         </ng-template>
+
+         <ng-template pTemplate="footer">
+            <div class="dialog-footer-buttons">
+               <button
+                  pButton
+                  type="button"
+                  label="Annulla"
+                  class="p-button-secondary"
+                  (click)="DialogAnnulla('coach')"
+               ></button>
+               <button
+                  pButton
+                  type="button"
+                  label="OK"
+                  class="p-button-primary"
+                  (click)="DialogSalva('coach')"
+               ></button>
+            </div>
+         </ng-template>
+      </p-card>
+   </div>
+</p-dialog>
+<!--   FINE DIALOG COACH   --->
