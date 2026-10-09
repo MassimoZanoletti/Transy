@@ -5,6 +5,22 @@
    <title>Transy</title>
    <base href="/">
    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <script>
+      // Smartphone e tablet: puntatore principale a dito e sistema non Windows (i PC Windows, anche touch o in
+      // modalità tablet, restano come sono). Non si cerca "Android" nello user agent perché Chrome sui tablet
+      // Android usa di default il "sito desktop" e si presenta come Chrome per Linux. L'interfaccia
+      // è pensata per un notebook. La classe "disp-mobile" attiva lo scorrimento dell'area centrale (styles.css);
+      // se lo schermo è più stretto di un notebook si impagina a 1280px di larghezza, così il browser la mostra
+      // rimpicciolita per farla stare nello schermo e si può zoomare avanti e indietro con le dita.
+      (function ()
+      {
+         if ((/Windows/.test(navigator.userAgent)) || (!window.matchMedia('(pointer: coarse)').matches))
+            return;
+         document.documentElement.classList.add('disp-mobile');
+         if (Math.min(screen.width, screen.height) < 1280)
+            document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1280');
+      })();
+   </script>
    <link rel="icon" type="image/x-icon" href="assets/transy.ico">
    <link rel="manifest" href="manifest.webmanifest">
    <meta name="theme-color" content="#1f2937">

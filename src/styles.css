@@ -127,3 +127,24 @@ body {
    width: 600px !important;
    height: 650px !important;
 }
+
+
+/* Smartphone e tablet (classe "disp-mobile" su <html>, messa dallo script in index.html): l'interfaccia è
+   pensata per stare tutta nella finestra di un notebook. Qui la pagina si disegna almeno grande come su un
+   notebook e l'area centrale scorre in entrambe le direzioni (con il dito), invece di tagliare quello che
+   non ci sta. Su PC (anche touch, anche in modalità tablet) resta tutto come prima. */
+html.disp-mobile #router-container {
+   overflow: auto !important;
+   -webkit-overflow-scrolling: touch;
+}
+
+html.disp-mobile #router-container > :not(router-outlet) {
+   min-width: 1280px;
+   min-height: 720px;
+}
+
+/* le pagine senza un display proprio sono inline (e lì min-width non vale); :where() ha specificità
+   zero, così il display delle pagine che lo impostano (es. flex della partita) resta il loro */
+:where(html.disp-mobile #router-container > :not(router-outlet)) {
+   display: block;
+}

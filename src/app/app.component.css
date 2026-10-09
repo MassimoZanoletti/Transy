@@ -2,6 +2,8 @@
    display: flex;
    flex-direction: column;
    height: 100vh;
+   /* sui dispositivi mobili 100vh comprende anche la barra degli indirizzi: dvh è l'altezza visibile */
+   height: 100dvh;
    overflow: hidden;
 }
 

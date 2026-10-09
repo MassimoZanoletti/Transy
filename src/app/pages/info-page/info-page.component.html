@@ -1,0 +1,27 @@
+<div id="main_container">
+   <div class="card flex justify-content-start">
+      <p-card header="Programma"
+              [style]="{ width: '100vw' }"
+              contentStyleClass="card-contenuto-ridotto">
+         <div class="info-griglia">
+            <ng-container *ngFor="let r of programma">
+               <div class="info-label">{{ r.label }}</div>
+               <div class="info-valore">{{ r.value }}</div>
+            </ng-container>
+         </div>
+      </p-card>
+   </div>
+
+   <div class="card flex justify-content-start">
+      <p-card header="Dispositivo"
+              [style]="{ width: '100vw' }"
+              contentStyleClass="card-contenuto-ridotto">
+         <div class="info-griglia">
+            <ng-container *ngFor="let r of deviceInfo()">
+               <div class="info-label">{{ r.label }}</div>
+               <div class="info-valore">{{ r.value }}</div>
+            </ng-container>
+         </div>
+      </p-card>
+   </div>
+</div>

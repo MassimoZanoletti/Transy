@@ -66,6 +66,39 @@
    overflow: hidden;
 }
 
+/* Smartphone e tablet (classe "disp-mobile" su <html>, vedi index.html): la pagina non deve stare nella
+   finestra, che è troppo bassa, ma cresce quanto serve e scorre l'area centrale dell'app. Senza questo la
+   zona delle azioni (#div-gioco-basso) riceve solo l'altezza avanzata, cioè pochi pixel. */
+:host-context(.disp-mobile) {
+   height: auto;
+}
+
+/* zona delle azioni alta quanto le panchine, mostrate per intero; la tabella delle operazioni non conta
+   nell'altezza (posizione assoluta), si adatta a quella delle panchine e scorre al suo interno */
+:host-context(.disp-mobile) .div-gioco-basso {
+   height: auto;
+   flex: 1 0 auto;
+}
+
+:host-context(.disp-mobile) .div-gioco-mybench,
+:host-context(.disp-mobile) .div-gioco-oppobench {
+   max-height: none;
+   overflow-y: visible;
+}
+
+:host-context(.disp-mobile) .div-gioco-operazioni {
+   position: relative;
+   height: auto;
+   flex: 1 1 0;
+   min-width: 0;
+}
+
+:host-context(.disp-mobile) .div-gioco-operazioni > p-table {
+   position: absolute;
+   inset: 0;
+   display: block;
+}
+
 /* Propaga l'altezza disponibile dal tab "Gioco" fino a #div-gioco-basso,
    in modo che sia la tabella delle operazioni (scrollHeight="flex") a scrollare
    internamente invece di far crescere la pagina oltre la finestra. */
