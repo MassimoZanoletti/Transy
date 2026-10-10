@@ -21,8 +21,8 @@ export interface TTiroPrecedente extends TPosizioneTiro
 
 
 // Colori dei quarti per i tiri (tutti i supplementari hanno lo stesso colore)
-const COLORI_QUARTI = ['#ff7777', '#17b1ff', '#8f4d00', '#109010'];
-const COLORE_SUPPLEMENTARI = '#ffff00';
+export const COLORI_QUARTI = ['#ff7777', '#17b1ff', '#8f4d00', '#109010'];
+export const COLORE_SUPPLEMENTARI = '#ffff00';
 
 
 // Campo (metà offensiva) con i tiri disegnati sopra; se "cliccabile", un click restituisce la posizione.

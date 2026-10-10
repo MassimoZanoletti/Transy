@@ -1,7 +1,14 @@
+/* la pagina occupa esattamente lo spazio del router-container (fra barra in alto e piè di pagina): così
+   scorre solo #stat-camp-contenuto e non anche il router-container (doppia barra di scorrimento) */
+:host {
+   display: block;
+   height: 100%;
+}
+
 #stat-camp-container {
    display: flex;
    flex-direction: column;
-   height: calc(100vh - 60px);
+   height: 100%;
    padding: 0 15px;
    box-sizing: border-box;
 }
@@ -46,6 +53,101 @@
 
 .legenda-peggiore {
    color: #ff6666;
+}
+
+/* ---- grafici a torta del contributo dei quarti ---- */
+#stat-camp-torte {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 24px;
+}
+
+.torta {
+   margin: 0;
+   width: 380px;
+   max-width: 100%;
+}
+
+.torta figcaption {
+   text-align: center;
+}
+
+.torta-titolo {
+   font-size: 1.15rem;
+   font-weight: bold;
+   color: #ffe378;
+}
+
+.torta-totale {
+   font-size: 0.95rem;
+   color: #cbd5e1;
+}
+
+.torta svg {
+   width: 100%;
+   height: auto;
+   display: block;
+}
+
+/* 2px di stacco fra gli spicchi, col colore del fondo */
+.fetta {
+   stroke: #121212;
+   stroke-width: 2;
+}
+
+.fetta:hover {
+   opacity: 0.85;
+}
+
+/* quarto perso nella torta della differenza: tratteggio scuro su tutta l'area, sopra il colore del quarto */
+.linea-tratteggio {
+   stroke: rgba(0, 0, 0, 0.6);
+   stroke-width: 3.5;
+}
+
+.tratteggio-negativo {
+   pointer-events: none;
+}
+
+/* testo delle etichette: colori del testo, mai quello dello spicchio */
+.etichetta-fetta {
+   font-size: 14px;
+   fill: #e2e8f0;
+}
+
+.etichetta-valore {
+   font-weight: bold;
+}
+
+.etichetta-perc {
+   fill: #94a3b8;
+   font-size: 12px;
+}
+
+#stat-camp-legenda-torte {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 18px;
+   margin-top: 4px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.voce-legenda {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.quadratino {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 2px;
+}
+
+.quadratino-negativo {
+   background: repeating-linear-gradient(45deg, #cbd5e1 0 2px, transparent 2px 5px);
 }
 
 /* "Torna alla Dashboard": stessa riga degli altri bottoni, allineato al bordo destro */

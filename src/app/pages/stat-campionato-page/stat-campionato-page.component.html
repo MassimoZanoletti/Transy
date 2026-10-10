@@ -163,6 +163,69 @@
             layout="horizontal"
             styleClass="my-3"></p-divider>
 
+         <!-- contributo dei quarti: punti fatti, subiti e differenza (sui totali) -->
+         <h3 class="titolo-sezione">Contributo dei quarti <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <div id="stat-camp-torte">
+            @for (torta of torte; track torta.titolo; let iTorta = $index)
+            {
+               <figure class="torta">
+                  <figcaption>
+                     <div class="torta-titolo">{{ torta.titolo }}</div>
+                     <div class="torta-totale">Totale: {{ ValoreTorta(torta.totale, iTorta === 2) }}</div>
+                  </figcaption>
+                  <svg viewBox="-190 -150 380 300" role="img" [attr.aria-label]="torta.titolo + ' per quarto'">
+                     <defs>
+                        <!-- tratteggio dei quarti persi (differenza negativa), sopra il colore del quarto -->
+                        <pattern [attr.id]="'tratteggio-' + iTorta" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
+                           <line x1="0" y1="0" x2="0" y2="9" class="linea-tratteggio"/>
+                        </pattern>
+                     </defs>
+                     @for (f of torta.fette; track f.etichetta)
+                     {
+                        <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
+                              [attr.fill]="f.colore"
+                              class="fetta">
+                           <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%)</title>
+                        </path>
+                        @if (f.negativo)
+                        {
+                           <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
+                                 [attr.fill]="'url(#tratteggio-' + iTorta + ')'"
+                                 class="fetta tratteggio-negativo">
+                              <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%) - a sfavore</title>
+                           </path>
+                        }
+                     }
+                     @for (f of torta.fette; track f.etichetta)
+                     {
+                        <text [attr.x]="PosEtichetta(f).x"
+                              [attr.y]="PosEtichetta(f).y"
+                              [attr.text-anchor]="PosEtichetta(f).ancora"
+                              class="etichetta-fetta">
+                           <tspan class="etichetta-valore">{{ f.etichetta }} {{ ValoreTorta(f.valore, iTorta === 2) }}</tspan>
+                           <tspan [attr.x]="PosEtichetta(f).x" dy="1.2em" class="etichetta-perc">{{ PercFetta(f) }}%</tspan>
+                        </text>
+                     }
+                     @if (torta.fette.length === 0)
+                     {
+                        <text x="0" y="0" text-anchor="middle" class="etichetta-fetta">nessun valore</text>
+                     }
+                  </svg>
+               </figure>
+            }
+         </div>
+         <div id="stat-camp-legenda-torte">
+            @for (v of VociLegenda(); track v.etichetta)
+            {
+               <span class="voce-legenda"><span class="quadratino" [style.background-color]="v.colore"></span>{{ (v.etichetta === 'Et') ? 'Supplementari' : v.etichetta }}</span>
+            }
+            <span class="voce-legenda"><span class="quadratino quadratino-negativo"></span>tratteggiato: a sfavore (punti subiti; quarti persi nella differenza, spicchio grande quanto lo scarto)</span>
+         </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
          <!-- statistiche dei giocatori a referto nelle partite selezionate -->
          <h3 class="titolo-sezione">Statistiche giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
          <p-table id="tabellaStatGiocatori"

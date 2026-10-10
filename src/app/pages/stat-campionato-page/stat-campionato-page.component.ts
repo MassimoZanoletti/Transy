@@ -32,6 +32,7 @@ import {MatchSyncService} from "../../services/match-sync.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {PdfSaveService} from "../../services/pdf-save.service";
 import { UnaAllaVolta } from '../../common/una-alla-volta';
+import {CreaTorta, PathFetta, PercFetta, PoligonoFetta, PuntoTorta, TFettaTorta, TTorta} from "../../common/torte-quarti";
 
 
 
@@ -70,6 +71,8 @@ export class StatCampionatoPageComponent
    public medie: TRigaStatCamp | null = null;
    // con il dettaglio per quarto: totali e medie di ciascun quarto (Q1.., Et1..), sotto quelli generali
    public totaliQuarti: Array<{ totali: TRigaStatCamp, medie: TRigaStatCamp }> = [];
+   // grafici a torta: quanto contribuisce ciascun quarto a punti fatti, subiti e differenza (sui totali)
+   public torte: Array<TTorta> = [];
    public giocatori: Array<TGiocatoreStatCamp> = [];
    // colonne dei giocatori con il valore più alto in verde: valore confrontato (arrotondato come mostrato),
    // null = giocatore escluso dal confronto
@@ -150,6 +153,7 @@ export class StatCampionatoPageComponent
       {
          const righe: Array<TRigaStatCamp> = [];
          const righeTabella: Array<TRigaStatCamp> = [];
+         const righeQuarti: Array<TRigaStatCamp> = [];
          const giocatori = new Map<number, TGiocatoreStatCamp> ();
          for (const mh of this.matches)
          {
@@ -166,13 +170,17 @@ export class StatCampionatoPageComponent
             righeTabella.push (riga);
             AccumulaGiocatori (giocatori, mh, cm, ops, teamId);
             // dettaglio per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto
-            if (this.dettaglioQuarti)
-               for (const q of QuartiGiocati (ops))
-               {
-                  const cmQ = new TCurrMatch (this.servMatchHeader, this.servMatchRoster, this.servTeam);
-                  RicostruisciPartita (cmQ, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), await TOperationList.Create (), q);
-                  righeTabella.push (RigaQuarto (mh, cmQ, teamId, q));
-               }
+            // per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto. Servono sempre
+            // (grafici a torta); in tabella solo con il dettaglio per quarto
+            for (const q of QuartiGiocati (ops))
+            {
+               const cmQ = new TCurrMatch (this.servMatchHeader, this.servMatchRoster, this.servTeam);
+               RicostruisciPartita (cmQ, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), await TOperationList.Create (), q);
+               const rigaQ = RigaQuarto (mh, cmQ, teamId, q);
+               righeQuarti.push (rigaQ);
+               if (this.dettaglioQuarti)
+                  righeTabella.push (rigaQ);
+            }
          }
          this.righe = righe;
          this.righeTabella = righeTabella;
@@ -194,14 +202,20 @@ export class StatCampionatoPageComponent
          // per ogni quarto le righe di quel quarto di tutte le partite; la media è sulle partite in cui
          // quel quarto è stato giocato (conta per i supplementari)
          const perQuarto = new Map<number, Array<TRigaStatCamp>> ();
-         for (const r of righeTabella)
-            if (r.quarto !== undefined)
-               perQuarto.set (r.quarto, [...(perQuarto.get (r.quarto) ?? []), r]);
+         for (const r of righeQuarti)
+            perQuarto.set (r.quarto!, [...(perQuarto.get (r.quarto!) ?? []), r]);
          this.totaliQuarti = [...perQuarto.entries ()].sort ((a, b) => a[0] - b[0]).map (([, rq]) =>
          {
             const tot = { ...TotaliPartite (rq), squadra: `TOTALI ${rq[0].casaTrasf}` };
             return { totali: tot, medie: { ...MediePartite (tot, rq.length), squadra: `MEDIA ${rq[0].casaTrasf}` } };
          });
+         const valoriQuarti = (f: (r: TRigaStatCamp) => number) =>
+            new Map ([...perQuarto.entries ()].map (([q, rq]) => [q, rq.reduce ((acc, r) => acc + f (r), 0)]));
+         this.torte = [
+            CreaTorta ('Punti fatti', valoriQuarti (r => r.puntiF)),
+            CreaTorta ('Punti subiti', valoriQuarti (r => r.puntiS), true),
+            CreaTorta ('Differenza punti', valoriQuarti (r => r.dif))
+         ];
          // giocatori in ordine di nome
          this.giocatori = [...giocatori.values ()].sort ((a, b) => a.nome.localeCompare (b.nome, 'it', { sensitivity: 'base' }));
          // massimi per le colonne di minuti e punti dei giocatori (valori come mostrati)
@@ -265,12 +279,50 @@ export class StatCampionatoPageComponent
    }
 
 
+   ///////////////////////////////////////////////////////////////
+   // Grafici a torta (SVG): torta di raggio RAGGIO_TORTA centrata in (0,0), etichette fuori dal bordo
+   ///////////////////////////////////////////////////////////////
+
+   public readonly RAGGIO_TORTA = 100;
+   public readonly PathFetta = PathFetta;
+   public readonly PercFetta = PercFetta;
+
+
+   // posizione dell'etichetta di uno spicchio: fuori dal bordo, a metà dell'arco
+   PosEtichetta (f: TFettaTorta): { x: number, y: number, ancora: string }
+   {
+      const [x, y] = PuntoTorta (0, 0, this.RAGGIO_TORTA + 22, (f.a0 + f.a1) / 2);
+      return { x, y, ancora: (Math.abs (x) < 12) ? 'middle' : ((x > 0) ? 'start' : 'end') };
+   }
+
+
+   // valore col segno per la torta della differenza (+5 / -9), semplice per le altre
+   ValoreTorta (valore: number,
+                differenza: boolean): string
+   {
+      return (differenza && (valore > 0)) ? `+${valore}` : `${valore}`;
+   }
+
+
+   // legenda: i quarti presenti in almeno una torta
+   VociLegenda (): Array<{ etichetta: string, colore: string }>
+   {
+      const voci = new Map<string, string> ();
+      for (const t of this.torte)
+         for (const f of t.fette)
+            voci.set (f.etichetta, f.colore);
+      return [...voci.entries ()].map (([etichetta, colore]) => ({ etichetta, colore }));
+   }
+
+
    // righe in fondo alla tabella: totali e medie generali, poi quelli di ciascun quarto, ogni coppia
    // preceduta da una riga di stacco (null)
    RigheTotali (): Array<TRigaStatCamp | null>
    {
       if ((!this.totali) || (!this.medie))
          return [];
+      if (!this.dettaglioQuarti)
+         return [this.totali, this.medie];
       return [this.totali, this.medie, ...this.totaliQuarti.flatMap (tq => [null, tq.totali, tq.medie])];
    }
 
@@ -320,6 +372,103 @@ export class StatCampionatoPageComponent
    // Esportazione in PDF (A4 orizzontale): pagina 1 statistiche di squadra, pagina 2 le due tabelle dei
    // giocatori. Stessa impostazione dell'export del tab "Statistiche" della partita.
    ///////////////////////////////////////////////////////////////
+
+   // Le tre torte su una pagina A4 orizzontale: spicchi come poligoni (jsPDF non ha archi) separati da un
+   // bordo bianco, quarti persi (differenza negativa) tratteggiati su tutta l'area, etichette fuori dal bordo
+   private DisegnaTortePdf (pdf: any,
+                            font: string): void
+   {
+      // raggio contenuto: fra due torte vicine devono starci le etichette laterali di entrambe
+      const r = 30;
+      const cy = 90;
+      const centri = [52, 148.5, 245];
+      const rgb = (hex: string): [number, number, number] => [1, 3, 5].map (i => parseInt (hex.substring (i, i + 2), 16)) as [number, number, number];
+      // stile null = solo il percorso, senza disegnarlo (per il ritaglio del tratteggio)
+      const traccia = (f: TFettaTorta, cx: number, raggio: number, stile: string | null) =>
+      {
+         const punti = PoligonoFetta (f, cx, cy, raggio);
+         const delta = punti.slice (1).map ((pt, k) => [pt[0] - punti[k][0], pt[1] - punti[k][1]]);
+         pdf.lines (delta, punti[0][0], punti[0][1], [1, 1], stile, true);
+      };
+      this.torte.forEach ((torta, i) =>
+      {
+         const cx = centri[i];
+         const differenza = (i === 2);
+         pdf.setFont (font, 'bold');
+         pdf.setFontSize (13);
+         pdf.setTextColor (0, 0, 0);
+         pdf.text (torta.titolo, cx, cy - r - 22, { align: 'center' });
+         pdf.setFont (font, 'normal');
+         pdf.setFontSize (10);
+         pdf.text (`Totale: ${this.ValoreTorta (torta.totale, differenza)}`, cx, cy - r - 15, { align: 'center' });
+         if (torta.fette.length === 0)
+         {
+            pdf.text ('nessun valore', cx, cy, { align: 'center' });
+            return;
+         }
+         for (const f of torta.fette)
+         {
+            pdf.setFillColor (...rgb (f.colore));
+            pdf.setDrawColor (255, 255, 255);
+            pdf.setLineWidth (0.7);
+            pdf.setLineDashPattern ([], 0);
+            traccia (f, cx, r, 'FD');
+         }
+         // quarti persi: tratteggio diagonale su tutta l'area (righe tagliate sulla forma dello spicchio)
+         for (const f of torta.fette.filter (x => x.negativo))
+         {
+            pdf.saveGraphicsState ();
+            traccia (f, cx, r - 0.4, null);
+            pdf.clip ();
+            pdf.discardPath ();
+            pdf.setDrawColor (40, 40, 40);
+            pdf.setLineWidth (0.5);
+            for (let d = -2 * r; d <= 2 * r; d += 2.2)
+               pdf.line (cx + d - r, cy + r, cx + d + r, cy - r);
+            pdf.restoreGraphicsState ();
+         }
+         // etichette fuori dal bordo: quarto, valore e percentuale
+         pdf.setFontSize (8);
+         for (const f of torta.fette)
+         {
+            const [x, y] = PuntoTorta (cx, cy, r + 5, (f.a0 + f.a1) / 2);
+            const allinea = (Math.abs (x - cx) < 4) ? 'center' : ((x > cx) ? 'left' : 'right');
+            pdf.setTextColor (0, 0, 0);
+            pdf.setFont (font, 'bold');
+            pdf.text (`${f.etichetta}  ${this.ValoreTorta (f.valore, differenza)}`, x, y, { align: allinea });
+            pdf.setFont (font, 'normal');
+            pdf.setTextColor (90, 90, 90);
+            pdf.text (`${PercFetta (f)}%`, x, y + 3.5, { align: allinea });
+         }
+      });
+      // legenda in basso
+      let x = 20;
+      const y = cy + r + 30;
+      pdf.setFontSize (10);
+      for (const v of this.VociLegenda ())
+      {
+         pdf.setFillColor (...rgb (v.colore));
+         pdf.setDrawColor (0, 0, 0);
+         pdf.setLineWidth (0.2);
+         pdf.rect (x, y - 3.5, 4, 4, 'FD');
+         pdf.setTextColor (0, 0, 0);
+         pdf.text ((v.etichetta === 'Et') ? 'Supplementari' : v.etichetta, x + 6, y);
+         x += (v.etichetta === 'Et') ? 34 : 18;
+      }
+      // quadratino tratteggiato: punti a sfavore
+      pdf.setDrawColor (40, 40, 40);
+      pdf.setLineWidth (0.2);
+      pdf.rect (x + 6, y - 3.5, 4, 4, 'S');
+      pdf.setLineWidth (0.4);
+      for (const d of [1, 2, 3])
+         pdf.line (x + 6 + d - 1, y + 0.5, x + 6 + d + 1, y - 3.5);
+      pdf.text ('tratteggiato: a sfavore (punti subiti, quarti persi)', x + 12, y);
+      pdf.setTextColor (90, 90, 90);
+      pdf.setFontSize (8);
+      pdf.text ("Valori sui totali delle partite selezionate; i supplementari sono sommati in un unico spicchio (Et). Nella differenza ogni spicchio e' grande quanto lo scarto del quarto.", 20, y + 8);
+      pdf.setTextColor (0, 0, 0);
+   }
+
 
    @UnaAllaVolta()
    async EsportaPdf (): Promise<void>
@@ -416,7 +565,7 @@ export class StatCampionatoPageComponent
             rigaTot (this.totali, [82, 65, 13]),
             rigaTot (this.medie, [35, 99, 83]),
             // totali e medie dei singoli quarti, ogni quarto staccato dal precedente
-            ...this.totaliQuarti.flatMap (tq => [
+            ...(this.dettaglioQuarti ? this.totaliQuarti : []).flatMap (tq => [
                [{ content: '', colSpan: 26, styles: { fillColor: [255, 255, 255], minCellHeight: 2, cellPadding: 0 } }],
                rigaTot (tq.totali, [82, 65, 13]),
                rigaTot (tq.medie, [35, 99, 83])
@@ -447,7 +596,12 @@ export class StatCampionatoPageComponent
       });
       legenda ((pdf as any).lastAutoTable.finalY + 5);
 
-      // ---- pagina 2: le due tabelle dei giocatori ----
+      // ---- pagina 2: contributo dei quarti (torte) ----
+      pdf.addPage ();
+      titolo (`Contributo dei quarti - ${nomeTeam}`, 10);
+      this.DisegnaTortePdf (pdf, font);
+
+      // ---- pagina 3: le due tabelle dei giocatori ----
       pdf.addPage ();
       titolo (`Statistiche giocatori ${nomeTeam}`, 10);
       autoTable (pdf, {
