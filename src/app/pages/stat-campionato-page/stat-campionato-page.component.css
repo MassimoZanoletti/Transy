@@ -57,7 +57,8 @@
 /* ---- tabella: stesse regole della tabella statistiche della partita (statistiche-comp) ---- */
 
 :host ::ng-deep .custom-table .p-datatable-tbody > tr > td,
-:host ::ng-deep .custom-table .p-datatable-thead > tr > th {
+:host ::ng-deep .custom-table .p-datatable-thead > tr > th,
+:host ::ng-deep .custom-table .p-datatable-tfoot > tr > th {
    padding: 0.3rem 0.5rem !important;
    white-space: nowrap;
 }
@@ -75,29 +76,30 @@
    border-bottom: 2px solid #3949ab;
 }
 
-/* righe TOTALI e MEDIA: come il footer dei totali di squadra */
-:host ::ng-deep .custom-header-table .p-datatable-thead > tr.riga-totali > th {
+/* righe TOTALI e MEDIA in fondo alla tabella: come il footer dei totali di squadra */
+:host ::ng-deep .custom-header-table .p-datatable-tfoot > tr.riga-totali > th {
    color: #ffffff !important;
    background-color: #52410d !important;
    font-size: 1.1em;
+   font-weight: bold;
 }
 
-:host ::ng-deep .custom-header-table .p-datatable-thead > tr.riga-totali.riga-medie > th {
+:host ::ng-deep .custom-header-table .p-datatable-tfoot > tr.riga-totali.riga-medie > th {
    background-color: #236353 !important;
 }
 
-/* riga vuota di stacco tra le medie e le partite (fa parte dell'intestazione: resta fissa scorrendo) */
-:host ::ng-deep .custom-header-table .p-datatable-thead > tr.riga-stacco > th {
+/* riga vuota di stacco tra l'ultima partita e i totali */
+:host ::ng-deep .custom-header-table .p-datatable-tfoot > tr.riga-stacco > th {
    height: 20px;
    padding: 0 !important;
    background-color: #121212 !important;
    border-left: none !important;
    border-right: none !important;
-   border-top: 2px solid #94a3b8 !important;
-   border-bottom: none !important;
+   border-top: none !important;
+   border-bottom: 2px solid #94a3b8 !important;
 }
 
-:host ::ng-deep .custom-header-table .p-datatable-thead > tr.riga-totali > th.etichetta-totali {
+:host ::ng-deep .custom-header-table .p-datatable-tfoot > tr.riga-totali > th.etichetta-totali {
    color: #ffaa00 !important;
    text-align: right;
    font-style: italic;
@@ -113,6 +115,14 @@
 
 :host ::ng-deep .custom-table .p-datatable-tbody > tr:nth-child(3n) {
    background-color: #2f3e53 !important;
+}
+
+/* righe di dettaglio dei quarti (sotto la riga della partita) */
+:host ::ng-deep .custom-table .p-datatable-tbody > tr.riga-quarto {
+   background-color: #171f2b !important;
+   color: #9aa8bb;
+   font-style: italic;
+   font-size: 0.9em;
 }
 
 /* valore migliore/peggiore della colonna (punti fatti, punti subiti, differenza) */

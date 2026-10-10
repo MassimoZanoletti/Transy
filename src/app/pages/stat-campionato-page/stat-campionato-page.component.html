@@ -38,7 +38,7 @@
          <p-table id="tabellaStatCampionato"
                   class="custom-header-table"
                   styleClass="custom-table p-datatable-gridlines"
-                  [value]="righe"
+                  [value]="righeTabella"
                   [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
             <ng-template pTemplate="header">
                <tr>
@@ -78,10 +78,55 @@
                   <th class="num">Ass</th>
                   <th class="num">PIR</th>
                </tr>
-               <!-- totali e medie sopra l'elenco delle partite (restano visibili scorrendo) -->
-               @for (r of [totali, medie]; track r.squadra)
+            </ng-template>
+            <ng-template pTemplate="body" let-r>
+               <tr [class.riga-quarto]="r.quarto !== undefined">
+                  <td>{{ r.fase }}</td>
+                  <td>{{ r.giornata }}</td>
+                  <td>{{ r.data }}</td>
+                  <td>{{ r.squadra }}</td>
+                  <td class="centro">{{ r.casaTrasf }}</td>
+                  <td class="sep num" [class]="ColoreRiga(r, r.puntiF, 'puntiF', true)">{{ r.puntiF }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.puntiS, 'puntiS', false)">{{ r.puntiS }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.dif, 'dif', true)">{{ r.dif }}</td>
+                  <td class="sep num">{{ r.tl.realizzati }}</td>
+                  <td class="num">{{ r.tl.tentati }}</td>
+                  <td class="num" [class]="ColorePercRiga(r, r.tl, 'tl')">{{ Perc(r.tl) }}</td>
+                  <td class="sep num">{{ r.t2.realizzati }}</td>
+                  <td class="num">{{ r.t2.tentati }}</td>
+                  <td class="num" [class]="ColorePercRiga(r, r.t2, 't2')">{{ Perc(r.t2) }}</td>
+                  <td class="sep num">{{ r.t3.realizzati }}</td>
+                  <td class="num">{{ r.t3.tentati }}</td>
+                  <td class="num" [class]="ColorePercRiga(r, r.t3, 't3')">{{ Perc(r.t3) }}</td>
+                  <td class="sep num" [class]="ColoreRiga(r, r.ff, 'ff', false)">{{ r.ff }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.fs, 'fs', true)">{{ r.fs }}</td>
+                  <td class="sep num" [class]="ColoreRiga(r, r.rd, 'rd', true)">{{ r.rd }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.ra, 'ra', true)">{{ r.ra }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.rt, 'rt', true)">{{ r.rt }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.pp, 'pp', false)">{{ r.pp }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.pr, 'pr', true)">{{ r.pr }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.as, 'as', true)">{{ r.as }}</td>
+                  <td class="num" [class]="ColoreRiga(r, r.pir, 'pir', true)">{{ r.pir }}</td>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+               <!-- stacco tra l'ultima partita e i totali -->
+               <tr class="riga-stacco">
+                  <th colspan="26"></th>
+               </tr>
+               <!-- totali e medie in fondo, dopo l'elenco delle partite; poi quelli dei singoli quarti -->
+               @for (r of RigheTotali(); track $index)
                {
-                  <tr class="riga-totali" [class.riga-medie]="r === medie">
+                  @if (r === null)
+                  {
+                     <!-- stacco prima dei totali di ciascun quarto -->
+                     <tr class="riga-stacco">
+                        <th colspan="26"></th>
+                     </tr>
+                  }
+                  @else
+                  {
+                  <tr class="riga-totali" [class.riga-medie]="r.squadra.startsWith('MEDIA')">
                      <th colspan="5" class="etichetta-totali">{{ r.squadra }}</th>
                      <th class="sep num">{{ Num(r.puntiF) }}</th>
                      <th class="num">{{ Num(r.puntiS) }}</th>
@@ -105,41 +150,8 @@
                      <th class="num">{{ Num(r.as) }}</th>
                      <th class="num">{{ Num(r.pir) }}</th>
                   </tr>
+                  }
                }
-               <!-- stacco tra le medie e le partite -->
-               <tr class="riga-stacco">
-                  <th colspan="26"></th>
-               </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-r>
-               <tr>
-                  <td>{{ r.fase }}</td>
-                  <td>{{ r.giornata }}</td>
-                  <td>{{ r.data }}</td>
-                  <td>{{ r.squadra }}</td>
-                  <td class="centro">{{ r.casaTrasf }}</td>
-                  <td class="sep num" [class]="ColoreMinMax(r.puntiF, 'puntiF', true)">{{ r.puntiF }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.puntiS, 'puntiS', false)">{{ r.puntiS }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.dif, 'dif', true)">{{ r.dif }}</td>
-                  <td class="sep num">{{ r.tl.realizzati }}</td>
-                  <td class="num">{{ r.tl.tentati }}</td>
-                  <td class="num" [class]="ColorePerc(r.tl, 'tl')">{{ Perc(r.tl) }}</td>
-                  <td class="sep num">{{ r.t2.realizzati }}</td>
-                  <td class="num">{{ r.t2.tentati }}</td>
-                  <td class="num" [class]="ColorePerc(r.t2, 't2')">{{ Perc(r.t2) }}</td>
-                  <td class="sep num">{{ r.t3.realizzati }}</td>
-                  <td class="num">{{ r.t3.tentati }}</td>
-                  <td class="num" [class]="ColorePerc(r.t3, 't3')">{{ Perc(r.t3) }}</td>
-                  <td class="sep num" [class]="ColoreMinMax(r.ff, 'ff', false)">{{ r.ff }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.fs, 'fs', true)">{{ r.fs }}</td>
-                  <td class="sep num" [class]="ColoreMinMax(r.rd, 'rd', true)">{{ r.rd }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.ra, 'ra', true)">{{ r.ra }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.rt, 'rt', true)">{{ r.rt }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.pp, 'pp', false)">{{ r.pp }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.pr, 'pr', true)">{{ r.pr }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.as, 'as', true)">{{ r.as }}</td>
-                  <td class="num" [class]="ColoreMinMax(r.pir, 'pir', true)">{{ r.pir }}</td>
-               </tr>
             </ng-template>
          </p-table>
          <div id="stat-camp-legenda">

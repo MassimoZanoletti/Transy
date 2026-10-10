@@ -3212,6 +3212,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             }
             if (fd.fCommesso)
             {
+               // un fallo senza quarto (es. spuntato in "Falli totali" senza indicare il quarto) finirebbe nel
+               // totale della partita ma in nessun quarto (falli di squadra, bonus, statistiche per quarto):
+               // gli si assegna il quarto selezionato nel cronometro
+               if (!(Number(fd.fQuarto) >= 1))
+                  fd.fQuarto = this.compTimer ? this.compTimer.GetQuarterNumber() : 1;
                const op = new TOperation(fd.fQuarto, fd.fTempo, TOperationType.totFalloFatto, player.isMyTeam(), player);
                op.eventData = { subtype: MatchSyncService.FalloSubtype(fd), ftawarded: fd.numLiberi };
                await opList.Add(op);

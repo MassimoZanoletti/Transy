@@ -175,6 +175,8 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogVisible_StatCamp: boolean = false;
    public statCamp_Teams: Array<IDSTeam> = [];
    public statCamp_Team: IDSTeam | null = null;
+   // dettaglio per quarto nelle statistiche (scelta ricordata su questo dispositivo)
+   public statCamp_Quarti: boolean = (() => { try { return localStorage.getItem ('BBS_StatCampQuarti') === '1'; } catch { return false; } })();
    private statCamp_AllMatches: Array<IDSMatchHeader> = [];
    public statCamp_Matches: Array<IDSMatchHeader> = [];
    public statCamp_Selected: Array<IDSMatchHeader> = [];
@@ -983,8 +985,10 @@ export class MainPageComponent implements OnInit, OnDestroy
       const params: TStatCampionatoParams = {
          team:    this.statCamp_Team,
          champ:   this.currChamp,
-         matches: selezionate
+         matches: selezionate,
+         quarti:  this.statCamp_Quarti
       };
+      try { localStorage.setItem ('BBS_StatCampQuarti', this.statCamp_Quarti ? '1' : '0'); } catch { }
       this.dialogVisible_StatCamp = false;
       this.router.navigate (['/statcampionato'], { state: params });
    }

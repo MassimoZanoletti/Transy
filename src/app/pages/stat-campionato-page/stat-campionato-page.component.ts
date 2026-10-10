@@ -17,8 +17,10 @@ import {TempoStr, TTiriStat} from "../../common/statistiche";
 import {
    AccumulaGiocatori,
    MediePartite,
+   QuartiGiocati,
    RicostruisciPartita,
    RigaPartita,
+   RigaQuarto,
    TotaliPartite,
    TGiocatoreStatCamp,
    TRigaStatCamp
@@ -39,6 +41,7 @@ export interface TStatCampionatoParams
    team: IDSTeam;
    champ: IDSChamp;
    matches: Array<IDSMatchHeader>;
+   quarti?: boolean;           // sotto ogni partita, una riga per ciascun quarto giocato
 }
 
 
@@ -60,8 +63,13 @@ export class StatCampionatoPageComponent
    public champ: IDSChamp | null = null;
    public matches: Array<IDSMatchHeader> = [];
    public righe: Array<TRigaStatCamp> = [];
+   // righe mostrate (tabella e PDF): le partite e, se richiesto, sotto ciascuna i suoi quarti
+   public righeTabella: Array<TRigaStatCamp> = [];
+   public dettaglioQuarti: boolean = false;
    public totali: TRigaStatCamp | null = null;
    public medie: TRigaStatCamp | null = null;
+   // con il dettaglio per quarto: totali e medie di ciascun quarto (Q1.., Et1..), sotto quelli generali
+   public totaliQuarti: Array<{ totali: TRigaStatCamp, medie: TRigaStatCamp }> = [];
    public giocatori: Array<TGiocatoreStatCamp> = [];
    // colonne dei giocatori con il valore più alto in verde: valore confrontato (arrotondato come mostrato),
    // null = giocatore escluso dal confronto
@@ -124,6 +132,7 @@ export class StatCampionatoPageComponent
          this.team = params.team;
          this.champ = params.champ;
          this.matches = params.matches;
+         this.dettaglioQuarti = Boolean (params.quarti);
       }
       else
          setTimeout (() => this.router.navigate (['/']));
@@ -140,6 +149,7 @@ export class StatCampionatoPageComponent
       try
       {
          const righe: Array<TRigaStatCamp> = [];
+         const righeTabella: Array<TRigaStatCamp> = [];
          const giocatori = new Map<number, TGiocatoreStatCamp> ();
          for (const mh of this.matches)
          {
@@ -151,10 +161,21 @@ export class StatCampionatoPageComponent
             const cm = new TCurrMatch (this.servMatchHeader, this.servMatchRoster, this.servTeam);
             const opList = await TOperationList.Create ();
             const ops = RicostruisciPartita (cm, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), opList);
-            righe.push (RigaPartita (mh, cm, teamId));
+            const riga = RigaPartita (mh, cm, teamId);
+            righe.push (riga);
+            righeTabella.push (riga);
             AccumulaGiocatori (giocatori, mh, cm, ops, teamId);
+            // dettaglio per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto
+            if (this.dettaglioQuarti)
+               for (const q of QuartiGiocati (ops))
+               {
+                  const cmQ = new TCurrMatch (this.servMatchHeader, this.servMatchRoster, this.servTeam);
+                  RicostruisciPartita (cmQ, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), await TOperationList.Create (), q);
+                  righeTabella.push (RigaQuarto (mh, cmQ, teamId, q));
+               }
          }
          this.righe = righe;
+         this.righeTabella = righeTabella;
          this.minMax = {};
          for (const col of ['puntiF', 'puntiS', 'dif', 'ff', 'fs', 'rd', 'ra', 'rt', 'pp', 'pr', 'as', 'pir'] as const)
          {
@@ -170,6 +191,17 @@ export class StatCampionatoPageComponent
          }
          this.totali = TotaliPartite (righe);
          this.medie = MediePartite (this.totali, righe.length);
+         // per ogni quarto le righe di quel quarto di tutte le partite; la media è sulle partite in cui
+         // quel quarto è stato giocato (conta per i supplementari)
+         const perQuarto = new Map<number, Array<TRigaStatCamp>> ();
+         for (const r of righeTabella)
+            if (r.quarto !== undefined)
+               perQuarto.set (r.quarto, [...(perQuarto.get (r.quarto) ?? []), r]);
+         this.totaliQuarti = [...perQuarto.entries ()].sort ((a, b) => a[0] - b[0]).map (([, rq]) =>
+         {
+            const tot = { ...TotaliPartite (rq), squadra: `TOTALI ${rq[0].casaTrasf}` };
+            return { totali: tot, medie: { ...MediePartite (tot, rq.length), squadra: `MEDIA ${rq[0].casaTrasf}` } };
+         });
          // giocatori in ordine di nome
          this.giocatori = [...giocatori.values ()].sort ((a, b) => a.nome.localeCompare (b.nome, 'it', { sensitivity: 'base' }));
          // massimi per le colonne di minuti e punti dei giocatori (valori come mostrati)
@@ -230,6 +262,34 @@ export class StatCampionatoPageComponent
       if (valore === mm.min)
          return altoVerde ? 'valore-peggiore' : 'valore-migliore';
       return '';
+   }
+
+
+   // righe in fondo alla tabella: totali e medie generali, poi quelli di ciascun quarto, ogni coppia
+   // preceduta da una riga di stacco (null)
+   RigheTotali (): Array<TRigaStatCamp | null>
+   {
+      if ((!this.totali) || (!this.medie))
+         return [];
+      return [this.totali, this.medie, ...this.totaliQuarti.flatMap (tq => [null, tq.totali, tq.medie])];
+   }
+
+
+   // colori migliore/peggiore solo sulle righe delle partite: i quarti non entrano nel confronto
+   ColoreRiga (r: TRigaStatCamp,
+               valore: number,
+               colonna: string,
+               altoVerde: boolean): string
+   {
+      return (r.quarto !== undefined) ? '' : this.ColoreMinMax (valore, colonna, altoVerde);
+   }
+
+
+   ColorePercRiga (r: TRigaStatCamp,
+                   t: TTiriStat,
+                   colonna: string): string
+   {
+      return (r.quarto !== undefined) ? '' : this.ColorePerc (t, colonna);
    }
 
 
@@ -323,6 +383,9 @@ export class StatCampionatoPageComponent
          pdf.setTextColor (0, 0, 0);
       };
 
+      // righe dei quarti: corsivo grigio, su fondo leggermente più scuro
+      const stileQuarto = { fontStyle: 'italic', textColor: [90, 90, 90], fillColor: [238, 238, 238], fontSize: 8 };
+
       // ---- pagina 1: statistiche di squadra ----
       titolo (`Statistiche di ${nomeTeam} per il campionato ${nomeCamp}`, 10);
       const rigaTot = (r: TRigaStatCamp, fill: number[]): any[] =>
@@ -346,28 +409,38 @@ export class StatCampionatoPageComponent
              { content: 'T2', colSpan: 3 }, { content: 'T3', colSpan: 3 }, { content: 'Falli', colSpan: 2 },
              { content: 'Varie', colSpan: 7 }],
             ['Fase', '', 'Data', 'Squadra', 'C/T', 'F', 'S', 'Dif', 'S', 'T', '%', 'S', 'T', '%', 'S', 'T', '%',
-             'F', 'S', 'RD', 'RA', 'RT', 'PP', 'PR', 'Ass', 'PIR'],
-            rigaTot (this.totali, [82, 65, 13]),
-            rigaTot (this.medie, [35, 99, 83])
+             'F', 'S', 'RD', 'RA', 'RT', 'PP', 'PR', 'Ass', 'PIR']
          ],
-         body: this.righe.map (r => [
+         // totali e medie in fondo, dopo l'ultima partita (come nella tabella a video)
+         foot: [
+            rigaTot (this.totali, [82, 65, 13]),
+            rigaTot (this.medie, [35, 99, 83]),
+            // totali e medie dei singoli quarti, ogni quarto staccato dal precedente
+            ...this.totaliQuarti.flatMap (tq => [
+               [{ content: '', colSpan: 26, styles: { fillColor: [255, 255, 255], minCellHeight: 2, cellPadding: 0 } }],
+               rigaTot (tq.totali, [82, 65, 13]),
+               rigaTot (tq.medie, [35, 99, 83])
+            ])
+         ],
+         showFoot: 'lastPage',
+         body: this.righeTabella.map (r => [
             cella (r.fase), cella (r.giornata), cella (r.data), cella (r.squadra), cella (r.casaTrasf),
-            cella (String (r.puntiF), this.ColoreMinMax (r.puntiF, 'puntiF', true)),
-            cella (String (r.puntiS), this.ColoreMinMax (r.puntiS, 'puntiS', false)),
-            cella (String (r.dif), this.ColoreMinMax (r.dif, 'dif', true)),
-            cella (String (r.tl.realizzati)), cella (String (r.tl.tentati)), cella (this.Perc (r.tl), this.ColorePerc (r.tl, 'tl')),
-            cella (String (r.t2.realizzati)), cella (String (r.t2.tentati)), cella (this.Perc (r.t2), this.ColorePerc (r.t2, 't2')),
-            cella (String (r.t3.realizzati)), cella (String (r.t3.tentati)), cella (this.Perc (r.t3), this.ColorePerc (r.t3, 't3')),
-            cella (String (r.ff), this.ColoreMinMax (r.ff, 'ff', false)),
-            cella (String (r.fs), this.ColoreMinMax (r.fs, 'fs', true)),
-            cella (String (r.rd), this.ColoreMinMax (r.rd, 'rd', true)),
-            cella (String (r.ra), this.ColoreMinMax (r.ra, 'ra', true)),
-            cella (String (r.rt), this.ColoreMinMax (r.rt, 'rt', true)),
-            cella (String (r.pp), this.ColoreMinMax (r.pp, 'pp', false)),
-            cella (String (r.pr), this.ColoreMinMax (r.pr, 'pr', true)),
-            cella (String (r.as), this.ColoreMinMax (r.as, 'as', true)),
-            cella (String (r.pir), this.ColoreMinMax (r.pir, 'pir', true))
-         ]),
+            cella (String (r.puntiF), this.ColoreRiga (r, r.puntiF, 'puntiF', true)),
+            cella (String (r.puntiS), this.ColoreRiga (r, r.puntiS, 'puntiS', false)),
+            cella (String (r.dif), this.ColoreRiga (r, r.dif, 'dif', true)),
+            cella (String (r.tl.realizzati)), cella (String (r.tl.tentati)), cella (this.Perc (r.tl), this.ColorePercRiga (r, r.tl, 'tl')),
+            cella (String (r.t2.realizzati)), cella (String (r.t2.tentati)), cella (this.Perc (r.t2), this.ColorePercRiga (r, r.t2, 't2')),
+            cella (String (r.t3.realizzati)), cella (String (r.t3.tentati)), cella (this.Perc (r.t3), this.ColorePercRiga (r, r.t3, 't3')),
+            cella (String (r.ff), this.ColoreRiga (r, r.ff, 'ff', false)),
+            cella (String (r.fs), this.ColoreRiga (r, r.fs, 'fs', true)),
+            cella (String (r.rd), this.ColoreRiga (r, r.rd, 'rd', true)),
+            cella (String (r.ra), this.ColoreRiga (r, r.ra, 'ra', true)),
+            cella (String (r.rt), this.ColoreRiga (r, r.rt, 'rt', true)),
+            cella (String (r.pp), this.ColoreRiga (r, r.pp, 'pp', false)),
+            cella (String (r.pr), this.ColoreRiga (r, r.pr, 'pr', true)),
+            cella (String (r.as), this.ColoreRiga (r, r.as, 'as', true)),
+            cella (String (r.pir), this.ColoreRiga (r, r.pir, 'pir', true))
+         ].map (c => (r.quarto !== undefined) ? { ...c, styles: { ...c.styles, ...stileQuarto } } : c)),
          columnStyles: { 0: { halign: 'left' }, 1: { halign: 'left' }, 2: { halign: 'left' }, 3: { halign: 'left' }, 4: { halign: 'center' } },
          didDrawCell: separatoriDi (new Set ([4, 7, 10, 13, 16, 18])),
          ...stile

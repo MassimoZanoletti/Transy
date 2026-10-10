@@ -2,6 +2,7 @@ import {IDSMatchHeader, TDSMatchRoster, TMatchPlayer, TMatchTeam, TTipoRealizzaz
 import {TOperation, TOperationList, TOperationType} from "./operation";
 import {matchGlobs, TCurrMatch} from "./curr-match";
 import {MinutiPerQuarto, TabellaSquadra, TContestoLive, TRigaStat, TTiriStat} from "./statistiche";
+import {globs} from "./utils";
 
 
 // Statistiche di squadra su più partite (pagina "Statistiche campionato"): per ogni partita la squadra
@@ -15,7 +16,8 @@ export interface TRigaStatCamp
    giornata: string;
    data: string;
    squadra: string;            // avversaria
-   casaTrasf: string;          // "C" / "T" per la squadra scelta
+   casaTrasf: string;          // "C" / "T" per la squadra scelta; nelle righe dei quarti "Q1".."Q4", "Et1".. (supplementari)
+   quarto?: number;            // solo nelle righe di dettaglio di un quarto (sotto la riga della partita)
    puntiF: number;
    puntiS: number;
    dif: number;
@@ -61,11 +63,13 @@ export interface TGiocatoreStatCamp
 
 // Squadre di una partita ricostruite dai suoi eventi, senza toccare la partita aperta nella pagina match.
 // Restituisce le operazioni nell'ordine in cui sono state rigiocate (servono per i minuti dei giocatori).
+// Con soloQuarto vengono rigiocate solo le operazioni di quel quarto: statistiche del singolo quarto.
 export function RicostruisciPartita (cm: TCurrMatch,
                                      roster: TDSMatchRoster[],
                                      events: any[],
                                      eventToOperation: (ev: any, my: TMatchTeam | null, opp: TMatchTeam | null) => TOperation,
-                                     opList: TOperationList): TOperation[]
+                                     opList: TOperationList,
+                                     soloQuarto?: number): TOperation[]
 {
    const myTeam = cm.myTeam();
    const oppTeam = cm.oppTeam();
@@ -88,8 +92,10 @@ export function RicostruisciPartita (cm: TCurrMatch,
       team.NotifyRosterChanged();
    }
    // stesso ordine di TOperationList (AddNoSort + Refresh): quarto, tempo decrescente, sequenza di caricamento
-   const ops = events.map(ev => eventToOperation(ev, myTeam, oppTeam));
+   let ops = events.map(ev => eventToOperation(ev, myTeam, oppTeam));
    ops.forEach((op, i) => op.counter.set(i + 1));
+   if (soloQuarto !== undefined)
+      ops = ops.filter(op => op.quarter() === soloQuarto);
    ops.sort((a, b) => (a.quarter() - b.quarter()) || (b.time() - a.time()) || (a.counter() - b.counter()));
    // ApplyOperation lavora su matchGlobs.currMatch: la partita temporanea ci resta solo per questo ciclo,
    // sincrono, quindi nessun altro codice può vederla
@@ -266,6 +272,28 @@ export function RigaPartita (mh: IDSMatchHeader,
       pr:        nostra.pr,
       as:        nostra.as,
       pir:       nostra.pir
+   };
+}
+
+
+// Quarti in cui c'è almeno un'azione registrata, in ordine
+export function QuartiGiocati (ops: TOperation[]): number[]
+{
+   return [...new Set(ops.map(op => op.quarter()).filter(q => q > 0))].sort((a, b) => a - b);
+}
+
+
+// Riga di dettaglio di un quarto (partita ricostruita con soloQuarto): prime colonne vuote, in C/T il quarto
+export function RigaQuarto (mh: IDSMatchHeader,
+                            cm: TCurrMatch,
+                            teamId: number,
+                            quarto: number): TRigaStatCamp
+{
+   return {
+      ...RigaPartita(mh, cm, teamId),
+      fase: '', giornata: '', data: '', squadra: '',
+      casaTrasf: (quarto <= globs.MaxRegQuarters) ? `Q${quarto}` : `Et${quarto - globs.MaxRegQuarters}`,
+      quarto
    };
 }
 

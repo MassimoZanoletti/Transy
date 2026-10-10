@@ -688,6 +688,12 @@
                   [scrollHeight]="'400px'"
                   appendTo="body"
                   (onChange)="OnStatCampTeamChange()"/>
+               <p-checkbox
+                  [(ngModel)]="statCamp_Quarti"
+                  [binary]="true"
+                  inputId="chkstatcampquarti"
+                  label="Dettaglio per quarto"
+                  [style]="{ 'margin-left': '24px' }"/>
             </div>
             <p-table
                id="tabellaStatCampPartite"
