@@ -6,6 +6,7 @@ import {InputTextModule} from 'primeng/inputtext';
 import {ButtonModule} from 'primeng/button';
 import {NgIf} from '@angular/common';
 import {utils} from "../../common/utils";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 
@@ -28,6 +29,7 @@ export class LoginPageComponent
    }
 
 
+   @UnaAllaVolta()
    async login ()
    {
       const loginRes: boolean = await this.authService.login (this.username, this.password);

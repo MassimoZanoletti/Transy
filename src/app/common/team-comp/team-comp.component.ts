@@ -184,15 +184,12 @@ export class TeamCompComponent implements OnInit, OnDestroy
    }
 
 
+   // Falli di squadra del quarto selezionato nel cronometro (vedi MatchComponent.AllineaQuartoSquadre)
    CalcFalliQuarto(): number
    {
       if (!this.matchTeamData) return 0;
       const cq: number = this.matchTeamData.currQuarter() >= 0 ? this.matchTeamData.currQuarter() : 0;
-      const quartoNum: number = cq + 1; // currQuarter() è 0-based, fQuarto è 1-based
-      let total = 0;
-      for (const pl of this.matchTeamData.Roster)
-         total += pl.falliFatti().filter(f => f.fCommesso && f.fQuarto == quartoNum).length;
-      return total;
+      return this.matchTeamData.FalliSquadraQuarto(cq + 1); // currQuarter() è 0-based, fQuarto è 1-based
    }
 
 

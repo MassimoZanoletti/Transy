@@ -1478,6 +1478,18 @@ export class TMatchTeam
    }
 
 
+   // Falli di squadra del quarto (1-based), dai falli fatti dei giocatori. Nei supplementari proseguono da
+   // quelli del 4° quarto e quindi non tornano più indietro (e così il bonus)
+   public FalliSquadraQuarto (quartoNum: number): number
+   {
+      const daQuarto = (quartoNum > globs.MaxRegQuarters) ? globs.MaxRegQuarters : quartoNum;
+      let total = 0;
+      for (const pl of this.Roster)
+         total += pl.falliFatti().filter(f => f.fCommesso && (Number(f.fQuarto) >= daQuarto) && (Number(f.fQuarto) <= quartoNum)).length;
+      return total;
+   }
+
+
    // Fotografia completa dei timeout della squadra: "1°tempo|2°tempo|supplementari", es. "XO|OOO|OOOO"
    public GetTimeoutSnapshot(): string
    {

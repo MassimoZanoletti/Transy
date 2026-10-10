@@ -201,7 +201,7 @@
                   <div class="punteggi-quarti-titolo">Progressivi</div>
                   @for (riga of GetPunteggiQuarti().progressivi; track $index)
                   {
-                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo">{{riga.diff}}</span></div>
+                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo" [class.punteggi-quarti-negativo]="riga.negativo">{{riga.diff}}</span></div>
                   }
                </div>
             </div>
@@ -222,7 +222,7 @@
                   <div class="punteggi-quarti-titolo">Parziali</div>
                   @for (riga of GetPunteggiQuarti().parziali; track $index)
                   {
-                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo">{{riga.diff}}</span></div>
+                     <div class="punteggi-quarti-riga"><span>{{riga.punti}}</span><span [class.punteggi-quarti-positivo]="riga.positivo" [class.punteggi-quarti-negativo]="riga.negativo">{{riga.diff}}</span></div>
                   }
                </div>
             </div>

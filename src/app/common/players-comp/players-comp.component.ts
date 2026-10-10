@@ -26,6 +26,7 @@ import {MatchSyncService} from "../../services/match-sync.service";
 import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
 import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.component";
+import { UnaAllaVolta } from '../una-alla-volta';
 
 
 
@@ -199,6 +200,7 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
    }
 
 
+   @UnaAllaVolta()
    async salvaPlayerEdit(newPlayer: TDSPlayer)
    {
       this.dialogVisible_PlayerEdit = false;

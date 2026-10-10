@@ -42,6 +42,7 @@ import {firstValueFrom} from "rxjs";
 import {CellEditor} from "primeng/table";
 import {PlayersCompComponent} from "../players-comp/players-comp.component";
 import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.component";
+import { UnaAllaVolta } from '../una-alla-volta';
 
 
 
@@ -181,6 +182,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
    }
 
 
+   @UnaAllaVolta()
    async BtnSalvaDiag()
    {
       if ((await this.CheckMyRoster()) == false)
@@ -288,6 +290,9 @@ export class RosterCompComponent implements OnInit, OnDestroy
       if (matchHeaderId > 0)
       {
          const theData = await firstValueFrom (this.servMatchRoster.getAllData(matchHeaderId));
+         // di nuovo vuote dopo l'attesa: se nel frattempo è partito un altro caricamento, i giocatori non si sommano
+         this.listaMyRoster = [];
+         this.listaOppoRoster = [];
          if ((theData) && (theData.elements))
          {
             const fullList: Array<TDSMatchRoster> = theData.elements;
@@ -745,6 +750,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
    }
 
 
+   @UnaAllaVolta()
    async BtnSalvaPlayerEdit(newPlayer: TDSPlayer)
    {
       let teamId: number = 0;

@@ -601,7 +601,9 @@ export class MatchSyncService
          for (let i = 0; i < q.num - 1; i++)
             start += team?.GetQuarto(i)?.punti ?? 0;
          const qrt = team?.GetQuarto(q.num - 1) ?? null;
-         return { start, curr: start + (qrt?.punti ?? 0), fouls: qrt?.falliQrt ?? 0, bonus: qrt?.bonus ?? false };
+         // falli e bonus come nel riquadro squadra (nei supplementari proseguono dal 4° quarto)
+         const fouls = team?.FalliSquadraQuarto(q.num) ?? 0;
+         return { start, curr: start + (qrt?.punti ?? 0), fouls, bonus: fouls >= globs.FalliPerBonus };
       };
       const my = pts(q.myTeam);
       const opp = pts(q.oppTeam);

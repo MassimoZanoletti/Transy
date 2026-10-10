@@ -184,9 +184,36 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    */
 
 
+   // Doppio tocco: un secondo click su un bottone entro DOPPIO_TOCCO_MS dal precedente, sullo stesso bottone
+   // o nello stesso punto dello schermo (es. Start che diventa Stop, OK di una finestra che si chiude e lascia
+   // sotto il dito un altro bottone), viene scartato prima che arrivi ai gestori di Angular (fase di capture).
+   // Esclusi i bottoni con l'attributo data-multitocco (es. +1/-1 secondo del cronometro, da premere a raffica).
+   private static readonly DOPPIO_TOCCO_MS = 400;
+   private static readonly DOPPIO_TOCCO_PX = 30;
+   private ultimoTocco: { t: number, x: number, y: number, el: Element | null } = { t: 0, x: 0, y: 0, el: null };
+
+   private FiltraDoppioTocco = (ev: MouseEvent): void =>
+   {
+      const el = (ev.target instanceof Element) ? ev.target.closest('button, .p-button, [role="button"]') : null;
+      if ((!el) || (el.closest('[data-multitocco]')))
+         return;
+      const prec = this.ultimoTocco;
+      const vicino = (el === prec.el) ||
+                     ((Math.abs(ev.clientX - prec.x) <= AppComponent.DOPPIO_TOCCO_PX) && (Math.abs(ev.clientY - prec.y) <= AppComponent.DOPPIO_TOCCO_PX));
+      if (vicino && ((ev.timeStamp - prec.t) < AppComponent.DOPPIO_TOCCO_MS))
+      {
+         ev.stopImmediatePropagation();
+         ev.preventDefault();
+         return;
+      }
+      this.ultimoTocco = { t: ev.timeStamp, x: ev.clientX, y: ev.clientY, el };
+   };
+
+
    ngOnInit ()
    {
       window.addEventListener('beforeunload', this.beforeUnloadHandler);
+      document.addEventListener('click', this.FiltraDoppioTocco, true);
       this.InitServiceWorkerUpdates ();
       // Modifiche (intestazione, roster, nomi) rifiutate dal server all'invio dalla coda: possono arrivare
       // in qualunque momento e su qualunque pagina, quindi l'avviso è qui
@@ -298,6 +325,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 
    ngOnDestroy() {
       window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+      document.removeEventListener('click', this.FiltraDoppioTocco, true);
       this.swSubs.forEach (sub => sub.unsubscribe ());
    }
 

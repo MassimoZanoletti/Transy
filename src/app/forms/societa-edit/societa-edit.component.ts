@@ -19,6 +19,7 @@ import {InputNumberModule} from "primeng/inputnumber";
 import {NgIf} from "@angular/common";
 import {PaginatorModule} from "primeng/paginator";
 import {PrimeTemplate} from "primeng/api";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 @Component({
   selector:    'app-societa-edit',
@@ -77,6 +78,7 @@ export class SocietaEditComponent implements OnInit
    }
 
 
+   @UnaAllaVolta()
    async Salva()
    {
       if (this.nome.trim() == "")

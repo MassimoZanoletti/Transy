@@ -401,9 +401,13 @@
    color: #ffffff;
 }
 
-/* scarto a favore di MyTeam; negativo e zero restano bianchi */
+/* scarto a favore di MyTeam verde, a sfavore rosso; zero resta bianco */
 .punteggi-quarti-positivo {
    color: #a0e77f;
+}
+
+.punteggi-quarti-negativo {
+   color: #f87171;
 }
 
 .div-gioco-oppoteam {
@@ -434,7 +438,7 @@
 
 .div-gioco-commands {
    display: flex;
-   gap: 20px;
+   gap: 40px;
 }
 
 

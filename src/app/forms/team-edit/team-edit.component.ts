@@ -18,6 +18,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 @Component({
   selector:    'app-team-edit',
@@ -83,6 +84,7 @@ export class TeamEditComponent implements OnInit
    }
 
 
+   @UnaAllaVolta()
    async Salva()
    {
       if (this.nome.trim() == "")

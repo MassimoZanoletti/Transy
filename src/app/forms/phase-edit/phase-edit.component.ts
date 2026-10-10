@@ -19,6 +19,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import {CalendarModule} from "primeng/calendar";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 @Component({
   selector:    'app-phase-edit',
@@ -84,6 +85,7 @@ export class PhaseEditComponent implements OnInit
    }
 
 
+   @UnaAllaVolta()
    async Salva()
    {
       if (this.nome.trim() == "")

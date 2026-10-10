@@ -109,10 +109,10 @@
    color: white;
 }
 
+/* Annulla a sinistra e OK a destra, ai due estremi: in partita, col dito, non si sbaglia bottone */
 .dialog-footer-buttons {
    display: flex;
-   justify-content: flex-end;
-   gap: 0.2rem;
-   margin-left: auto !important;
+   justify-content: space-between;
+   width: 100%;
 }
 

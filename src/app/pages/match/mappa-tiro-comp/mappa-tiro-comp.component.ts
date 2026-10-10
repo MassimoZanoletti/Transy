@@ -10,6 +10,7 @@ import {IDSMatchHeader} from "../../../models/datamod";
 import {matchGlobs} from "../../../common/curr-match";
 import {ConfigService} from "../../../services/config.service";
 import {PdfSaveService} from "../../../services/pdf-save.service";
+import { UnaAllaVolta } from '../../../common/una-alla-volta';
 
 
 // Mappa di tiro di un giocatore (un riquadro della griglia sotto la mappa di squadra)
@@ -106,6 +107,7 @@ export class MappaTiroCompComponent
 
    // PDF in orizzontale della squadra mostrata: mappa di squadra sulla prima pagina, mappe dei giocatori
    // (6 per riga) sulla seconda (e seguenti, se i giocatori non ci stanno in una pagina)
+   @UnaAllaVolta()
    async EsportaPdf (): Promise<void>
    {
       this.Aggiorna();

@@ -29,6 +29,7 @@ import {TeamService} from "../../services/team.service";
 import {MatchSyncService} from "../../services/match-sync.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {PdfSaveService} from "../../services/pdf-save.service";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 
@@ -78,21 +79,21 @@ export class StatCampionatoPageComponent
    private maxGioc: Record<string, { min: number, max: number }> = {};
    // seconda tabella dei giocatori: valore confrontato per ogni colonna (null = cella vuota, esclusa dal
    // confronto) e se il valore più alto è il migliore (falli fatti e palle perse: il contrario)
-   private readonly colonneGioc2: Record<string, { val: (g: TGiocatoreStatCamp) => number | null, altoVerde: boolean }> = {
-      ff:     { val: g => this.ValNonZero (g.ff),                  altoVerde: false },
-      ffP:    { val: g => this.ValPerPartita (g, g.ff),            altoVerde: false },
-      fs:     { val: g => this.ValNonZero (g.fs),                  altoVerde: true },
-      fsP:    { val: g => this.ValPerPartita (g, g.fs),            altoVerde: true },
-      rd:     { val: g => this.ValNonZero (g.rd),                  altoVerde: true },
-      ra:     { val: g => this.ValNonZero (g.ra),                  altoVerde: true },
-      rt:     { val: g => this.ValNonZero (g.rd + g.ra),           altoVerde: true },
-      rP:     { val: g => this.ValPerPartita (g, g.rd + g.ra),     altoVerde: true },
-      pp:     { val: g => this.ValNonZero (g.pp),                  altoVerde: false },
-      ppP:    { val: g => this.ValPerPartita (g, g.pp),            altoVerde: false },
-      pr:     { val: g => this.ValNonZero (g.pr),                  altoVerde: true },
-      prP:    { val: g => this.ValPerPartita (g, g.pr),            altoVerde: true },
-      as:     { val: g => this.ValNonZero (g.as),                  altoVerde: true },
-      asP:    { val: g => this.ValPerPartita (g, g.as),            altoVerde: true },
+   private readonly colonneGioc2: Record<string, { val: (g: TGiocatoreStatCamp) => number | null, altoVerde: boolean, solo?: 'valore-migliore' | 'valore-peggiore' }> = {
+      ff:     { val: g => this.ValNonZero (g.ff),                  altoVerde: false, solo: 'valore-peggiore' },
+      ffP:    { val: g => this.ValPerPartita (g, g.ff),            altoVerde: false, solo: 'valore-peggiore' },
+      fs:     { val: g => this.ValNonZero (g.fs),                  altoVerde: true, solo: 'valore-migliore' },
+      fsP:    { val: g => this.ValPerPartita (g, g.fs),            altoVerde: true, solo: 'valore-migliore' },
+      rd:     { val: g => this.ValNonZero (g.rd),                  altoVerde: true, solo: 'valore-migliore' },
+      ra:     { val: g => this.ValNonZero (g.ra),                  altoVerde: true, solo: 'valore-migliore' },
+      rt:     { val: g => this.ValNonZero (g.rd + g.ra),           altoVerde: true, solo: 'valore-migliore' },
+      rP:     { val: g => this.ValPerPartita (g, g.rd + g.ra),     altoVerde: true, solo: 'valore-migliore' },
+      pp:     { val: g => this.ValNonZero (g.pp),                  altoVerde: false, solo: 'valore-peggiore' },
+      ppP:    { val: g => this.ValPerPartita (g, g.pp),            altoVerde: false, solo: 'valore-peggiore' },
+      pr:     { val: g => this.ValNonZero (g.pr),                  altoVerde: true, solo: 'valore-migliore' },
+      prP:    { val: g => this.ValPerPartita (g, g.pr),            altoVerde: true, solo: 'valore-migliore' },
+      as:     { val: g => this.ValNonZero (g.as),                  altoVerde: true, solo: 'valore-migliore' },
+      asP:    { val: g => this.ValPerPartita (g, g.as),            altoVerde: true, solo: 'valore-migliore' },
       pir:    { val: g => this.ValNonZero (g.pir),                 altoVerde: true },
       pirP:   { val: g => this.ValPerPartita (g, g.pir),           altoVerde: true },
       pm:     { val: g => this.ValNonZero (g.pm),                  altoVerde: true },
@@ -260,6 +261,7 @@ export class StatCampionatoPageComponent
    // giocatori. Stessa impostazione dell'export del tab "Statistiche" della partita.
    ///////////////////////////////////////////////////////////////
 
+   @UnaAllaVolta()
    async EsportaPdf (): Promise<void>
    {
       if ((this.elaborazione) || (!this.team) || (!this.champ))
@@ -481,7 +483,9 @@ export class StatCampionatoPageComponent
    }
 
 
-   // colore migliore/peggiore per una colonna della seconda tabella dei giocatori (stesse regole di ColoreMinMax)
+   // colore migliore/peggiore per una colonna della seconda tabella dei giocatori (stesse regole di ColoreMinMax);
+   // solo: evidenziato solo il migliore o solo il peggiore (falli subiti, rimbalzi, palle recuperate, assist: pochi
+   // non è un demerito; falli fatti, palle perse: pochi non è un merito)
    ColoreGioc2 (g: TGiocatoreStatCamp,
                 colonna: string): string
    {
@@ -490,11 +494,12 @@ export class StatCampionatoPageComponent
       const v = def?.val (g);
       if ((!mm) || (v === null) || (v === undefined) || (mm.min === mm.max))
          return '';
+      let classe = '';
       if (v === mm.max)
-         return def.altoVerde ? 'valore-migliore' : 'valore-peggiore';
-      if (v === mm.min)
-         return def.altoVerde ? 'valore-peggiore' : 'valore-migliore';
-      return '';
+         classe = def.altoVerde ? 'valore-migliore' : 'valore-peggiore';
+      else if (v === mm.min)
+         classe = def.altoVerde ? 'valore-peggiore' : 'valore-migliore';
+      return ((def.solo) && (classe !== def.solo)) ? '' : classe;
    }
 
 

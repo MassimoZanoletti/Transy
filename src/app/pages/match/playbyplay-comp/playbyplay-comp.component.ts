@@ -12,6 +12,7 @@ import {globs} from "../../../common/utils";
 import {TOperationType} from "../../../common/operation";
 import {TContestoLive, TempoStr} from "../../../common/statistiche";
 import {PdfSaveService} from "../../../services/pdf-save.service";
+import { UnaAllaVolta } from '../../../common/una-alla-volta';
 
 
 // Punto del grafico: x = punti della squadra, y = minuti di gioco trascorsi nel quarto
@@ -522,6 +523,7 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    // PDF A3 verticale, una pagina per quarto (come nebula): titolo con punteggio, quarto, punteggio e
    // parziale del quarto, grafico. Ogni grafico si disegna fuori schermo alla larghezza di quello a video.
+   @UnaAllaVolta()
    async EsportaPdf (): Promise<void>
    {
       this.Aggiorna();

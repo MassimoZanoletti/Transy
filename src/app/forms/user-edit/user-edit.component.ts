@@ -23,6 +23,7 @@ import {PrimeTemplate} from "primeng/api";
 import {DropdownModule} from 'primeng/dropdown';
 import {utils} from "../../common/utils";
 import { LogService } from "../../services/log.service";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 
@@ -109,6 +110,7 @@ export class UserEditComponent implements OnInit
    }
 
 
+   @UnaAllaVolta()
    async Salva()
    {
       this.nome = this.nome.trim();

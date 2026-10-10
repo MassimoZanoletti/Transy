@@ -70,6 +70,7 @@ import { PlayersCompComponent } from "../../common/players-comp/players-comp.com
 import { RosterCompComponent } from "../../common/roster-comp/roster-comp.component";
 import { MatchSyncService } from "../../services/match-sync.service";
 import { TStatCampionatoParams } from "../stat-campionato-page/stat-campionato-page.component";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 
@@ -541,6 +542,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   @UnaAllaVolta()
    async DialogSocietaSalva()
    {
       this.dialogVisible_Societa = false;
@@ -876,6 +878,9 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   // Un solo caricamento alla volta: con la rete lenta un doppio tocco sul bottone faceva partire due
+   // letture che aggiungevano entrambe le partite alla stessa lista (elenco doppio)
+   @UnaAllaVolta()
    async OnStatisticheCampionato ()
    {
       if (!this.currChamp)
@@ -896,16 +901,18 @@ export class MainPageComponent implements OnInit, OnDestroy
          const dataPhases = await firstValueFrom (this.phaseService.getAllData (champId));
          const fasi: Array<IDSPhase> = ((dataPhases) && (dataPhases.ok)) ? dataPhases.elements : [];
          const perFase = await Promise.all (fasi.map (fase => firstValueFrom (this.matchHeaderServ.getAllData (fase.id))));
+         const partite: Array<IDSMatchHeader> = [];
          perFase.forEach ((data, idx) =>
                           {
                              if ((data) && (data.ok))
-                                this.statCamp_AllMatches.push (...data.elements.map ((mh: IDSMatchHeader) => ({
+                                partite.push (...data.elements.map ((mh: IDSMatchHeader) => ({
                                    ...mh,
                                    phaseNome_lk:   mh.phaseNome_lk || fasi[idx].nome,
                                    phaseAbbrev_lk: mh.phaseAbbrev_lk || fasi[idx].abbrev
                                 })));
                           });
-         this.statCamp_AllMatches.sort ((a, b) => (a.matchDate.getTime () - b.matchDate.getTime ()) || (a.matchNumber - b.matchNumber));
+         partite.sort ((a, b) => (a.matchDate.getTime () - b.matchDate.getTime ()) || (a.matchNumber - b.matchNumber));
+         this.statCamp_AllMatches = partite;
          this.dialogVisible_StatCamp = true;
       }
       catch (err)
@@ -1110,6 +1117,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    }
 
 
+   @UnaAllaVolta()
    async SalvaMatchHeader(datiMH: { mh: IDSMatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
@@ -1203,6 +1211,7 @@ ${err?.message ?? ''}`,
    }
 
 
+   @UnaAllaVolta()
    async DialogMatchStatusSalva()
    {
       this.dialogVisible_MatchStatus = false;
@@ -1235,6 +1244,7 @@ ${err?.message ?? ''}`,
    }
 
 
+   @UnaAllaVolta()
    async SalvaMatchRosterDiag(event: [Array<TDSMatchRoster>, IDSMatchHeader])
    {
       this.dialogVisible_Roster = false;

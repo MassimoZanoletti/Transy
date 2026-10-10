@@ -10,6 +10,7 @@ import {TMatchPlayer} from "../../models/datamod";
 import {matchGlobs} from "../../common/curr-match";
 import {MatchSyncService} from "../../services/match-sync.service";
 import {globs} from "../../common/utils";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 // "numeroEdit"/"nomeEdit" sono i valori editabili (su cui l'utente digita); "origNumero"/"origNome" sono
@@ -72,6 +73,7 @@ export class NumeriNomiDlgComponent
    // database giocatori, altrimenti la modifica sparirebbe alla prossima apertura/nuova partita dello
    // stesso giocatore. Per non perdere gli altri campi dell'anagrafica (cognome, ruolo, altezza, ecc.), al
    // momento dell'invio si rilegge il record completo dal server e lo si riscrive cambiando solo "nomedisp".
+   @UnaAllaVolta()
    async BtnOk ()
    {
       this.salvando = true;

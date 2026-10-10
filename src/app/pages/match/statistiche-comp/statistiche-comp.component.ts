@@ -9,6 +9,7 @@ import {matchGlobs} from "../../../common/curr-match";
 import {globs} from "../../../common/utils";
 import {PdfSaveService} from "../../../services/pdf-save.service";
 import {AndamentoQuarti, MinutiPerQuarto, TabellaSquadra, TContestoLive, TQuartoAndamento, TRigaStat, TTabellaStat, TTiriStat} from "../../../common/statistiche";
+import { UnaAllaVolta } from '../../../common/una-alla-volta';
 
 
 // Tab "Statistiche" della partita: stessa impostazione della pagina "Tabelle" di nebula (intestazione,
@@ -132,6 +133,7 @@ export class StatisticheCompComponent
    // Esporta in PDF intestazione, andamento per quarto e le due tabelle dei giocatori (stesso impaginato di
    // PDFExport_Tabelle di nebula: A4 orizzontale, jsPDF + jspdf-autotable). Le librerie si caricano solo qui
    // (import dinamico), per non appesantire l'avvio dell'app.
+   @UnaAllaVolta()
    async EsportaPdf (): Promise<void>
    {
       this.Aggiorna();

@@ -265,7 +265,8 @@
    </div>
    -->
    <ng-template pTemplate="footer">
-      <div class="flex justify-content-end gap-2">
+      <!-- Annulla a sinistra e OK a destra, ai due estremi: in partita, col dito, non si sbaglia bottone -->
+      <div class="flex justify-content-between w-full">
          <p-button label="Annulla" severity="secondary" (onClick)="timeoutVisible = false" />
          <p-button label="OK" severity="primary" (onClick)="BtnTimeoutSaveClick()" />
       </div>

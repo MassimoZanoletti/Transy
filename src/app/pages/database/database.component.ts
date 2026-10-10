@@ -34,6 +34,7 @@ import {TeamService} from "../../services/team.service";
 import {PlayerService} from "../../services/player.service";
 import {CoachService} from "../../services/coach.service";
 import {utils} from "../../common/utils";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 // Livelli della gerarchia: Società > Stagione > Campionato > (Squadre | Fasi) ; Squadra > (Giocatori | Allenatori)
@@ -365,6 +366,7 @@ export class DatabaseComponent implements OnInit
 
 
    // Ricarica tutti i livelli mantenendo le scelte fatte (se gli elementi esistono ancora)
+   @UnaAllaVolta()
    async Aggiorna ()
    {
       await this.RicaricaTutto ();
@@ -584,6 +586,7 @@ export class DatabaseComponent implements OnInit
    }
 
 
+   @UnaAllaVolta()
    async DialogSalva ()
    {
       if (this.dialogValue_Nome.trim () == "")

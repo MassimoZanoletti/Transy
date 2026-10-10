@@ -101,10 +101,11 @@ import { PlaybyplayCompComponent } from "./playbyplay-comp/playbyplay-comp.compo
 import { TContestoLive } from "../../common/statistiche";
 import { TOperation, TOperationList, TOperationType } from "../../common/operation";
 import { MatchSyncService } from "../../services/match-sync.service";
+import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
 // Riga dei punteggi per quarto (vedi GetPunteggiQuarti)
-type TRigaPunteggio = { punti: string, diff: string, positivo: boolean };
+type TRigaPunteggio = { punti: string, diff: string, positivo: boolean, negativo: boolean };
 
 
 
@@ -213,6 +214,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    private today: Date = new Date();
    private routeSubscription!: Subscription;
+   private timerSalvaPunteggio: ReturnType<typeof setTimeout> | undefined;
    // Partita per cui è già stata fatta l'inizializzazione (vedi ngAfterViewInit) e coda delle inizializzazioni
    private initializedMatchId: number = 0;
    private initChain: Promise<void> = Promise.resolve();
@@ -337,7 +339,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          {
             label: "",
             items: [
-               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTutto(); } }
+               {label: "Azzera tutta la partita", icon: 'pi pi-times', styleClass: 'icona-arancio', command:() => { this.mnuAzzeraTutto(); } },
+               {label: "Termina partita", icon: 'pi pi-flag', styleClass: 'icona-verde', command:() => { this.mnuTerminaPartita(); } }
             ]
          },
          {
@@ -405,6 +408,12 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    ngOnDestroy(): void
    {
       this.routeSubscription.unsubscribe(); // Aggiungi questa linea
+      // Un salvataggio del punteggio ancora in attesa parte subito
+      if (this.timerSalvaPunteggio)
+      {
+         clearTimeout (this.timerSalvaPunteggio);
+         this.SalvaPunteggioPartita();
+      }
    }
 
 
@@ -481,8 +490,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       //
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       // Salvataggio remoto: ogni operazione aggiunta/tolta finisce nella coda di sincronizzazione
-      opList.OnItemAdded   = op => { this.matchSync.EnqueueAddEvent(op, this.matchHeader.id); };
-      opList.OnItemRemoved = op => { this.matchSync.EnqueueDeleteEvent(op, this.matchHeader.id); };
+      opList.OnItemAdded   = op => { this.matchSync.EnqueueAddEvent(op, this.matchHeader.id); this.PianificaSalvataggioPunteggio(); };
+      opList.OnItemRemoved = op => { this.matchSync.EnqueueDeleteEvent(op, this.matchHeader.id); this.PianificaSalvataggioPunteggio(); };
       //
       await this.LoadMatchHeader(globs.openedMatchHeaderId);
       await this.LoadMatchRoster(globs.openedMatchHeaderId);
@@ -494,7 +503,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       // La partita viene ricostruita rigiocando gli eventi salvati (server + azioni locali non ancora inviate):
       // statistiche, punteggi, falli, giocatori in campo, tempi di gioco e cronometro.
       const replayed = await this.LoadMatchFromEvents();
-      if (!replayed)
+      if (replayed)
+         // Allinea il punteggio dell'intestazione (anche per partite giocate prima che venisse salvato)
+         await this.SalvaPunteggioPartita();
+      else
       {
          // Nessun evento: partita da iniziare. Se il tab "Gioco" (e quindi il timer) è già stato visitato in
          // questa sessione, il relativo binding [matchNotStarted] non forza un nuovo ngOnInit: resettalo esplicitamente.
@@ -504,6 +516,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          // In campo la situazione dell'ultimo momento di gioco del quarto selezionato nel cronometro
          this.ApplyLineupForQuarter (this.compTimer ? this.compTimer.currQuarter : '1q');
       }
+      // dopo il replay il quarto delle squadre è quello dell'ultimo canestro: va riportato a quello del cronometro
+      this.AllineaQuartoSquadre ();
+      if (replayed)
+         this.RisalvaQuartiGiocati();
       this.RefreshFrozenClock();
       //
       if (this.matchHeader.atHome)
@@ -730,6 +746,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (matchHeaderId > 0)
       {
          const theData = await firstValueFrom (this.servMatchRoster.getAllData(matchHeaderId));
+         // di nuovo vuote dopo l'attesa: se nel frattempo è partito un altro caricamento, i giocatori non si sommano
+         this.listaRosterCasa = [];
+         this.listaRosterFuori = [];
          if ((theData) && (theData.elements))
          {
             const fullList: Array<TDSMatchRoster> = theData.elements;
@@ -1265,6 +1284,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async SalvaMatchHeader(datiMH: { mh: IDSMatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
@@ -1322,6 +1342,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async salvaPlayerFalli(event: {player: TMatchPlayer | null, nuovoFallo: boolean})
    {
       this.dialogVisible_Falli = false;
@@ -1368,6 +1389,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async SalvaMatchRosterDiag(event: [Array<TDSMatchRoster>, IDSMatchHeader])
    {
       this.dialogVisible_Roster = false;
@@ -1567,11 +1589,48 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    // Stato della partita (Non giocato / In gioco / Terminato), salvato in coda (quindi anche senza connessione)
    private async ImpostaStatoPartita (stato: matchStatusType.Status): Promise<void>
    {
-      if (!(this.matchHeader?.id > 0) || (this.matchHeader.matchStatus === stato.code))
+      if (!(this.matchHeader?.id > 0))
          return;
+      const statoCambiato = (this.matchHeader.matchStatus !== stato.code);
       this.matchHeader.matchStatus = stato.code;
+      const puntiCambiati = this.AggiornaPuntiIntestazione();
+      if (statoCambiato || puntiCambiati)
+         await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
+                                            this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
+   }
+
+
+   // Riporta nell'intestazione il punteggio attuale (quello mostrato nella dashboard); true se è cambiato
+   private AggiornaPuntiIntestazione (): boolean
+   {
+      const cm = matchGlobs.currMatch;
+      if (!cm)
+         return false;
+      const my = cm.myTeam()?.CalcPunti() ?? 0;
+      const opp = cm.oppTeam()?.CalcPunti() ?? 0;
+      if ((Number(this.matchHeader.myTeamPoints) === my) && (Number(this.matchHeader.oppoTeamPoints) === opp))
+         return false;
+      this.matchHeader.myTeamPoints = my;
+      this.matchHeader.oppoTeamPoints = opp;
+      return true;
+   }
+
+
+   // Salvataggio in coda del punteggio nell'intestazione, se cambiato (la coda tiene solo l'ultima versione)
+   private async SalvaPunteggioPartita (): Promise<void>
+   {
+      if (!(this.matchHeader?.id > 0) || !this.AggiornaPuntiIntestazione())
+         return;
       await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
                                          this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
+   }
+
+
+   // Dopo ogni azione aggiunta/tolta: il punteggio viene salvato poco dopo, a effetti statistici applicati
+   private PianificaSalvataggioPunteggio (): void
+   {
+      clearTimeout (this.timerSalvaPunteggio);
+      this.timerSalvaPunteggio = setTimeout (() => this.SalvaPunteggioPartita(), 1500);
    }
 
 
@@ -1583,6 +1642,19 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          this.RefreshFrozenClock();
          this.SaveQuarterState (this.compTimer?.currQuarter ?? '1q');
       }
+   }
+
+
+   // All'apertura: ogni quarto iniziato viene risalvato coi valori ricalcolati dalle azioni, così sul server
+   // punti, falli e bonus restano allineati (anche per le partite salvate prima delle correzioni ai falli)
+   private RisalvaQuartiGiocati (): void
+   {
+      if (!this.compTimer)
+         return;
+      const { quarterTimes } = this.compTimer.GetState();
+      for (const quarto of Object.keys(quarterTimes))
+         if (this.compTimer.IsQuarterStarted(quarto))
+            this.SaveQuarterState (quarto, quarterTimes[quarto]);
    }
 
 
@@ -2134,6 +2206,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async BtnUndoClick (): Promise<void>
    {
       if (!matchGlobs.currMatch)
@@ -2395,6 +2468,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async onSostituzioneSave(event: { players: TMatchPlayer[], azione: string, usciti?: TMatchPlayer[], entrati?: TMatchPlayer[], quintetto?: TMatchPlayer[], tempoSec?: number }): Promise<void>
    {
       // i flag inGioco sono già stati aggiornati dentro il componente
@@ -2544,6 +2618,17 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Il quarto "corrente" delle squadre (falli del quarto, bonus, punti del quarto nei riquadri squadra)
+   // segue quello selezionato nel cronometro: un quarto nuovo parte da zero, uno già giocato mostra i suoi valori
+   AllineaQuartoSquadre (quarto?: string): void
+   {
+      const q = quarto ?? this.compTimer?.currQuarter ?? '1q';
+      const idx = this.QuarterKeyToNumber(q) - 1;
+      matchGlobs.currMatch?.myTeam()?.currQuarter.set(idx);
+      matchGlobs.currMatch?.oppTeam()?.currQuarter.set(idx);
+   }
+
+
    // Stessa numerazione di TimerCompComponent.GetQuarterNumber (1..4 regolari, 5..8 supplementari)
    QuarterKeyToNumber (quarto: string): number
    {
@@ -2636,7 +2721,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    GetPunteggiQuarti (): { parziali: TRigaPunteggio[], progressivi: TRigaPunteggio[] }
    {
       const riga = (my: number, opp: number): TRigaPunteggio =>
-         ({ punti: `${my} - ${opp}`, diff: `(${(my - opp > 0) ? '+' : ''}${my - opp})`, positivo: (my - opp > 0) });
+         ({ punti: `${my} - ${opp}`, diff: `(${(my - opp > 0) ? '+' : ''}${my - opp})`, positivo: (my - opp > 0), negativo: (my - opp < 0) });
       const myTeam = matchGlobs.currMatch?.myTeam() ?? null;
       const oppTeam = matchGlobs.currMatch?.oppTeam() ?? null;
       const result = { parziali: [] as TRigaPunteggio[], progressivi: [] as TRigaPunteggio[] };
@@ -2832,6 +2917,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (this.compTimer?.IsQuarterStarted(event.oldQuarto))
          this.SaveQuarterState (event.oldQuarto, event.oldTime);
       this.ApplyLineupForQuarter (event.newQuarto);
+      this.AllineaQuartoSquadre (event.newQuarto);
       this.RefreshFrozenClock();
       this.UpdateFieldPlayers();
    }
@@ -2878,6 +2964,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async onNumeriNomiOk ()
    {
       this.dialogVisible_NumeriNomi = false;
@@ -2896,6 +2983,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async BtnEliminaAzione (op: TOperation): Promise<void>
    {
       // La conferma è già stata chiesta dentro app-azioni-dlg prima di emettere l'evento.
@@ -2950,6 +3038,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async onEditAzioneSalva (m: TModificaAzione): Promise<void>
    {
       this.dialogVisible_EditAzione = false;
@@ -3057,6 +3146,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async onTempiGiocoOk ()
    {
       this.dialogVisible_TempiGioco = false;
@@ -3174,6 +3264,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async onFalliTotaliOk ()
    {
       this.dialogVisible_FalliTotali = false;
@@ -3185,6 +3276,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   @UnaAllaVolta()
    async mnuAzzeraTutto()
    {
       const dlgData: MessDlgData = {
@@ -3213,6 +3305,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       //
       await this.ClearSelection();
       this.compTimer?.ResetToMatchStart();
+      this.AllineaQuartoSquadre ();
       this.quarterEndLineups = {};
       this.UpdateFieldPlayers();
       await this.SaveQuintettoToDB ([
@@ -3224,6 +3317,21 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       await matchGlobs.currSavedMatch.SaveToStorage();
       this.cdr.detectChanges();
       this.msgService.add({ severity: 'success', summary: 'Azzera tutto', detail: 'La partita è stata azzerata' });
+   }
+
+
+   // Stato "Terminato", senza conferma (in coda insieme al punteggio finale: funziona anche offline)
+   @UnaAllaVolta()
+   async mnuTerminaPartita()
+   {
+      if (this.matchHeader.matchStatus === matchStatusType.terminated.code)
+      {
+         this.msgService.add({ severity: 'info', summary: 'Termina partita', detail: 'La partita è già terminata' });
+         return;
+      }
+      await this.ImpostaStatoPartita (matchStatusType.terminated);
+      this.cdr.detectChanges();
+      this.msgService.add({ severity: 'success', summary: 'Termina partita', detail: 'La partita è stata segnata come terminata' });
    }
 
 

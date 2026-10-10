@@ -15,9 +15,9 @@
    color: #cbd5e1;
 }
 
+/* Annulla a sinistra e Senza posizione a destra, ai due estremi: in partita, col dito, non si sbaglia bottone */
 .tiropos-bottoni {
    display: flex;
-   justify-content: flex-end;
-   gap: 10px;
+   justify-content: space-between;
    width: 100%;
 }

@@ -128,3 +128,8 @@
    gap: 24px;
    flex: 0 0 auto;
 }
+
+/* Annulla da solo all'estremo sinistro, lontano dai comandi: in partita, col dito, non si sbaglia bottone */
+.sostit-annulla {
+   margin-right: auto;
+}
