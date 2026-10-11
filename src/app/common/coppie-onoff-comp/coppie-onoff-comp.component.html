@@ -81,6 +81,7 @@
                         {
                            <td class="co-cella"
                                [class.co-diagonale]="i === j"
+                               [class.co-testo-scuro]="TestoScuro(c)"
                                [style.background-color]="Fondo(c)"
                                [title]="TitoloCella(i, j)">{{ Testo(c, metrica) }}</td>
                         }
@@ -90,7 +91,7 @@
             </table>
          </div>
          <div class="co-nota">
-            {{ EtichettaMetrica() }}. Sulla diagonale il giocatore da solo. Blu positivo, arancio negativo;
+            {{ EtichettaMetrica() }}. Sulla diagonale il giocatore da solo. Rosso positivo (a nostro favore), azzurro negativo;
             più intenso = valore più grande. Passa sopra una cella per i dettagli.
          </div>
       </div>

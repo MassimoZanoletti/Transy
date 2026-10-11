@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {SelectButtonModule} from 'primeng/selectbutton';
 import {TooltipModule} from 'primeng/tooltip';
+import {COLORE_NOI} from "../grafico-differenza";
 import {MIN_POSSESSI_RATING, MinutiQuintetto, NetQuintetto, NumQ, PlusMinusQuintetto, TInCampoStat, TQuintettoStat} from "../quintetti";
 import {
    ColoreCoppia,
@@ -76,6 +77,14 @@ export class CoppieOnoffCompComponent
          return 'transparent';
       const alfa = Math.round(255 * (0.15 + 0.7 * col.k)).toString(16).padStart(2, '0');
       return `${col.colore}${alfa}`;
+   }
+
+
+   // sul rosso chiaro intenso il testo chiaro non si legge: testo scuro
+   TestoScuro (c: TInCampoStat): boolean
+   {
+      const col = ColoreCoppia(ValoreCoppia(c, this.metrica), this.maxScala);
+      return (!!col) && (col.colore === COLORE_NOI) && (col.k > 0.45);
    }
 
 

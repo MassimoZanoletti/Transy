@@ -9,7 +9,7 @@ import {
    TInCampoStat,
    TQuintettoStat
 } from "./quintetti";
-import {COLORE_SVANTAGGIO, COLORE_VANTAGGIO} from "./grafico-differenza";
+import {COLORE_LORO, COLORE_NOI, COLORE_NOI_PDF} from "./grafico-differenza";
 
 
 // Coppie di giocatori e On/Off, ricavati dai quintetti (quintetti.ts): ogni quintetto sa chi era in campo,
@@ -150,14 +150,15 @@ export function MaxScalaCoppie (m: TMatriceCoppie,
 }
 
 
-// Colore della cella: blu (positivo / minuti) o arancio (negativo), intensità proporzionale al valore.
-// Restituisce colore e intensità 0..1
+// Colore della cella: rosso (positivo / minuti, a nostro favore) o azzurro (negativo), intensità
+// proporzionale al valore. Restituisce colore e intensità 0..1; pdf: rosso più pieno per il fondo bianco
 export function ColoreCoppia (v: number | null,
-                              max: number): { colore: string, k: number } | null
+                              max: number,
+                              pdf: boolean = false): { colore: string, k: number } | null
 {
    if ((v === null) || (v === 0))
       return null;
-   return { colore: (v > 0) ? COLORE_VANTAGGIO : COLORE_SVANTAGGIO, k: Math.min(1, Math.abs(v) / max) };
+   return { colore: (v > 0) ? (pdf ? COLORE_NOI_PDF : COLORE_NOI) : COLORE_LORO, k: Math.min(1, Math.abs(v) / max) };
 }
 
 
@@ -189,7 +190,7 @@ export function MatriceCoppiePdf (pdf: any,
          `${g.numero} ${g.nome}`,
          ...m.celle[i].map((c, j) =>
          {
-            const col = ColoreCoppia(ValoreCoppia(c, metrica), max);
+            const col = ColoreCoppia(ValoreCoppia(c, metrica), max, true);
             const fill = col ? Rgb(col.colore).map(x => Math.round(255 + (x - 255) * 0.75 * col.k)) : [255, 255, 255];
             return { content: TestoCoppia(c, metrica), styles: { fillColor: fill, fontStyle: (i === j) ? 'bold' : 'normal' } };
          })
@@ -205,7 +206,7 @@ export function MatriceCoppiePdf (pdf: any,
    pdf.setFontSize(8);
    pdf.setFont(font, 'normal');
    pdf.setTextColor(90, 90, 90);
-   pdf.text(`${ETICHETTE_METRICA[metrica]}. Sulla diagonale il giocatore da solo (tutto il tempo in campo). Blu: positivo, arancio: negativo.`, 5, y);
+   pdf.text(`${ETICHETTE_METRICA[metrica]}. Sulla diagonale il giocatore da solo (tutto il tempo in campo). Rosso: positivo (a nostro favore), azzurro: negativo.`, 5, y);
    pdf.setTextColor(0, 0, 0);
    return y;
 }

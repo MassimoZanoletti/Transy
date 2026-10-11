@@ -3,6 +3,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {SelectButtonModule} from 'primeng/selectbutton';
 import {ButtonModule} from 'primeng/button';
+import {MenuModule} from 'primeng/menu';
+import {MenuItem} from 'primeng/api';
 import type {jsPDF} from 'jspdf';
 import {CampoTiriComponent, TTiroPrecedente} from "../../../common/campo-tiri/campo-tiri.component";
 import {CalcolaMappaTiri, PercentualeTiri, TMappaTiri} from "../../../common/mappa-tiri";
@@ -11,6 +13,8 @@ import {matchGlobs} from "../../../common/curr-match";
 import {ConfigService} from "../../../services/config.service";
 import {PdfSaveService} from "../../../services/pdf-save.service";
 import { UnaAllaVolta } from '../../../common/una-alla-volta';
+import {CalcolaZone, CaricaImmagineCampo, PaginaZonePdf, TMappaZone} from "../../../common/zone-tiro";
+import {ZoneTiroCompComponent} from "../../../common/zone-tiro-comp/zone-tiro-comp.component";
 
 
 // Mappa di tiro di un giocatore (un riquadro della griglia sotto la mappa di squadra)
@@ -35,7 +39,9 @@ interface TMappaGiocatore extends TMappaTiri
       FormsModule,
       SelectButtonModule,
       ButtonModule,
-      CampoTiriComponent
+      MenuModule,
+      CampoTiriComponent,
+      ZoneTiroCompComponent
    ],
    templateUrl: './mappa-tiro-comp.component.html',
    styleUrl:    './mappa-tiro-comp.component.css'
@@ -58,6 +64,15 @@ export class MappaTiroCompComponent
    public nomeSquadra: string = '';
    public squadra: TMappaTiri | null = null;
    public giocatori: TMappaGiocatore[] = [];
+   // mappa di squadra: tiri uno per uno o raggruppati in zone
+   public vista: 'tiri' | 'zone' = 'tiri';
+   public readonly opzioniVista = [{ label: 'Tiri', value: 'tiri' }, { label: 'Zone', value: 'zone' }];
+   public zone: TMappaZone | null = null;
+   // esportazione: solo tiri (può andare anche fuori dallo staff) o con la pagina delle zone (solo staff)
+   public readonly vociPdf: MenuItem[] = [
+      { label: 'Solo tiri',                     icon: 'pi pi-file',        command: () => this.EsportaPdf(false) },
+      { label: 'Tiri e zone (solo staff)',      icon: 'pi pi-chart-pie',   command: () => this.EsportaPdf(true) }
+   ];
 
 
    constructor (private config: ConfigService,
@@ -83,6 +98,7 @@ export class MappaTiroCompComponent
          .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0));
       this.nomeSquadra = this.isMyTeam ? myNome : oppoNome;
       this.squadra = CalcolaMappaTiri(roster);
+      this.zone = CalcolaZone(roster);
       this.giocatori = roster.map(p => ({
          ...CalcolaMappaTiri([p]),
          numero: p.playNumber(),
@@ -107,16 +123,17 @@ export class MappaTiroCompComponent
 
    // PDF in orizzontale della squadra mostrata: mappa di squadra sulla prima pagina, mappe dei giocatori
    // (6 per riga) sulla seconda (e seguenti, se i giocatori non ci stanno in una pagina)
+   // conZone: dopo la mappa di squadra una pagina con la mappa a zone e la sua tabella (solo per lo staff)
    @UnaAllaVolta()
-   async EsportaPdf (): Promise<void>
+   async EsportaPdf (conZone: boolean): Promise<void>
    {
       this.Aggiorna();
       if (!this.MappaAbilitata() || !this.squadra)
          return;
-      const destinazione = await this.pdfSave.ChiediDestinazione(`M_${this.matchHeader?.title || 'partita'}-mappa-tiro-${this.isMyTeam ? 'myteam' : 'oppoteam'}.pdf`);
+      const destinazione = await this.pdfSave.ChiediDestinazione(`M_${this.matchHeader?.title || 'partita'}-mappa-tiro-${this.isMyTeam ? 'myteam' : 'oppoteam'}${conZone ? '-zone' : ''}.pdf`);
       if (!destinazione)
          return;
-      const [{ default: jsPDF }, campo] = await Promise.all([import('jspdf'), this.CaricaImmagineCampo()]);
+      const [{ default: jsPDF }, { default: autoTable }, campo] = await Promise.all([import('jspdf'), import('jspdf-autotable'), CaricaImmagineCampo()]);
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageWidth = 297;
       const pageHeight = 210;
@@ -154,6 +171,14 @@ export class MappaTiroCompComponent
          pdf.setFont(font, 'italic');
          pdf.text(`${this.squadra.senzaPosizione} ${this.squadra.senzaPosizione === 1 ? 'tiro' : 'tiri'} senza posizione (non sul campo)`,
                   pageWidth / 2, y + 9, { align: 'center' });
+      }
+
+      // solo staff: mappa a zone con la tabella accanto
+      if (conZone && this.zone)
+      {
+         pdf.addPage();
+         titoloPagina(`Mappa di tiro a zone - ${this.nomeSquadra}`);
+         await PaginaZonePdf(pdf, autoTable, this.zone, campo, margine + 5, ySquadra, altezzaSquadra, font, pageWidth, margine);
       }
 
       // pagina 2: mappe dei giocatori, 6 per riga
@@ -196,18 +221,6 @@ export class MappaTiroCompComponent
       });
 
       await destinazione.Salva(pdf);
-   }
-
-
-   private CaricaImmagineCampo (): Promise<HTMLImageElement>
-   {
-      return new Promise((resolve, reject) =>
-      {
-         const img = new Image();
-         img.onload = () => resolve(img);
-         img.onerror = reject;
-         img.src = 'assets/campo-tiri.png';
-      });
    }
 
 

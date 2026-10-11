@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {
-   COLORE_SVANTAGGIO,
-   COLORE_VANTAGGIO,
+   COLORE_LORO,
+   COLORE_NOI,
    DescrizionePunto,
    Gradini,
    EtichettaQuarto,
@@ -12,10 +12,11 @@ import {
    TSerieDiff
 } from "../grafico-differenza";
 import {TempoStr} from "../statistiche";
+import {TParziale} from "../parziali-timeout";
 
 
-// Grafico a video (SVG) dello scarto lungo la partita: area a gradini blu (vantaggio) / arancio
-// (svantaggio), divisione dei quarti, timeout e, al passaggio del mouse/dito, linea verticale con il
+// Grafico a video (SVG) dello scarto lungo la partita: area a gradini nel colore della squadra in vantaggio
+// (rosso noi, azzurro loro), divisione dei quarti, timeout e, al passaggio del mouse/dito, linea verticale con il
 // punteggio in quel momento.
 @Component({
    selector:    'app-grafico-differenza-comp',
@@ -28,6 +29,8 @@ export class GraficoDifferenzaCompComponent
 {
    @Input() nomeNoi: string = '';
    @Input() nomeLoro: string = '';
+   // parziali da evidenziare con una fascia verticale
+   @Input() parziali: TParziale[] = [];
    @Input() set serie (s: TSerieDiff | null)
    {
       this._serie = s;
@@ -44,8 +47,8 @@ export class GraficoDifferenzaCompComponent
    public readonly MR = 10;
    public readonly MT = 22;
    public readonly MB = 34;
-   public readonly coloreVantaggio = COLORE_VANTAGGIO;
-   public readonly coloreSvantaggio = COLORE_SVANTAGGIO;
+   public readonly coloreVantaggio = COLORE_NOI;
+   public readonly coloreSvantaggio = COLORE_LORO;
 
    public lim = 5;
    public griglia: number[] = [];
@@ -102,6 +105,12 @@ export class GraficoDifferenzaCompComponent
    Diff (p: TPuntoDiff): number
    {
       return p.my - p.opp;
+   }
+
+
+   TitoloParziale (p: TParziale): string
+   {
+      return `Parziale ${p.punti}-0 ${p.myTeam ? this.nomeNoi : this.nomeLoro}`;
    }
 
 

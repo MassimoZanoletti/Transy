@@ -4,6 +4,9 @@ import {AnalisiInCampo, PlusMinusQuintetto, PossessiQuintetto} from "./quintetti
 import {CalcolaFourFactors, BoxVuoto} from "./four-factors";
 import {SerieDifferenza} from "./grafico-differenza";
 import {MatriceCoppie, OnOff} from "./coppie-onoff";
+import {AccumulaTimeout, EsitiTimeout, InvertiEsito, InvertiParziale, Parziali, RiepilogoVuoto} from "./parziali-timeout";
+import {SommaZone, ZonaDelTiro, ZoneVuote} from "./zone-tiro";
+import {MediaMobile, ScalaY} from "./andamento-campionato";
 
 
 function Giocatore (id: number, my: boolean, quintetto: boolean): TMatchPlayer
@@ -96,6 +99,41 @@ describe('Quintetti, +/- e scarto', () =>
       expect(s.maxSvant?.opp).toBe(3);
    });
 
+   it('trova i parziali e valuta i timeout', () =>
+   {
+      const s = SerieDifferenza(ops, [1, 2], live);
+      // canestri: noi 2, loro 3, noi 2, loro 1 (TL nel 2° quarto)
+      expect(Parziali(s).length).toBe(0);                     // nessuno da 8
+      const p = Parziali(s, 2);
+      expect(p.map(x => `${x.myTeam ? 'N' : 'L'}${x.punti}`)).toEqual(['N2', 'L3', 'N2']);
+      expect(p[1].myPrima).toBe(2);
+      expect(p[1].oppPrima).toBe(0);
+      expect(InvertiParziale(p[1]).myTeam).toBeTrue();
+      const e = EsitiTimeout(s);
+      expect(e.length).toBe(1);
+      expect(e[0].myTeam).toBeFalse();                          // timeout avversario a inizio Q2
+      expect(e[0].my).toBe(4);
+      expect(e[0].opp).toBe(3);
+      expect(e[0].prima).toEqual({ my: 0, opp: 0, secondi: 10 });   // la finestra prima non esce dal quarto
+      // sempre noi-loro, anche se il timeout l'hanno chiamato gli avversari: dopo hanno segnato loro (TL)
+      expect(e[0].dopo.my).toBe(0);
+      expect(e[0].dopo.opp).toBe(1);
+      expect(e[0].primoASegnare).toBe('opp');
+      const r = RiepilogoVuoto();
+      AccumulaTimeout(r, e, false);
+      expect(r.numero).toBe(1);
+      expect(r.favorevoli).toBe(0);
+      expect(r.sommaDopo).toBe(-1);             // dal nostro punto di vista
+      expect(r.primoNostro).toBe(0);
+      // visto dall'altra squadra (pagina del campionato) si gira tutto
+      const inv = InvertiEsito(e[0]);
+      expect(inv.myTeam).toBeTrue();
+      expect(inv.my).toBe(3);
+      expect(inv.opp).toBe(4);
+      expect(inv.dopo).toEqual({ my: 1, opp: 0, secondi: e[0].dopo.secondi });
+      expect(inv.primoASegnare).toBe('my');
+   });
+
    it('calcola i Four Factors', () =>
    {
       const noi = { ...BoxVuoto(), punti: 10, t2: { realizzati: 3, tentati: 6 }, t3: { realizzati: 1, tentati: 4 }, tl: { realizzati: 1, tentati: 2 }, ra: 2, rd: 6, pp: 3 };
@@ -106,5 +144,58 @@ describe('Quintetti, +/- e scarto', () =>
       expect(ff.fattori[2].noi).toBeCloseTo(20);           // 2 / (2 + 8)
       expect(ff.fattori[3].noi).toBeCloseTo(10);
       expect(ff.possessi).toBeCloseTo((11.88 + 7) / 2);
+   });
+});
+
+
+describe('Zone di tiro', () =>
+{
+   it('classifica i tiri nelle zone', () =>
+   {
+      expect(ZonaDelTiro(287, 70, false)).toBe('sotto');
+      expect(ZonaDelTiro(250, 190, false)).toBe('area');
+      expect(ZonaDelTiro(100, 120, false)).toBe('mediaSx');
+      expect(ZonaDelTiro(287, 280, false)).toBe('mediaCentro');
+      expect(ZonaDelTiro(470, 150, false)).toBe('mediaDx');
+      expect(ZonaDelTiro(20, 40, true)).toBe('angoloSx');
+      expect(ZonaDelTiro(555, 60, true)).toBe('angoloDx');
+      expect(ZonaDelTiro(60, 260, true)).toBe('alaSx');
+      expect(ZonaDelTiro(287, 380, true)).toBe('frontale');
+      expect(ZonaDelTiro(515, 260, true)).toBe('alaDx');
+      // il valore registrato vince sulla posizione: un "3" cliccato appena dentro l'arco resta da 3
+      expect(ZonaDelTiro(287, 310, true)).toBe('frontale');
+   });
+
+   it('somma le zone di più partite', () =>
+   {
+      const a = ZoneVuote();
+      const b = ZoneVuote();
+      b.zone[0].segnati = 2; b.zone[0].tentati = 3; b.conPosizione = 3; b.senzaPosizione = 1;
+      SommaZone(a, b);
+      SommaZone(a, b);
+      expect(a.zone[0].segnati).toBe(4);
+      expect(a.zone[0].tentati).toBe(6);
+      expect(a.conPosizione).toBe(6);
+      expect(a.senzaPosizione).toBe(2);
+      expect(b.zone[0].tentati).toBe(3);       // b non cambia
+   });
+});
+
+
+describe('Andamento partita per partita', () =>
+{
+   it('calcola la media mobile saltando i valori mancanti', () =>
+   {
+      expect(MediaMobile([10, 20, 30, 40], 3)).toEqual([10, 15, 20, 30]);
+      expect(MediaMobile([null, 4, null, 8], 3)).toEqual([null, 4, 4, 6]);
+   });
+
+   it('sceglie una scala tonda, simmetrica per le barre', () =>
+   {
+      const linee = ScalaY({ titolo: '', barre: false, etichette: [], esiti: [], dettagli: [], serie: [{ nome: '', colore: '', valori: [49, 81] }] });
+      expect(linee).toEqual({ min: 40, max: 90, passo: 10 });
+      const barre = ScalaY({ titolo: '', barre: true, etichette: [], esiti: [], dettagli: [], serie: [{ nome: '', colore: '', valori: [-15, 22] }] });
+      expect(barre.min).toBe(-barre.max);
+      expect(barre.max).toBeGreaterThanOrEqual(22);
    });
 });

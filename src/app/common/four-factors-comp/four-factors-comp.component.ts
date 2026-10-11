@@ -1,12 +1,12 @@
 import {Component, Input} from '@angular/core';
 import {TooltipModule} from 'primeng/tooltip';
-import {COLORE_SVANTAGGIO, COLORE_VANTAGGIO} from "../grafico-differenza";
+import {COLORE_LORO, COLORE_NOI} from "../grafico-differenza";
 import {MiglioreFF, NetRtg, NumFF, TFattore, TFourFactors} from "../four-factors";
 
 
 // Riquadro dei Four Factors (tab "Statistiche" della partita e pagina "Statistiche campionato"): per ogni
 // fattore i valori delle due squadre affiancati da due barre, il migliore in verde; sotto possessi e punti
-// ogni 100 possessi. Colori delle barre come il grafico dello scarto (blu noi, arancio avversari).
+// ogni 100 possessi. Colori delle barre come il grafico dello scarto (rosso noi, azzurro avversari).
 @Component({
    selector:    'app-four-factors-comp',
    standalone:  true,
@@ -20,8 +20,8 @@ export class FourFactorsCompComponent
    @Input() nomeNoi: string = '';
    @Input() nomeLoro: string = '';
 
-   public readonly coloreNoi = COLORE_VANTAGGIO;
-   public readonly coloreLoro = COLORE_SVANTAGGIO;
+   public readonly coloreNoi = COLORE_NOI;
+   public readonly coloreLoro = COLORE_LORO;
    public readonly Num = NumFF;
    public readonly Migliore = MiglioreFF;
    public readonly tooltipPossessi = this.Tooltip('Possessi stimati', 'Tiri dal campo tentati - rimbalzi offensivi + palle perse + 0,44 x liberi tentati; media delle due squadre.');

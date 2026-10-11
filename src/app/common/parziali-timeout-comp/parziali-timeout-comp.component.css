@@ -1,0 +1,114 @@
+/* stessi colori delle tabelle statistiche (quintetti-comp, coppie-onoff-comp) */
+.pt-sezioni {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px 40px;
+   align-items: flex-start;
+}
+
+.pt-sezione {
+   min-width: 0;
+   max-width: 100%;
+}
+
+.pt-titolo {
+   margin: 0 0 6px 0;
+   display: inline-block;
+}
+
+.pt-sottotitolo {
+   font-weight: normal;
+   font-size: 0.85rem;
+   color: #94a3b8;
+}
+
+.pt-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.pt-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.pt-stacco {
+   margin-top: 12px;
+}
+
+.pt-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.pt-tabella th,
+.pt-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.pt-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.pt-tabella tbody tr:nth-child(3n+1) {
+   background-color: #1f2938;
+}
+
+.pt-tabella tbody tr:nth-child(3n+2) {
+   background-color: #273345;
+}
+
+.pt-tabella tbody tr:nth-child(3n) {
+   background-color: #2f3e53;
+}
+
+.pt-sinistra {
+   text-align: left !important;
+}
+
+.pt-centro {
+   text-align: center;
+}
+
+.pt-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+/* numeri e nomi nei colori delle squadre (come il grafico dello scarto): rosso noi, azzurro loro */
+.pt-noi {
+   color: #ff8888;
+   font-weight: bold;
+}
+
+.pt-loro {
+   color: #3a8bd8;
+   font-weight: bold;
+}
+
+.pt-positivo {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.pt-negativo {
+   color: #ff6666;
+   font-weight: bold;
+}
+
+.pt-nota {
+   margin-top: 4px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.pt-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

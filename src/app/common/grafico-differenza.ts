@@ -8,8 +8,15 @@ import {globs} from "./utils";
 // timeout delle due squadre. Serie comune al disegno a video (SVG) e nel PDF (jsPDF).
 
 
-export const COLORE_VANTAGGIO = '#3a8bd8';
-export const COLORE_SVANTAGGIO = '#d9782a';
+// Colori delle squadre in tutte le statistiche: MyTeam rosso (colore sociale del Sarezzo), OppoTeam azzurro.
+// A video (fondo scuro) un rosso chiaro, nel PDF (fondo bianco) uno più pieno ma non rosso puro. Gli stessi
+// colori indicano anche "a favore di chi" (scarto, +/-, differenze).
+export const COLORE_NOI = '#ff8888';
+export const COLORE_NOI_PDF = '#d04545';
+export const COLORE_LORO = '#3a8bd8';
+
+// colore da usare nel PDF al posto di quello a video
+export const ColorePdf = (colore: string) => (colore === COLORE_NOI) ? COLORE_NOI_PDF : colore;
 
 
 export interface TPuntoDiff
@@ -27,13 +34,14 @@ export interface TSerieDiff
    punti: TPuntoDiff[];        // il primo è lo 0-0 iniziale; l'ultimo chiude la serie alla fine (o al cronometro)
    durata: number;             // secondi fino all'ultimo punto
    quarti: { label: string, inizio: number, fine: number }[];
-   timeout: { t: number, myTeam: boolean, quarto: number, tempo: number }[];
+   // iPunto: indice in punti del primo canestro registrato dopo il timeout (a parità di secondo conta l'ordine)
+   timeout: { t: number, myTeam: boolean, quarto: number, tempo: number, iPunto: number }[];
    maxVant: TPuntoDiff | null;
    maxSvant: TPuntoDiff | null;
 }
 
 
-const DurataQuarto = (q: number) => (q <= globs.MaxRegQuarters) ? globs.DurationRegulTime : globs.DurationExtraTime;
+export const DurataQuarto = (q: number) => (q <= globs.MaxRegQuarters) ? globs.DurationRegulTime : globs.DurationExtraTime;
 
 export const EtichettaQuarto = (q: number) => (q <= globs.MaxRegQuarters) ? `Q${q}` : `ET${q - globs.MaxRegQuarters}`;
 
@@ -76,7 +84,7 @@ export function SerieDifferenza (ops: TOperation[],
       const t = InizioQuarto(q) + DurataQuarto(q) - op.time();
       if (op.oper() === TOperationType.totTimeout)
       {
-         serie.timeout.push({ t, myTeam: op.myTeam(), quarto: q, tempo: op.time() });
+         serie.timeout.push({ t, myTeam: op.myTeam(), quarto: q, tempo: op.time(), iPunto: serie.punti.length });
          continue;
       }
       const punti = (op.oper() === TOperationType.totTLYes) ? 1 :
@@ -165,7 +173,8 @@ export function DisegnaDifferenzaPdf (pdf: any,
                                       y: number,
                                       w: number,
                                       h: number,
-                                      font: string): void
+                                      font: string,
+                                      parziali: { t0: number, t1: number, myTeam: boolean, punti: number }[] = []): void
 {
    if (serie.durata <= 0)
       return;
@@ -187,12 +196,22 @@ export function DisegnaDifferenzaPdf (pdf: any,
       pdf.setTextColor(90, 90, 90);
       pdf.text((d > 0) ? `+${d}` : `${d}`, x - 1.5, sy(d) + 1, { align: 'right' });
    }
+   // parziali: fascia chiara dal primo all'ultimo canestro, etichetta in alto
+   for (const p of parziali)
+   {
+      const c = rgb(p.myTeam ? COLORE_NOI_PDF : COLORE_LORO).map(v => Math.round(255 + (v - 255) * 0.18)) as [number, number, number];
+      pdf.setFillColor(...c);
+      pdf.rect(sx(p.t0) - 0.8, y, sx(p.t1) - sx(p.t0) + 1.6, h, 'F');
+      pdf.setFontSize(7);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text(`${p.punti}-0`, (sx(p.t0) + sx(p.t1)) / 2, y + 3, { align: 'center' });
+   }
    // area a gradini
    for (const g of Gradini(serie))
    {
       if (g.diff === 0)
          continue;
-      pdf.setFillColor(...rgb((g.diff > 0) ? COLORE_VANTAGGIO : COLORE_SVANTAGGIO));
+      pdf.setFillColor(...rgb((g.diff > 0) ? COLORE_NOI_PDF : COLORE_LORO));
       pdf.rect(sx(g.t0), Math.min(sy(0), sy(g.diff)), sx(g.t1) - sx(g.t0), Math.abs(sy(g.diff) - sy(0)), 'F');
    }
    // divisione dei quarti ed etichette
@@ -222,7 +241,7 @@ export function DisegnaDifferenzaPdf (pdf: any,
    // timeout: triangolino in alto (noi) o in basso (avversari)
    for (const to of serie.timeout)
    {
-      pdf.setFillColor(...rgb(to.myTeam ? COLORE_VANTAGGIO : COLORE_SVANTAGGIO));
+      pdf.setFillColor(...rgb(to.myTeam ? COLORE_NOI_PDF : COLORE_LORO));
       pdf.setDrawColor(30, 30, 30);
       pdf.setLineWidth(0.15);
       const tx = sx(to.t);
@@ -243,7 +262,7 @@ export function DisegnaDifferenzaPdf (pdf: any,
    let lx = x;
    pdf.setFont(font, 'normal');
    pdf.setFontSize(9);
-   for (const v of [{ c: COLORE_VANTAGGIO, t: `${nomeNoi} in vantaggio` }, { c: COLORE_SVANTAGGIO, t: `${nomeLoro} in vantaggio` }])
+   for (const v of [{ c: COLORE_NOI_PDF, t: `${nomeNoi} in vantaggio` }, { c: COLORE_LORO, t: `${nomeLoro} in vantaggio` }])
    {
       pdf.setFillColor(...rgb(v.c));
       pdf.rect(lx, ly - 3, 4, 4, 'F');

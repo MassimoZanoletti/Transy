@@ -20,6 +20,8 @@ import {AnalisiInCampo, TabellaQuintettiPdf, TQuintettoStat} from "../../../comm
 import {QuintettiCompComponent} from "../../../common/quintetti-comp/quintetti-comp.component";
 import {CoppieOnoffCompComponent} from "../../../common/coppie-onoff-comp/coppie-onoff-comp.component";
 import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../../common/coppie-onoff";
+import {AccumulaTimeout, EsitiTimeout, Parziali, RiepilogoVuoto, TabelleParzialiTimeoutPdf, TParziale, TRiepilogoTimeout, TTimeoutEsito} from "../../../common/parziali-timeout";
+import {ParzialiTimeoutCompComponent} from "../../../common/parziali-timeout-comp/parziali-timeout-comp.component";
 
 
 // Tab "Statistiche" della partita: stessa impostazione della pagina "Tabelle" di nebula (intestazione,
@@ -38,7 +40,8 @@ import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../../
       FourFactorsCompComponent,
       GraficoDifferenzaCompComponent,
       QuintettiCompComponent,
-      CoppieOnoffCompComponent
+      CoppieOnoffCompComponent,
+      ParzialiTimeoutCompComponent
    ],
    templateUrl: './statistiche-comp.component.html',
    styleUrl:    './statistiche-comp.component.css'
@@ -78,6 +81,11 @@ export class StatisticheCompComponent
    public fourFactors: TFourFactors | null = null;
    // quintetti di MyTeam (minuti insieme, punti fatti/subiti, possessi)
    public quintetti: TQuintettoStat[] = [];
+   // parziali senza risposta ed efficacia dei timeout delle due squadre
+   public parziali: TParziale[] = [];
+   public parzialiTabella: { p: TParziale }[] = [];
+   public esitiTimeout: TTimeoutEsito[] = [];
+   public riepilogoTimeout: { noi: TRiepilogoTimeout, loro: TRiepilogoTimeout } | null = null;
    public aggiornatoAlle: string = '';
    // menu del bottone "Esporta in PDF": l'esportazione semplice si ferma alla seconda tabella (va anche ai
    // giornalisti), quella completa aggiunge le analisi (scarto, Four Factors, quintetti, On/Off) per lo staff
@@ -123,6 +131,14 @@ export class StatisticheCompComponent
          TabellaSquadra(oppTeam, oppNome, false, minuti, quartiGiocati, coach(this.oppoCoach1), coach(this.oppoCoach2), inCampo.plusMinus)
       ];
       this.serieDiff = SerieDifferenza(ops, quartiGiocati, live);
+      this.parziali = Parziali(this.serieDiff);
+      this.parzialiTabella = this.parziali.map(p => ({ p }));
+      this.esitiTimeout = EsitiTimeout(this.serieDiff);
+      const noi = RiepilogoVuoto();
+      const loro = RiepilogoVuoto();
+      AccumulaTimeout(noi, this.esitiTimeout, true);
+      AccumulaTimeout(loro, this.esitiTimeout, false);
+      this.riepilogoTimeout = { noi, loro };
       this.fourFactors = CalcolaFourFactors(this.tabelle[0].totali, this.tabelle[1].totali);
       const ora = new Date();
       this.aggiornatoAlle = `${String(ora.getHours()).padStart(2, '0')}:${String(ora.getMinutes()).padStart(2, '0')}:${String(ora.getSeconds()).padStart(2, '0')}`;
@@ -341,9 +357,19 @@ export class StatisticheCompComponent
       const myNome = this.tabelle[0]?.squadra ?? '';
       const oppNome = this.tabelle[1]?.squadra ?? '';
       if (this.serieDiff)
-         DisegnaDifferenzaPdf(pdf, this.serieDiff, myNome, oppNome, 15, 18, pageWidth - 25, 95, font);
+         DisegnaDifferenzaPdf(pdf, this.serieDiff, myNome, oppNome, 15, 18, pageWidth - 25, 95, font, this.parziali);
       if (this.fourFactors)
          TabellaFourFactorsPdf(pdf, autoTable, this.fourFactors, myNome, oppNome, 140, font, 15);
+
+      // timeout e parziali
+      if (this.riepilogoTimeout)
+      {
+         pdf.addPage();
+         pdf.setFontSize(14);
+         pdf.setFont(font, 'bold');
+         pdf.text(`Timeout e parziali - ${this.titolo}  ${this.punteggio}`, pageWidth / 2, 8, { align: 'center' });
+         TabelleParzialiTimeoutPdf(pdf, autoTable, this.parzialiTabella, this.esitiTimeout, this.riepilogoTimeout, [myNome, oppNome], 16, font);
+      }
 
       // quintetti di MyTeam, su una pagina a parte
       if (this.quintetti.length > 0)

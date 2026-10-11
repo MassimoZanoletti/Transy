@@ -1,0 +1,87 @@
+@if (dati)
+{
+   <div class="ac-comandi">
+      <p-dropdown [options]="metriche"
+                  [(ngModel)]="metrica"
+                  (ngModelChange)="Prepara()"
+                  optionLabel="label"
+                  optionValue="value"
+                  [style]="{ 'min-width': '13rem' }"></p-dropdown>
+      <label class="ac-media">
+         <p-checkbox [(ngModel)]="mediaMobile"
+                     (ngModelChange)="Prepara()"
+                     [binary]="true"></p-checkbox>
+         media delle ultime {{ MEDIA_MOBILE }} partite
+      </label>
+   </div>
+
+   <div class="ac-contenitore">
+      <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" [attr.aria-label]="'Andamento partita per partita: ' + dati.titolo">
+         <!-- griglia ed etichette dell'asse y -->
+         @for (v of griglia; track v)
+         {
+            <line [attr.x1]="ML" [attr.x2]="W - MR" [attr.y1]="Y(v)" [attr.y2]="Y(v)" [class]="(v === 0 && dati.barre) ? 'ac-zero' : 'ac-griglia'"/>
+            <text [attr.x]="ML - 6" [attr.y]="Y(v) + 4" text-anchor="end" class="ac-asse">{{ Asse(v) }}</text>
+         }
+
+         <!-- partite: data ed esito (V/P) -->
+         @for (e of dati.etichette; track i; let i = $index)
+         {
+            @if (i % ogniEtichetta === 0)
+            {
+               <text [attr.x]="X(i)" [attr.y]="H - MB + 16" text-anchor="middle" class="ac-asse">{{ e }}</text>
+               <text [attr.x]="X(i)" [attr.y]="H - MB + 32" text-anchor="middle" class="ac-esito" [class.ac-vinta]="dati.esiti[i] === 'V'">{{ dati.esiti[i] }}</text>
+            }
+         }
+
+         @for (b of barre; track $index)
+         {
+            <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="2"
+                  [attr.fill]="b.positiva ? coloreSopra : coloreSotto" [class.ac-barra-tenue]="mediaMobile"/>
+         }
+         @for (l of linee; track $index)
+         {
+            <path [attr.d]="l.d" [attr.stroke]="l.colore" class="ac-linea" [class.ac-linea-media]="l.media"/>
+         }
+         @for (p of punti; track $index)
+         {
+            <circle [attr.cx]="p.x" [attr.cy]="p.y" [attr.r]="mediaMobile ? 3.5 : 4.5" [attr.fill]="p.colore" class="ac-punto" [class.ac-punto-tenue]="mediaMobile"/>
+         }
+
+         @if (hover)
+         {
+            <line [attr.x1]="hover.x" [attr.x2]="hover.x" [attr.y1]="MT" [attr.y2]="H - MB" class="ac-cursore"/>
+         }
+         <rect [attr.x]="ML" y="0" [attr.width]="W - ML - MR" [attr.height]="H"
+               class="ac-sensibile"
+               (pointermove)="Muovi($event)"
+               (pointerdown)="Muovi($event)"
+               (pointerleave)="Esci()"/>
+      </svg>
+      @if (hover)
+      {
+         <div class="ac-tooltip"
+              [style.left.%]="100 * hover.x / W"
+              [class.ac-tooltip-sinistra]="!hover.aDestra">
+            @for (r of hover.righe; track $index) { <div [class.ac-tooltip-titolo]="$index === 0">{{ r }}</div> }
+         </div>
+      }
+   </div>
+
+   <div class="ac-legenda">
+      @if (dati.barre)
+      {
+         <span><span class="ac-quadratino" [style.background-color]="coloreSopra"></span>positivo</span>
+         <span><span class="ac-quadratino" [style.background-color]="coloreSotto"></span>negativo</span>
+      }
+      @else
+      {
+         @for (s of dati.serie; track s.nome)
+         {
+            <span><span class="ac-quadratino" [style.background-color]="s.colore"></span>{{ s.nome }}</span>
+         }
+      }
+      @if (mediaMobile) { <span class="ac-nota">punti/barre: singola partita; linee: media delle ultime {{ MEDIA_MOBILE }}</span> }
+      <span class="ac-nota">V vinta, P persa</span>
+   </div>
+}

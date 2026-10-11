@@ -226,6 +226,15 @@
             layout="horizontal"
             styleClass="my-3"></p-divider>
 
+         <!-- andamento partita per partita (una metrica alla volta) -->
+         <h3 class="titolo-sezione">Andamento partita per partita <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-andamento-campionato-comp [partite]="ffPartite"
+                                        [nomeNoi]="team?.nome ?? ''"></app-andamento-campionato-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
          <!-- Four Factors: sui totali delle partite selezionate e partita per partita -->
          <h3 class="titolo-sezione">Four Factors <span class="evidenziato">{{ team?.nome }}</span></h3>
          <app-four-factors-comp [ff]="fourFactors"
@@ -285,6 +294,42 @@
             <span class="legenda-migliore">■ squadra messa meglio nel fattore (Net: positivo)</span>
             <span class="legenda-peggiore">■ Net negativo</span>
          </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- tiri a zone sulle partite selezionate: fatti dalla squadra o subiti -->
+         <div class="intest-zone">
+            <h3 class="titolo-sezione">Mappa di tiro a zone <span class="evidenziato">{{ team?.nome }}</span></h3>
+            <p-selectButton [options]="opzioniZone"
+                            [(ngModel)]="vistaZone"
+                            optionLabel="label"
+                            optionValue="value"
+                            [allowEmpty]="false"
+                            size="small"/>
+         </div>
+         @if (ZoneMostrate()?.conPosizione)
+         {
+            <app-zone-tiro-comp [mappa]="ZoneMostrate()"
+                                [altezza]="ALTEZZA_ZONE"></app-zone-tiro-comp>
+         }
+         @else
+         {
+            <div class="nota-zone">Nessun tiro con posizione registrata{{ (vistaZone === 'subiti') ? ' per gli avversari' : '' }}.</div>
+         }
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- timeout e parziali sulle partite selezionate -->
+         <h3 class="titolo-sezione">Timeout e parziali <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <div class="testo-conta-parziali">{{ TestoContaParziali() }}</div>
+         <app-parziali-timeout-comp [parziali]="parzialiCamp"
+                                    [riepilogo]="riepilogoTimeout"
+                                    [nomeNoi]="team?.nome ?? ''"
+                                    nomeLoro="Avversari"></app-parziali-timeout-comp>
 
          <p-divider
             layout="horizontal"

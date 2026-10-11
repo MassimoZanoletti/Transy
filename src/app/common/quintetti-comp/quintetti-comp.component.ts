@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {ButtonModule} from 'primeng/button';
 import {TooltipModule} from 'primeng/tooltip';
-import {COLORE_SVANTAGGIO, COLORE_VANTAGGIO} from "../grafico-differenza";
+import {COLORE_LORO, COLORE_NOI} from "../grafico-differenza";
 import {
    GiocatoriOrdinati,
    MIN_POSSESSI_RATING,
@@ -16,7 +16,7 @@ import {
 
 
 // Tabella dei quintetti (tab "Statistiche" della partita e pagina "Statistiche campionato"): giocatori,
-// minuti insieme, punti fatti/subiti, +/- con barra divergente (blu positivo, arancio negativo) e valori
+// minuti insieme, punti fatti/subiti, +/- con barra divergente (rossa a nostro favore, azzurra contro) e valori
 // per 100 possessi. In ordine di minuti; di default solo i primi, gli altri con "Mostra tutti".
 @Component({
    selector:    'app-quintetti-comp',
@@ -40,8 +40,8 @@ export class QuintettiCompComponent
    public readonly PRIMI = 10;
    public tutti: boolean = false;
    public maxPm: number = 1;
-   public readonly coloreVantaggio = COLORE_VANTAGGIO;
-   public readonly coloreSvantaggio = COLORE_SVANTAGGIO;
+   public readonly coloreVantaggio = COLORE_NOI;
+   public readonly coloreSvantaggio = COLORE_LORO;
    public readonly Giocatori = GiocatoriOrdinati;
    public readonly Minuti = MinutiQuintetto;
    public readonly Num = NumQ;

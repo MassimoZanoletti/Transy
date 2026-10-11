@@ -1,0 +1,130 @@
+<div class="pt-sezioni">
+   <!-- efficacia dei timeout: punteggi sempre noi-loro (numeri nei colori delle squadre), differenze dal nostro punto di vista -->
+   <ng-template #coppia let-my="my" let-opp="opp"><span class="pt-noi">{{ my }}</span>-<span class="pt-loro">{{ opp }}</span></ng-template>
+   <div class="pt-sezione">
+      <h4 class="pt-titolo" [pTooltip]="tooltipTimeout" [escape]="false" tooltipPosition="top">
+         Efficacia dei timeout <span class="pt-sottotitolo">({{ minutiFinestra }}' prima e dopo)</span> <i class="pi pi-question-circle pt-help"></i>
+      </h4>
+      @if (riepilogo)
+      {
+         <div class="pt-scorrimento">
+            <table class="pt-tabella">
+               <thead>
+                  <tr>
+                     <th class="pt-sinistra">Chiamati da</th>
+                     <th class="pt-num">N.</th>
+                     <th class="pt-num">Media prima<br><span class="pt-sottotitolo">pro {{ nomeNoi }}</span></th>
+                     <th class="pt-num">Media dopo<br><span class="pt-sottotitolo">pro {{ nomeNoi }}</span></th>
+                     <th class="pt-num">Dopo a favore<br><span class="pt-sottotitolo">di {{ nomeNoi }}</span></th>
+                     <th class="pt-num">Primo canestro<br><span class="pt-sottotitolo">di {{ nomeNoi }}</span></th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (r of [{ nome: nomeNoi, noi: true, v: riepilogo.noi }, { nome: nomeLoro, noi: false, v: riepilogo.loro }]; track r.nome)
+                  {
+                     <tr>
+                        <td class="pt-sinistra" [class.pt-noi]="r.noi" [class.pt-loro]="!r.noi">{{ r.nome }}</td>
+                        <td class="pt-num">{{ r.v.numero }}</td>
+                        <td class="pt-num" [class.pt-positivo]="r.v.sommaPrima > 0" [class.pt-negativo]="r.v.sommaPrima < 0">{{ Media(r.v.sommaPrima, r.v.numero) }}</td>
+                        <td class="pt-num" [class.pt-positivo]="r.v.sommaDopo > 0" [class.pt-negativo]="r.v.sommaDopo < 0">{{ Media(r.v.sommaDopo, r.v.numero) }}</td>
+                        <td class="pt-num">@if (r.v.numero > 0) { {{ r.v.favorevoli }} / {{ r.v.numero }} }</td>
+                        <td class="pt-num">@if (r.v.numero > 0) { {{ r.v.primoNostro }} / {{ r.v.numero }} }</td>
+                     </tr>
+                  }
+               </tbody>
+            </table>
+         </div>
+      }
+
+      @if (esiti)
+      {
+         @if (esiti.length === 0)
+         {
+            <div class="pt-vuoto">Nessun timeout registrato.</div>
+         }
+         @else
+         {
+            <div class="pt-scorrimento pt-stacco">
+               <table class="pt-tabella">
+                  <thead>
+                     <tr>
+                        <th class="pt-sinistra">Chiamato da</th>
+                        <th>Quando</th>
+                        <th>Punteggio</th>
+                        <th>Prima {{ minutiFinestra }}'</th>
+                        <th>Dopo {{ minutiFinestra }}'</th>
+                        <th class="pt-num">Diff. dopo<br><span class="pt-sottotitolo">pro {{ nomeNoi }}</span></th>
+                        <th>Primo a segnare</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     @for (e of esiti; track $index)
+                     {
+                        <tr>
+                           <td class="pt-sinistra" [class.pt-noi]="e.myTeam" [class.pt-loro]="!e.myTeam">{{ e.myTeam ? nomeNoi : nomeLoro }}</td>
+                           <td class="pt-centro">{{ Quando(e.quarto, e.tempo) }}</td>
+                           <td class="pt-centro"><ng-container *ngTemplateOutlet="coppia; context: { my: e.my, opp: e.opp }"></ng-container></td>
+                           <td class="pt-centro"><ng-container *ngTemplateOutlet="coppia; context: { my: e.prima.my, opp: e.prima.opp }"></ng-container></td>
+                           <td class="pt-centro"><ng-container *ngTemplateOutlet="coppia; context: { my: e.dopo.my, opp: e.dopo.opp }"></ng-container></td>
+                           <td class="pt-num" [class.pt-positivo]="Dopo(e) > 0" [class.pt-negativo]="Dopo(e) < 0">{{ Diff(Dopo(e)) }}</td>
+                           <td class="pt-centro" [class.pt-noi]="e.primoASegnare === 'my'" [class.pt-loro]="e.primoASegnare === 'opp'">
+                              @if (e.primoASegnare !== null) { {{ (e.primoASegnare === 'my') ? nomeNoi : nomeLoro }} }
+                           </td>
+                        </tr>
+                     }
+                  </tbody>
+               </table>
+            </div>
+            <div class="pt-nota">
+               Punteggi sempre nell'ordine <span class="pt-noi">{{ nomeNoi }}</span> - <span class="pt-loro">{{ nomeLoro }}</span>;
+               differenze dal punto di vista di {{ nomeNoi }} (verde a favore, rosso contro), qualunque squadra abbia chiamato il timeout.
+            </div>
+         }
+      }
+   </div>
+
+   <!-- parziali -->
+   <div class="pt-sezione">
+      <h4 class="pt-titolo" [pTooltip]="tooltipParziali" [escape]="false" tooltipPosition="top">
+         Parziali <span class="pt-sottotitolo">(almeno {{ MIN_PARZIALE }}-0)</span> <i class="pi pi-question-circle pt-help"></i>
+      </h4>
+      @if (parziali.length === 0)
+      {
+         <div class="pt-vuoto">Nessun parziale.</div>
+      }
+      @else
+      {
+         <div class="pt-scorrimento">
+            <table class="pt-tabella">
+               <thead>
+                  <tr>
+                     @if (ConPartita()) { <th class="pt-sinistra">Partita</th> }
+                     <th class="pt-sinistra">Squadra</th>
+                     <th>Parziale</th>
+                     <th>Da</th>
+                     <th>A</th>
+                     <th>Punteggio</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (x of parziali; track $index)
+                  {
+                     <tr>
+                        @if (ConPartita()) { <td class="pt-sinistra">{{ x.partita }}</td> }
+                        <td class="pt-sinistra" [class.pt-noi]="x.p.myTeam" [class.pt-loro]="!x.p.myTeam">{{ x.p.myTeam ? nomeNoi : nomeLoro }}</td>
+                        <td class="pt-centro" [class.pt-positivo]="x.p.myTeam" [class.pt-negativo]="!x.p.myTeam">{{ x.p.punti }}-0</td>
+                        <td class="pt-centro">{{ Quando(x.p.quarto0, x.p.tempo0) }}</td>
+                        <td class="pt-centro">{{ Quando(x.p.quarto1, x.p.tempo1) }}</td>
+                        <td class="pt-centro">
+                           <ng-container *ngTemplateOutlet="coppia; context: { my: x.p.myPrima, opp: x.p.oppPrima }"></ng-container>
+                           →
+                           <ng-container *ngTemplateOutlet="coppia; context: { my: PunteggioDopo(x.p)[0], opp: PunteggioDopo(x.p)[1] }"></ng-container>
+                        </td>
+                     </tr>
+                  }
+               </tbody>
+            </table>
+         </div>
+      }
+   </div>
+</div>

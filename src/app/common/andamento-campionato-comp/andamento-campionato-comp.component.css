@@ -1,0 +1,137 @@
+.ac-comandi {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 16px;
+   margin-bottom: 6px;
+}
+
+.ac-media {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   font-size: 0.9rem;
+   color: #cbd5e1;
+}
+
+.ac-contenitore {
+   position: relative;
+   width: 100%;
+   max-width: 1100px;
+}
+
+.ac-contenitore svg {
+   width: 100%;
+   height: auto;
+   display: block;
+   touch-action: pan-y;
+}
+
+.ac-griglia {
+   stroke: #334155;
+   stroke-width: 1;
+}
+
+.ac-zero {
+   stroke: #94a3b8;
+   stroke-width: 1.5;
+}
+
+.ac-asse {
+   font-size: 12px;
+   fill: #94a3b8;
+}
+
+.ac-esito {
+   font-size: 12px;
+   fill: #94a3b8;
+}
+
+.ac-vinta {
+   fill: #e2e8f0;
+   font-weight: bold;
+}
+
+.ac-linea {
+   fill: none;
+   stroke-width: 2;
+   stroke-linejoin: round;
+   stroke-linecap: round;
+}
+
+.ac-linea-media {
+   stroke-width: 2.5;
+}
+
+/* anello del colore del fondo: i punti sovrapposti restano distinguibili */
+.ac-punto {
+   stroke: #121212;
+   stroke-width: 2;
+}
+
+/* con la media mobile i valori delle singole partite restano sullo sfondo */
+.ac-punto-tenue,
+.ac-barra-tenue {
+   opacity: 0.55;
+}
+
+.ac-cursore {
+   stroke: #e2e8f0;
+   stroke-width: 1;
+   stroke-dasharray: 3 3;
+   pointer-events: none;
+}
+
+.ac-sensibile {
+   fill: transparent;
+   cursor: crosshair;
+}
+
+.ac-tooltip {
+   position: absolute;
+   top: 4px;
+   margin-left: 10px;
+   padding: 4px 8px;
+   background-color: #1e293b;
+   border: 1px solid #475569;
+   border-radius: 4px;
+   color: #e2e8f0;
+   font-size: 0.85rem;
+   white-space: nowrap;
+   pointer-events: none;
+}
+
+.ac-tooltip-titolo {
+   font-weight: bold;
+}
+
+.ac-tooltip-sinistra {
+   transform: translateX(-100%);
+   margin-left: -10px;
+}
+
+.ac-legenda {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 18px;
+   margin-top: 4px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.ac-legenda > span {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.ac-quadratino {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 2px;
+}
+
+.ac-nota {
+   color: #94a3b8;
+}

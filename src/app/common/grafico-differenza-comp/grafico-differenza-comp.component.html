@@ -10,7 +10,15 @@
             <text [attr.x]="ML - 6" [attr.y]="Y(d) + 4" text-anchor="end" class="gd-asse">{{ Segno(d) }}</text>
          }
 
-         <!-- area a gradini: blu in vantaggio, arancio in svantaggio -->
+         <!-- parziali: fascia leggera dal primo all'ultimo canestro, con l'etichetta in alto -->
+         @for (p of parziali; track $index)
+         {
+            <rect [attr.x]="X(p.t0) - 3" [attr.y]="MT" [attr.width]="X(p.t1) - X(p.t0) + 6" [attr.height]="H - MT - MB"
+                  [attr.fill]="p.myTeam ? coloreVantaggio : coloreSvantaggio" class="gd-parziale"><title>{{ TitoloParziale(p) }}</title></rect>
+            <text [attr.x]="(X(p.t0) + X(p.t1)) / 2" [attr.y]="MT + 13" text-anchor="middle" class="gd-etichetta-parziale">{{ p.punti }}-0</text>
+         }
+
+         <!-- area a gradini nel colore della squadra in vantaggio -->
          @for (g of gradini; track $index)
          {
             <rect [attr.x]="g.x" [attr.y]="g.y" [attr.width]="g.w" [attr.height]="g.h"
@@ -77,6 +85,7 @@
    <div class="gd-legenda">
       <span><span class="gd-quadratino" [style.background-color]="coloreVantaggio"></span>{{ nomeNoi }} in vantaggio</span>
       <span><span class="gd-quadratino" [style.background-color]="coloreSvantaggio"></span>{{ nomeLoro }} in vantaggio</span>
+      @if (parziali.length > 0) { <span class="gd-nota">fasce chiare: parziali</span> }
       <span class="gd-nota">▼ ▲ timeout (in alto chiamati da noi, in basso dagli avversari)</span>
    </div>
 }

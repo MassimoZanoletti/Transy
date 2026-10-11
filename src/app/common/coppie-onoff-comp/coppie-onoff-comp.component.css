@@ -118,6 +118,10 @@
    cursor: default;
 }
 
+.co-testo-scuro {
+   color: #111111;
+}
+
 .co-diagonale {
    font-weight: bold;
    outline: 2px solid #94a3b8;

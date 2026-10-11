@@ -1,0 +1,86 @@
+@if (mappa)
+{
+   <div class="zt-contenuto">
+      <div class="zt-campo-colonna">
+         <!-- tre strati: zone (colori pieni), campo in modalità "moltiplica" (restano solo le linee), etichette -->
+         <div class="zt-box">
+            <svg class="zt-zone"
+                 [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                 preserveAspectRatio="none"
+                 role="img"
+                 aria-label="Mappa di tiro a zone">
+               <defs>
+                  <clipPath id="zt-arco"><path [attr.d]="arco"/></clipPath>
+               </defs>
+               @for (f of forme; track f.id)
+               {
+                  <path [attr.d]="f.d"
+                        [attr.fill]="Riempimento(f.id)"
+                        [attr.clip-path]="f.dentroArco ? 'url(#zt-arco)' : null"
+                        class="zt-forma"
+                        [class.zt-attiva]="zonaAttiva === f.id"
+                        (pointerenter)="zonaAttiva = f.id"
+                        (pointerleave)="zonaAttiva = null"><title>{{ Titolo(Zona(f.id)) }}</title></path>
+               }
+            </svg>
+            <img src="assets/campo-tiri.png"
+                 alt="Campo"
+                 class="zt-campo"
+                 [style.height]="altezza"
+                 draggable="false"/>
+            <svg class="zt-etichette"
+                 [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                 preserveAspectRatio="none">
+               @for (z of mappa.zone; track z.id)
+               {
+                  @if (z.tentati > 0)
+                  {
+                     <text [attr.x]="z.etichetta.x" [attr.y]="z.etichetta.y" text-anchor="middle" class="zt-etichetta">{{ z.segnati }}/{{ z.tentati }}</text>
+                     <text [attr.x]="z.etichetta.x" [attr.y]="z.etichetta.y + 16" text-anchor="middle" class="zt-etichetta zt-etichetta-perc">{{ Perc(z) }}</text>
+                  }
+               }
+            </svg>
+         </div>
+         <div class="zt-legenda">
+            <span><span class="zt-quadratino" [style.background-color]="coloreSopra"></span>più di {{ ppsNeutro }} punti per tiro</span>
+            <span><span class="zt-quadratino" [style.background-color]="coloreSotto"></span>meno di {{ ppsNeutro }}</span>
+            <span><span class="zt-quadratino zt-quadratino-grigio"></span>meno di {{ MIN_TIRI_ZONA }} tiri</span>
+         </div>
+      </div>
+
+      <div class="zt-tabella-colonna">
+         <table class="zt-tabella">
+            <thead>
+               <tr>
+                  <th class="zt-sinistra">Zona</th>
+                  <th class="zt-num">S/T</th>
+                  <th class="zt-num">%</th>
+                  <th class="zt-num" [pTooltip]="tooltipPps" [escape]="false" tooltipPosition="top">Punti/tiro <i class="pi pi-question-circle zt-help"></i></th>
+                  <th class="zt-num">Quota tiri</th>
+               </tr>
+            </thead>
+            <tbody>
+               @for (z of mappa.zone; track z.id; let i = $index)
+               {
+                  <tr [class.zt-riga-attiva]="zonaAttiva === z.id"
+                      [class.zt-stacco]="i === 5">
+                     <td class="zt-sinistra">
+                        <span class="zt-quadratino"
+                              [style.background-color]="Riempimento(z.id)"></span>{{ z.nome }}
+                     </td>
+                     <td class="zt-num">@if (z.tentati > 0) { {{ z.segnati }}/{{ z.tentati }} }</td>
+                     <td class="zt-num">{{ Perc(z) }}</td>
+                     <td class="zt-num">{{ Pps(z) }}</td>
+                     <td class="zt-num">{{ Quota(z) }}</td>
+                  </tr>
+               }
+            </tbody>
+         </table>
+         @if (mappa.senzaPosizione > 0)
+         {
+            <div class="zt-nota">{{ mappa.senzaPosizione }} {{ mappa.senzaPosizione === 1 ? 'tiro' : 'tiri' }} senza posizione (esclusi dalle zone)</div>
+         }
+         <div class="zt-nota">Da 2 o da 3 secondo il tiro registrato; la posizione decide la zona.</div>
+      </div>
+   </div>
+}

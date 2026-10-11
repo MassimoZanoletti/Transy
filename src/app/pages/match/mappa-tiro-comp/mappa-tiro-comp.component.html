@@ -9,11 +9,20 @@
                       [allowEmpty]="false"/>
       @if (MappaAbilitata())
       {
+         <p-selectButton [options]="opzioniVista"
+                         [(ngModel)]="vista"
+                         optionLabel="label"
+                         optionValue="value"
+                         [allowEmpty]="false"/>
+         <p-menu #menuPdf
+                 [model]="vociPdf"
+                 [popup]="true"
+                 appendTo="body"></p-menu>
          <p-button label="Esporta in PDF"
                    icon="pi pi-file-pdf"
                    severity="danger"
                    size="small"
-                   (onClick)="EsportaPdf()"></p-button>
+                   (onClick)="menuPdf.toggle($event)"></p-button>
       }
    </div>
 
@@ -25,10 +34,18 @@
    @else if (squadra)
    {
       <div class="mappatiro-riquadro mappatiro-squadra">
-         <div class="mappatiro-titolo">Mappa di tiro - {{ nomeSquadra }}</div>
-         <app-campo-tiri [tiri]="squadra.tiri"
-                         titoloLegenda=""
-                         [altezzaMax]="ALTEZZA_SQUADRA"></app-campo-tiri>
+         <div class="mappatiro-titolo">Mappa di tiro{{ (vista === 'zone') ? ' a zone' : '' }} - {{ nomeSquadra }}</div>
+         @if (vista === 'zone')
+         {
+            <app-zone-tiro-comp [mappa]="zone"
+                                [altezza]="ALTEZZA_SQUADRA"></app-zone-tiro-comp>
+         }
+         @else
+         {
+            <app-campo-tiri [tiri]="squadra.tiri"
+                            titoloLegenda=""
+                            [altezzaMax]="ALTEZZA_SQUADRA"></app-campo-tiri>
+         }
          <div class="mappatiro-riepilogo">
             @for (r of squadra.riepilogo; track r.label)
             {
