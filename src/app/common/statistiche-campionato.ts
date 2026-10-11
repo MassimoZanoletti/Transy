@@ -1,8 +1,9 @@
 import {IDSMatchHeader, TDSMatchRoster, TMatchPlayer, TMatchTeam, TTipoRealizzazione} from "../models/datamod";
-import {TOperation, TOperationList, TOperationType} from "./operation";
+import {TOperation, TOperationList} from "./operation";
 import {matchGlobs, TCurrMatch} from "./curr-match";
 import {MinutiPerQuarto, TabellaSquadra, TContestoLive, TRigaStat, TTiriStat} from "./statistiche";
 import {globs} from "./utils";
+import {AccumulaQuintetti, AnalisiInCampo, TQuintettoStat} from "./quintetti";
 
 
 // Statistiche di squadra su più partite (pagina "Statistiche campionato"): per ogni partita la squadra
@@ -114,22 +115,26 @@ export function RicostruisciPartita (cm: TCurrMatch,
 }
 
 
-// Aggiunge a "giocatori" le statistiche dei giocatori della squadra scelta in una partita ricostruita.
-// Minuti come nel tab "Statistiche" della partita (MinutiPerQuarto), con la partita considerata finita:
-// l'ultimo quarto si chiude a 0.
+// Aggiunge a "giocatori" le statistiche dei giocatori della squadra scelta in una partita ricostruita, e a
+// "quintetti" quelle dei suoi quintetti. Minuti come nel tab "Statistiche" della partita (MinutiPerQuarto),
+// con la partita considerata finita: l'ultimo quarto si chiude a 0.
 export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
+                                   quintetti: Map<string, TQuintettoStat>,
                                    mh: IDSMatchHeader,
                                    cm: TCurrMatch,
                                    ops: TOperation[],
                                    teamId: number): void
 {
-   const team = (Number(mh.myTeamId_link) === teamId) ? cm.myTeam() : cm.oppTeam();
+   const isMy = (Number(mh.myTeamId_link) === teamId);
+   const team = isMy ? cm.myTeam() : cm.oppTeam();
    const roster = team?.Roster ?? [];
    const ultimoQuarto = ops.reduce((q, op) => Math.max(q, op.quarter()), 0);
    const live: TContestoLive = { quarto: ultimoQuarto, tempo: 0, quartoGiocato: () => false };
    const minuti = MinutiPerQuarto(ops, roster, live);
-   // +/-: basta seguire chi è in campo della squadra scelta, contando i canestri di entrambe le squadre
-   const plusMinus = PlusMinus(ops, roster);
+   // +/- e quintetti: basta seguire chi è in campo della squadra scelta, contando i canestri di entrambe le squadre
+   const inCampo = AnalisiInCampo(ops, roster, isMy, live);
+   const plusMinus = inCampo.plusMinus;
+   AccumulaQuintetti(quintetti, inCampo.quintetti);
    // tiri del giocatore per tipo (come Tiri() in statistiche.ts)
    const somma = (a: TTiriStat, p: TMatchPlayer, tipo: TTipoRealizzazione) =>
    {
@@ -171,75 +176,21 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
 }
 
 
-// Plus/minus di ciascun giocatore: differenza punti fatti-subiti dalla sua squadra mentre era in campo.
-// Chi è in campo segue le stesse regole di MinutiPerQuarto (statistiche.ts) e di ReplayOperations: nel 1°
-// quarto parte il quintetto base, negli altri chi ha finito il precedente; un nuovo blocco di "Quintetto"
-// sostituisce chi era in campo per quella squadra; le sostituzioni fanno uscire/entrare.
-function PlusMinus (ops: TOperation[],
-                    giocatori: TMatchPlayer[]): Map<TMatchPlayer, number>
-{
-   const pm = new Map<TMatchPlayer, number>(giocatori.map(p => [p, 0]));
-   let inCampo = new Set<TMatchPlayer>();
-   let currQ = 0;
-   let quintTeam: boolean | null = null;
-   let quintIds = new Set<number>();
-   let prevCounter = -1;
-   for (const op of ops)
-   {
-      const q = op.quarter();
-      if (q !== currQ)
-      {
-         if (currQ === 0)
-            inCampo = new Set(giocatori.filter(p => p.inQuintetto()));
-         currQ = q;
-         quintTeam = null;
-      }
-      const p1 = op.player1();
-      const p2 = op.player2();
-      if (op.oper() === TOperationType.totQuintetto)
-      {
-         const id1 = p1?.playerRecID ?? 0;
-         const nuovoBlocco = (quintTeam !== op.myTeam()) || (op.counter() !== prevCounter + 1) || quintIds.has(id1);
-         if (nuovoBlocco)
-         {
-            [...inCampo].filter(p => p.isMyTeam() === op.myTeam()).forEach(p => inCampo.delete(p));
-            quintIds = new Set<number>();
-            quintTeam = op.myTeam();
-         }
-         if (p1)
-         {
-            quintIds.add(id1);
-            inCampo.add(p1);
-         }
-      }
-      else
-      {
-         quintTeam = null;
-         if (op.oper() === TOperationType.totSostituz)
-         {
-            if (p1)
-               inCampo.delete(p1);
-            if (p2)
-               inCampo.add(p2);
-         }
-         const punti = (op.oper() === TOperationType.totTLYes) ? 1 :
-                       (op.oper() === TOperationType.totT2Yes) ? 2 :
-                       (op.oper() === TOperationType.totT3Yes) ? 3 : 0;
-         if (punti > 0)
-            for (const p of inCampo)
-               if (pm.has(p))
-                  pm.set(p, pm.get(p)! + ((p.isMyTeam() === op.myTeam()) ? punti : -punti));
-      }
-      prevCounter = op.counter();
-   }
-   return pm;
-}
-
-
 // Totali di squadra della partita ricostruita (tutti i giocatori a referto: i minuti non servono qui)
 function TotaliSquadra (team: TMatchTeam | null): TRigaStat
 {
    return TabellaSquadra(team, '', false, new Map(), [], '', '').totali;
+}
+
+
+// Totali di squadra delle due squadre della partita ricostruita, dal punto di vista della squadra scelta
+// (per i Four Factors)
+export function BoxPartita (mh: IDSMatchHeader,
+                            cm: TCurrMatch,
+                            teamId: number): { noi: TRigaStat, loro: TRigaStat }
+{
+   const isMy = (Number(mh.myTeamId_link) === teamId);
+   return { noi: TotaliSquadra(isMy ? cm.myTeam() : cm.oppTeam()), loro: TotaliSquadra(isMy ? cm.oppTeam() : cm.myTeam()) };
 }
 
 

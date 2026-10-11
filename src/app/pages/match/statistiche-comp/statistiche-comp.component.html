@@ -1,10 +1,16 @@
 <div class="div-statistiche">
    <div class="stat-comandi">
+      <!-- due esportazioni: solo tabelle (anche per i giornalisti) o completa con le analisi (solo staff) -->
+      <p-menu #menuPdf
+              [model]="vociPdf"
+              [popup]="true"
+              appendTo="body"></p-menu>
       <p-button label="Esporta in PDF"
                 icon="pi pi-file-pdf"
+                iconPos="left"
                 severity="danger"
                 size="small"
-                (onClick)="EsportaPdf()"></p-button>
+                (onClick)="menuPdf.toggle($event)"></p-button>
       <p-button label="Aggiorna"
                 icon="pi pi-refresh"
                 severity="primary"
@@ -86,6 +92,7 @@
                <th style="width: 50px; text-align: center;">Q4</th>
                <th style="width: 50px; text-align: center;">ET</th>
                <th style="width: 66px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipPir" [escape]="false" tooltipPosition="top">PIR <i class="pi pi-question-circle stat-help"></i></th>
+               <th style="width: 60px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipPm" [escape]="false" tooltipPosition="top">+/- <i class="pi pi-question-circle stat-help"></i></th>
                <th style="width: 72px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipOer" [escape]="false" tooltipPosition="top">OER <i class="pi pi-question-circle stat-help"></i></th>
                <th style="width: 84px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipEfg" [escape]="false" tooltipPosition="top">eFG% <i class="pi pi-question-circle stat-help"></i></th>
                <th style="width: 72px; text-align: center; white-space: nowrap;" [pTooltip]="tooltipTs" [escape]="false" tooltipPosition="top">TS% <i class="pi pi-question-circle stat-help"></i></th>
@@ -102,7 +109,7 @@
                {
                   <td></td>
                   <td style="text-align: center;">n.e.</td>
-                  <td colspan="23"></td>
+                  <td colspan="24"></td>
                }
                @else
                {
@@ -129,6 +136,7 @@
                      </td>
                   }
                   <td style="text-align: center;">{{ r.pir }}</td>
+                  <td style="text-align: center;" [class.stat-pm-pos]="(r.pm ?? 0) > 0" [class.stat-pm-neg]="(r.pm ?? 0) < 0">{{ PmStr(r.pm) }}</td>
                   <td style="text-align: center;">{{ r.oer }}</td>
                   <td style="text-align: center;">{{ r.efg }}</td>
                   <td style="text-align: center;">{{ r.ts }}</td>
@@ -162,6 +170,7 @@
                   <td style="text-align: center;">{{ q?.punti ?? '' }}</td>
                }
                <td style="text-align: center;">{{ tab.totali.pir }}</td>
+               <td></td>
                <td style="text-align: center;">{{ tab.totali.oer }}</td>
                <td style="text-align: center;">{{ tab.totali.efg }}</td>
                <td style="text-align: center;">{{ tab.totali.ts }}</td>
@@ -174,5 +183,32 @@
          <span class="match-header-label">1° Assistente:</span>
          <span class="match-header-value">{{ tab.coach2 }}</span>
       </div>
+   }
+
+   <!-- analisi per lo staff, dopo le tabelle (durante la partita le tabelle vengono prima): scarto lungo la
+        partita, Four Factors, quintetti, On/Off e coppie. Nel PDF solo con l'esportazione completa -->
+   @if (tabelle.length === 2)
+   {
+      <p-divider />
+      <div class="stat-analisi">
+         <div class="stat-analisi-grafico">
+            <h3 class="stat-titolo-sezione">Andamento dello scarto</h3>
+            <app-grafico-differenza-comp [serie]="serieDiff"
+                                         [nomeNoi]="tabelle[0].squadra"
+                                         [nomeLoro]="tabelle[1].squadra"></app-grafico-differenza-comp>
+         </div>
+         <div class="stat-analisi-ff">
+            <h3 class="stat-titolo-sezione">Four Factors</h3>
+            <app-four-factors-comp [ff]="fourFactors"
+                                   [nomeNoi]="tabelle[0].squadra"
+                                   [nomeLoro]="tabelle[1].squadra"></app-four-factors-comp>
+         </div>
+      </div>
+      <p-divider />
+      <h3 class="stat-titolo-sezione">Quintetti {{ tabelle[0].squadra }}</h3>
+      <app-quintetti-comp [quintetti]="quintetti"></app-quintetti-comp>
+      <p-divider />
+      <h3 class="stat-titolo-sezione">On/Off e coppie {{ tabelle[0].squadra }}</h3>
+      <app-coppie-onoff-comp [quintetti]="quintetti"></app-coppie-onoff-comp>
    }
 </div>

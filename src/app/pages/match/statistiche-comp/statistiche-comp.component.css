@@ -77,6 +77,15 @@
    color: #77ff77;
 }
 
+/* plus/minus positivo / negativo */
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td.stat-pm-pos {
+   color: #77ff77 !important;
+}
+
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td.stat-pm-neg {
+   color: #ff6666 !important;
+}
+
 /* falli fatti dei giocatori (colonna FF) */
 :host ::ng-deep .custom-table .p-datatable-tbody > tr > td.stat-falli {
    color: #ff6666 !important;
@@ -125,4 +134,27 @@
 
 :host ::ng-deep .custom-table .p-datatable-tbody > tr:nth-child(3n) {
    background-color: #2f3e53 !important;
+}
+
+/* analisi: grafico dello scarto e Four Factors affiancati, uno sotto l'altro se non c'è spazio */
+.stat-analisi {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 16px 40px;
+   align-items: flex-start;
+}
+
+.stat-analisi-grafico {
+   flex: 1 1 560px;
+   min-width: 0;
+   max-width: 1100px;
+}
+
+.stat-analisi-ff {
+   flex: 0 1 auto;
+   min-width: 0;
+}
+
+.stat-titolo-sezione {
+   margin: 0 0 8px 0;
 }

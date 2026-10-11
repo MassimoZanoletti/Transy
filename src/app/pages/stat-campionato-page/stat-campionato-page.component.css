@@ -55,6 +55,19 @@
    color: #ff6666;
 }
 
+/* ---- Four Factors: tabella partita per partita sotto il riquadro complessivo ---- */
+.tabella-ff {
+   display: block;
+   margin-top: 14px;
+}
+
+#stat-camp-legenda-ff {
+   display: flex;
+   gap: 20px;
+   margin-top: 6px;
+   font-size: 0.85rem;
+}
+
 /* ---- grafici a torta del contributo dei quarti ---- */
 #stat-camp-torte {
    display: flex;

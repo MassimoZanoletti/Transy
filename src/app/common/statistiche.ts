@@ -47,6 +47,7 @@ export interface TRigaStat
    sts: number;
    quarti: (TQuartoStat | null)[];   // Q1..Q4 e supplementari (ET) sommati
    pir: number;
+   pm: number | null;                // plus/minus (null: non calcolato, o giocatore mai entrato)
    oer: string;
    efg: string;
    ts: string;
@@ -224,14 +225,15 @@ function RigaVuota (): TRigaStat
       numero: '', nome: '', quintetto: false, capitano: false, nonEntrato: false,
       punti: 0, min: '', tl: tiri(), t2: tiri(), t3: tiri(), tdc: tiri(),
       ff: 0, fs: 0, rd: 0, ra: 0, rtot: 0, pp: 0, pr: 0, as: 0, stf: 0, sts: 0,
-      quarti: [null, null, null, null, null], pir: 0, oer: '', efg: '', ts: ''
+      quarti: [null, null, null, null, null], pir: 0, pm: null, oer: '', efg: '', ts: ''
    };
 }
 
 
 function RigaGiocatore (p: TMatchPlayer,
                         secondiQuarti: number[],
-                        isMyTeam: boolean): TRigaStat
+                        isMyTeam: boolean,
+                        plusMinus?: Map<TMatchPlayer, number>): TRigaStat
 {
    const riga = RigaVuota();
    riga.numero = p.playNumber();
@@ -259,6 +261,7 @@ function RigaGiocatore (p: TMatchPlayer,
    riga.stf = p.stoppFatte();
    riga.sts = p.stoppSubite();
    riga.pir = p.CalcPIR();
+   riga.pm = ((plusMinus) && (!riga.nonEntrato)) ? (plusMinus.get(p) ?? null) : null;
    for (let q = 1; q <= NUM_QUARTI; q++)
    {
       const col = Math.min(q, 5) - 1;
@@ -288,11 +291,12 @@ export function TabellaSquadra (team: TMatchTeam | null,
                                 minuti: Map<TMatchPlayer, number[]>,
                                 quartiGiocati: number[],
                                 coach1: string,
-                                coach2: string): TTabellaStat
+                                coach2: string,
+                                plusMinus?: Map<TMatchPlayer, number>): TTabellaStat
 {
    const giocatori = [...(team?.Roster ?? [])]
       .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0));
-   const righe = giocatori.map(p => RigaGiocatore(p, minuti.get(p) ?? new Array(NUM_QUARTI).fill(0), isMyTeam));
+   const righe = giocatori.map(p => RigaGiocatore(p, minuti.get(p) ?? new Array(NUM_QUARTI).fill(0), isMyTeam, plusMinus));
 
    // Totali: somma dei giocatori entrati (per MyTeam), più rimbalzi e palle perse/recuperate attribuiti
    // alla sola squadra; gli indici sono calcolati sui totali di squadra

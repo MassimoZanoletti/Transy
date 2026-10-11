@@ -1,0 +1,106 @@
+.ff-griglia {
+   display: grid;
+   grid-template-columns: max-content 5rem minmax(8rem, 16rem) 5rem;
+   gap: 6px 12px;
+   align-items: center;
+   max-width: 100%;
+}
+
+.ff-intest {
+   font-weight: bold;
+   color: #ffe378;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.ff-nome {
+   white-space: nowrap;
+}
+
+.ff-peso {
+   font-size: 0.75rem;
+   color: #94a3b8;
+}
+
+.ff-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.ff-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.ff-sinistra {
+   text-align: left;
+}
+
+.ff-centro {
+   text-align: center;
+}
+
+.ff-migliore {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.ff-net {
+   font-weight: bold;
+   font-size: 1.1rem;
+}
+
+.ff-stacco {
+   border-top: 1px solid #475569;
+   padding-top: 6px;
+}
+
+/* due barre sottili una sopra l'altra, 2px di stacco */
+.ff-barre {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.ff-barra {
+   display: block;
+   height: 7px;
+   min-width: 1px;
+   border-radius: 0 4px 4px 0;
+}
+
+.ff-legenda {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 18px;
+   margin-top: 6px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.ff-legenda > span {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.ff-quadratino {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 2px;
+}
+
+.ff-legenda-migliore {
+   color: #77ff77;
+}
+
+/* smartphone: la colonna delle barre si stringe */
+@media (max-width: 600px) {
+   .ff-griglia {
+      grid-template-columns: max-content 3.5rem minmax(3rem, 1fr) 3.5rem;
+      gap: 6px 6px;
+      font-size: 0.9rem;
+   }
+}

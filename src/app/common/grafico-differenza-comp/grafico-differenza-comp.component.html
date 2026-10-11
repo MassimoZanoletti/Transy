@@ -1,0 +1,86 @@
+@if (serie && serie.durata > 0)
+{
+   <div class="gd-contenitore">
+      <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Andamento dello scarto durante la partita">
+         <!-- griglia orizzontale ed etichette dell'asse y -->
+         @for (d of griglia; track d)
+         {
+            <line [attr.x1]="ML" [attr.x2]="W - MR" [attr.y1]="Y(d)" [attr.y2]="Y(d)"
+                  [class]="(d === 0) ? 'gd-zero' : 'gd-griglia'"/>
+            <text [attr.x]="ML - 6" [attr.y]="Y(d) + 4" text-anchor="end" class="gd-asse">{{ Segno(d) }}</text>
+         }
+
+         <!-- area a gradini: blu in vantaggio, arancio in svantaggio -->
+         @for (g of gradini; track $index)
+         {
+            <rect [attr.x]="g.x" [attr.y]="g.y" [attr.width]="g.w" [attr.height]="g.h"
+                  [attr.fill]="g.positivo ? coloreVantaggio : coloreSvantaggio" class="gd-area"/>
+         }
+
+         <!-- divisione dei quarti -->
+         @for (q of serie.quarti; track q.label)
+         {
+            @if (q.inizio > 0)
+            {
+               <line [attr.x1]="X(q.inizio)" [attr.x2]="X(q.inizio)" [attr.y1]="MT" [attr.y2]="H - MB" class="gd-quarto"/>
+            }
+            <text [attr.x]="(X(q.inizio) + X(q.fine)) / 2" [attr.y]="H - 6" text-anchor="middle" class="gd-asse gd-etichetta-quarto">{{ q.label }}</text>
+         }
+
+         <path [attr.d]="linea" class="gd-linea"/>
+
+         <!-- scarti massimi -->
+         @if (serie.maxVant)
+         {
+            <text [attr.x]="X(serie.maxVant.t)" [attr.y]="Y(Diff(serie.maxVant)) - 7" text-anchor="middle" class="gd-max">{{ Segno(Diff(serie.maxVant)) }}</text>
+         }
+         @if (serie.maxSvant)
+         {
+            <text [attr.x]="X(serie.maxSvant.t)" [attr.y]="Y(Diff(serie.maxSvant)) + 17" text-anchor="middle" class="gd-max">{{ Segno(Diff(serie.maxSvant)) }}</text>
+         }
+
+         <!-- timeout: triangolo in alto (noi) o in basso (avversari) -->
+         @for (to of serie.timeout; track $index)
+         {
+            @if (to.myTeam)
+            {
+               <path [attr.d]="'M ' + (X(to.t) - 6) + ' ' + (MT - 12) + ' L ' + (X(to.t) + 6) + ' ' + (MT - 12) + ' L ' + X(to.t) + ' ' + (MT - 2) + ' Z'"
+                     [attr.fill]="coloreVantaggio" class="gd-timeout"><title>{{ TitoloTimeout(to) }}</title></path>
+            }
+            @else
+            {
+               <path [attr.d]="'M ' + (X(to.t) - 6) + ' ' + (H - MB + 12) + ' L ' + (X(to.t) + 6) + ' ' + (H - MB + 12) + ' L ' + X(to.t) + ' ' + (H - MB + 2) + ' Z'"
+                     [attr.fill]="coloreSvantaggio" class="gd-timeout"><title>{{ TitoloTimeout(to) }}</title></path>
+            }
+         }
+
+         <!-- linea verticale del punto indicato -->
+         @if (hover)
+         {
+            <line [attr.x1]="hover.x" [attr.x2]="hover.x" [attr.y1]="MT" [attr.y2]="H - MB" class="gd-cursore"/>
+         }
+
+         <!-- superficie sensibile al mouse/dito: tutta l'area del grafico -->
+         <rect [attr.x]="ML" [attr.y]="0" [attr.width]="W - ML - MR" [attr.height]="H"
+               class="gd-sensibile"
+               (pointermove)="Muovi($event)"
+               (pointerdown)="Muovi($event)"
+               (pointerleave)="Esci()"/>
+      </svg>
+      @if (hover)
+      {
+         <div class="gd-tooltip"
+              [style.left.%]="100 * hover.x / W"
+              [class.gd-tooltip-sinistra]="!hover.aDestra">{{ hover.testo }}</div>
+      }
+   </div>
+   <div class="gd-legenda">
+      <span><span class="gd-quadratino" [style.background-color]="coloreVantaggio"></span>{{ nomeNoi }} in vantaggio</span>
+      <span><span class="gd-quadratino" [style.background-color]="coloreSvantaggio"></span>{{ nomeLoro }} in vantaggio</span>
+      <span class="gd-nota">▼ ▲ timeout (in alto chiamati da noi, in basso dagli avversari)</span>
+   </div>
+}
+@else
+{
+   <div class="gd-vuoto">Nessun canestro registrato.</div>
+}

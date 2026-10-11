@@ -1,0 +1,137 @@
+/* stessi colori delle tabelle statistiche (quintetti-comp) */
+.co-sezioni {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px 40px;
+   align-items: flex-start;
+}
+
+.co-sezione {
+   min-width: 0;
+   max-width: 100%;
+}
+
+.co-titolo {
+   margin: 0 0 6px 0;
+   display: inline-block;
+}
+
+.co-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.co-intest-matrice {
+   display: flex;
+   align-items: center;
+   gap: 16px;
+   margin-bottom: 6px;
+}
+
+.co-intest-matrice .co-titolo {
+   margin: 0;
+}
+
+.co-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.co-tabella,
+.co-matrice {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.co-tabella th,
+.co-tabella td,
+.co-matrice th,
+.co-matrice td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.co-tabella thead th,
+.co-matrice thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.co-tabella tbody tr:nth-child(3n+1) {
+   background-color: #1f2938;
+}
+
+.co-tabella tbody tr:nth-child(3n+2) {
+   background-color: #273345;
+}
+
+.co-tabella tbody tr:nth-child(3n) {
+   background-color: #2f3e53;
+}
+
+.co-sinistra {
+   text-align: left !important;
+}
+
+.co-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.co-sep {
+   border-left: 2px solid #94a3b8 !important;
+}
+
+.co-numero {
+   color: #ffaa00;
+}
+
+.co-positivo {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.co-negativo {
+   color: #ff6666;
+   font-weight: bold;
+}
+
+/* matrice: celle quadrate, testo sempre chiaro sopra il colore */
+.co-riga {
+   background-color: #1f2938;
+   font-weight: normal;
+}
+
+.co-col {
+   min-width: 3.2rem;
+}
+
+.co-cella {
+   text-align: center;
+   font-variant-numeric: tabular-nums;
+   color: #f1f5f9;
+   min-width: 3.2rem;
+   cursor: default;
+}
+
+.co-diagonale {
+   font-weight: bold;
+   outline: 2px solid #94a3b8;
+   outline-offset: -2px;
+}
+
+.co-nota {
+   margin-top: 4px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+   max-width: 640px;
+}
+
+.co-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

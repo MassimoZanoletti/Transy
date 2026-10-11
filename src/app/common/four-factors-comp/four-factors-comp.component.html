@@ -1,0 +1,44 @@
+@if (ff)
+{
+   <div class="ff-griglia">
+      <span class="ff-intest">Four Factors</span>
+      <span class="ff-intest ff-num">{{ nomeNoi }}</span>
+      <span class="ff-intest"></span>
+      <span class="ff-intest ff-num ff-sinistra">{{ nomeLoro }}</span>
+
+      @for (f of ff.fattori; track f.sigla)
+      {
+         <span class="ff-nome" [pTooltip]="TooltipFattore(f)" [escape]="false" tooltipPosition="top">
+            {{ f.titolo }} <span class="ff-peso">{{ f.peso }}%</span> <i class="pi pi-question-circle ff-help"></i>
+         </span>
+         <span class="ff-num" [class.ff-migliore]="Migliore(f) > 0">{{ Num(f.noi) }}</span>
+         <span class="ff-barre" [attr.aria-label]="f.titolo + ': ' + Num(f.noi) + ' contro ' + Num(f.loro)">
+            <span class="ff-barra ff-barra-noi" [style.width.%]="Larghezza(f, f.noi)" [style.background-color]="coloreNoi"></span>
+            <span class="ff-barra ff-barra-loro" [style.width.%]="Larghezza(f, f.loro)" [style.background-color]="coloreLoro"></span>
+         </span>
+         <span class="ff-num ff-sinistra" [class.ff-migliore]="Migliore(f) < 0">{{ Num(f.loro) }}</span>
+      }
+
+      <span class="ff-nome ff-stacco" [pTooltip]="tooltipPossessi" [escape]="false" tooltipPosition="top">
+         {{ (ff.partite > 1) ? 'Possessi per partita' : 'Possessi' }} <i class="pi pi-question-circle ff-help"></i>
+      </span>
+      <span class="ff-num ff-stacco ff-centro" style="grid-column: span 3;">{{ Num(ff.possessi) }}</span>
+
+      <span class="ff-nome" [pTooltip]="tooltipRating" [escape]="false" tooltipPosition="top">
+         Punti ogni 100 possessi <i class="pi pi-question-circle ff-help"></i>
+      </span>
+      <span class="ff-num" [class.ff-migliore]="(Net() ?? 0) > 0">{{ Num(ff.offRtg) }}</span>
+      <span></span>
+      <span class="ff-num ff-sinistra" [class.ff-migliore]="(Net() ?? 0) < 0">{{ Num(ff.difRtg) }}</span>
+
+      <span class="ff-nome" [pTooltip]="tooltipNet" [escape]="false" tooltipPosition="top">
+         Net rating <i class="pi pi-question-circle ff-help"></i>
+      </span>
+      <span class="ff-num ff-centro ff-net" style="grid-column: span 3;">{{ Num(Net(), true) }}</span>
+   </div>
+   <div class="ff-legenda">
+      <span><span class="ff-quadratino" [style.background-color]="coloreNoi"></span>{{ nomeNoi }}</span>
+      <span><span class="ff-quadratino" [style.background-color]="coloreLoro"></span>{{ nomeLoro }}</span>
+      <span class="ff-legenda-migliore">verde: squadra messa meglio nel fattore</span>
+   </div>
+}

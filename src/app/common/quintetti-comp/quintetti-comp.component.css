@@ -1,0 +1,155 @@
+/* stessi colori delle tabelle statistiche (statistiche-comp, stat-campionato-page) */
+.q-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.q-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.q-tabella th,
+.q-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.q-tabella th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   font-size: 1.05rem;
+   border-bottom: 2px solid #3949ab;
+}
+
+.q-tabella tbody tr:nth-child(3n+1) {
+   background-color: #1f2938;
+}
+
+.q-tabella tbody tr:nth-child(3n+2) {
+   background-color: #273345;
+}
+
+.q-tabella tbody tr:nth-child(3n) {
+   background-color: #2f3e53;
+}
+
+.q-sinistra {
+   text-align: left;
+}
+
+.q-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.q-sep {
+   border-left: 2px solid #94a3b8 !important;
+}
+
+.q-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.q-giocatori {
+   display: inline-flex;
+   flex-wrap: wrap;
+   gap: 2px 12px;
+   max-width: 560px;
+   white-space: normal;
+}
+
+.q-giocatore {
+   white-space: nowrap;
+}
+
+.q-giocatore b {
+   color: #ffaa00;
+}
+
+/* +/-: barra divergente centrata sullo zero, valore a destra */
+.q-pm {
+   text-align: center;
+}
+
+.q-pm-cella {
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.q-pm-barra {
+   display: inline-flex;
+   width: 120px;
+   height: 10px;
+   border-left: none;
+}
+
+.q-pm-meta {
+   display: flex;
+   width: 50%;
+   height: 100%;
+}
+
+.q-pm-neg {
+   justify-content: flex-end;
+   border-right: 1px solid #94a3b8;
+}
+
+.q-pm-fill {
+   display: block;
+   height: 100%;
+}
+
+.q-pm-neg .q-pm-fill {
+   border-radius: 4px 0 0 4px;
+}
+
+.q-pm-pos .q-pm-fill {
+   border-radius: 0 4px 4px 0;
+}
+
+.q-pm-valore {
+   display: inline-block;
+   min-width: 2.5rem;
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.q-positivo {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.q-negativo {
+   color: #ff6666;
+   font-weight: bold;
+}
+
+.q-piede {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 12px;
+   margin-top: 4px;
+}
+
+.q-nota {
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.q-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}
+
+/* smartphone: barra più corta */
+@media (max-width: 600px) {
+   .q-pm-barra {
+      width: 60px;
+   }
+}

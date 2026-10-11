@@ -16,6 +16,7 @@ import {TOperationList} from "../../common/operation";
 import {TempoStr, TTiriStat} from "../../common/statistiche";
 import {
    AccumulaGiocatori,
+   BoxPartita,
    MediePartite,
    QuartiGiocati,
    RicostruisciPartita,
@@ -32,6 +33,12 @@ import {MatchSyncService} from "../../services/match-sync.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {PdfSaveService} from "../../services/pdf-save.service";
 import { UnaAllaVolta } from '../../common/una-alla-volta';
+import {BoxVuoto, CalcolaFourFactors, MiglioreFF, NetRtg, NumFF, SommaBox, TabellaFourFactorsPdf, TBoxSquadra, TFourFactors} from "../../common/four-factors";
+import {FourFactorsCompComponent} from "../../common/four-factors-comp/four-factors-comp.component";
+import {TabellaQuintettiPdf, TQuintettoStat} from "../../common/quintetti";
+import {QuintettiCompComponent} from "../../common/quintetti-comp/quintetti-comp.component";
+import {CoppieOnoffCompComponent} from "../../common/coppie-onoff-comp/coppie-onoff-comp.component";
+import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../common/coppie-onoff";
 import {CreaTorta, PathFetta, PercFetta, PoligonoFetta, PuntoTorta, TFettaTorta, TTorta} from "../../common/torte-quarti";
 
 
@@ -53,7 +60,10 @@ export interface TStatCampionatoParams
                imports: [
                   ButtonModule,
                   DividerModule,
-                  TableModule
+                  TableModule,
+                  FourFactorsCompComponent,
+                  QuintettiCompComponent,
+                  CoppieOnoffCompComponent
                ],
                templateUrl: './stat-campionato-page.component.html',
                styleUrl:    './stat-campionato-page.component.css'
@@ -73,7 +83,15 @@ export class StatCampionatoPageComponent
    public totaliQuarti: Array<{ totali: TRigaStatCamp, medie: TRigaStatCamp }> = [];
    // grafici a torta: quanto contribuisce ciascun quarto a punti fatti, subiti e differenza (sui totali)
    public torte: Array<TTorta> = [];
+   // Four Factors sulle partite selezionate (totali delle due squadre) e di ciascuna partita
+   public fourFactors: TFourFactors | null = null;
+   public ffPartite: Array<{ riga: TRigaStatCamp, ff: TFourFactors }> = [];
+   public readonly NumFF = NumFF;
+   public readonly MiglioreFF = MiglioreFF;
+   public readonly NetRtg = NetRtg;
    public giocatori: Array<TGiocatoreStatCamp> = [];
+   // quintetti della squadra sommati sulle partite selezionate, in ordine di minuti
+   public quintetti: Array<TQuintettoStat> = [];
    // colonne dei giocatori con il valore più alto in verde: valore confrontato (arrotondato come mostrato),
    // null = giocatore escluso dal confronto
    private readonly valoriGioc: Record<string, (g: TGiocatoreStatCamp) => number | null> = {
@@ -155,6 +173,10 @@ export class StatCampionatoPageComponent
          const righeTabella: Array<TRigaStatCamp> = [];
          const righeQuarti: Array<TRigaStatCamp> = [];
          const giocatori = new Map<number, TGiocatoreStatCamp> ();
+         const boxNoi: TBoxSquadra = BoxVuoto ();
+         const boxLoro: TBoxSquadra = BoxVuoto ();
+         const ffPartite: Array<{ riga: TRigaStatCamp, ff: TFourFactors }> = [];
+         const quintetti = new Map<string, TQuintettoStat> ();
          for (const mh of this.matches)
          {
             const [rosterData, { events }] = await Promise.all ([
@@ -168,7 +190,11 @@ export class StatCampionatoPageComponent
             const riga = RigaPartita (mh, cm, teamId);
             righe.push (riga);
             righeTabella.push (riga);
-            AccumulaGiocatori (giocatori, mh, cm, ops, teamId);
+            const box = BoxPartita (mh, cm, teamId);
+            SommaBox (boxNoi, box.noi);
+            SommaBox (boxLoro, box.loro);
+            ffPartite.push ({ riga, ff: CalcolaFourFactors (box.noi, box.loro) });
+            AccumulaGiocatori (giocatori, quintetti, mh, cm, ops, teamId);
             // dettaglio per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto
             // per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto. Servono sempre
             // (grafici a torta); in tabella solo con il dettaglio per quarto
@@ -183,6 +209,9 @@ export class StatCampionatoPageComponent
             }
          }
          this.righe = righe;
+         this.fourFactors = (righe.length > 0) ? CalcolaFourFactors (boxNoi, boxLoro, righe.length) : null;
+         this.ffPartite = ffPartite;
+         this.quintetti = [...quintetti.values ()].sort ((a, b) => b.secondi - a.secondi);
          this.righeTabella = righeTabella;
          this.minMax = {};
          for (const col of ['puntiF', 'puntiS', 'dif', 'ff', 'fs', 'rd', 'ra', 'rt', 'pp', 'pr', 'as', 'pir'] as const)
@@ -601,7 +630,42 @@ export class StatCampionatoPageComponent
       titolo (`Contributo dei quarti - ${nomeTeam}`, 10);
       this.DisegnaTortePdf (pdf, font);
 
-      // ---- pagina 3: le due tabelle dei giocatori ----
+      // ---- pagina 3: Four Factors complessivi e partita per partita ----
+      if (this.fourFactors)
+      {
+         pdf.addPage ();
+         titolo (`Four Factors - ${nomeTeam}`, 10);
+         const yFF = TabellaFourFactorsPdf (pdf, autoTable, this.fourFactors, nomeTeam, 'Avversari', 15, font);
+         const ffCella = (v: number | null, meglio: boolean) => cella (NumFF (v), meglio ? 'valore-migliore' : '');
+         autoTable (pdf, {
+            startY: yFF + 8,
+            head: [
+               [{ content: '', colSpan: 4 }, { content: 'eFG%', colSpan: 2 }, { content: 'TOV%', colSpan: 2 }, { content: 'ORB%', colSpan: 2 },
+                { content: 'TL/TdC', colSpan: 2 }, { content: 'Per 100 possessi', colSpan: 4 }],
+               ['Data', 'Squadra', 'C/T', 'Ris.', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Poss', 'Fatti', 'Subiti', 'Net']
+            ],
+            body: this.ffPartite.map (({ riga, ff }) =>
+            {
+               const net = NetRtg (ff);
+               return [
+                  cella (riga.data), cella (riga.squadra), cella (riga.casaTrasf), cella (`${riga.puntiF}-${riga.puntiS}`),
+                  ...ff.fattori.flatMap (f => [ffCella (f.noi, MiglioreFF (f) > 0), ffCella (f.loro, MiglioreFF (f) < 0)]),
+                  cella (NumFF (ff.possessi)), cella (NumFF (ff.offRtg)), cella (NumFF (ff.difRtg)),
+                  cella (NumFF (net, true), ((net ?? 0) > 0) ? 'valore-migliore' : ((net ?? 0) < 0) ? 'valore-peggiore' : '')
+               ];
+            }),
+            columnStyles: { 0: { halign: 'left' }, 1: { halign: 'left' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
+            didDrawCell: separatoriDi (new Set ([3, 5, 7, 9, 11])),
+            ...stile
+         });
+         pdf.setFontSize (8);
+         pdf.setFont (font, 'normal');
+         pdf.setTextColor (0, 140, 0);
+         pdf.text ('verde: squadra messa meglio nel fattore (Net: positivo)', 5, (pdf as any).lastAutoTable.finalY + 5);
+         pdf.setTextColor (0, 0, 0);
+      }
+
+      // ---- pagina 4: le due tabelle dei giocatori ----
       pdf.addPage ();
       titolo (`Statistiche giocatori ${nomeTeam}`, 10);
       autoTable (pdf, {
@@ -644,6 +708,19 @@ export class StatCampionatoPageComponent
          ...stile
       });
       legenda ((pdf as any).lastAutoTable.finalY + 5);
+
+      // ---- ultima pagina: quintetti ----
+      if (this.quintetti.length > 0)
+      {
+         pdf.addPage ();
+         titolo (`Quintetti ${nomeTeam}`, 10);
+         TabellaQuintettiPdf (pdf, autoTable, this.quintetti, true, 15, font);
+
+         pdf.addPage ();
+         titolo (`On/Off e coppie ${nomeTeam}`, 10);
+         const yOnOff = TabellaOnOffPdf (pdf, autoTable, OnOff (this.quintetti), 15, font);
+         MatriceCoppiePdf (pdf, autoTable, MatriceCoppie (this.quintetti), 'pm', yOnOff + 8, font);
+      }
 
       await destinazione.Salva (pdf);
    }

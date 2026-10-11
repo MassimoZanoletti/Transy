@@ -226,6 +226,70 @@
             layout="horizontal"
             styleClass="my-3"></p-divider>
 
+         <!-- Four Factors: sui totali delle partite selezionate e partita per partita -->
+         <h3 class="titolo-sezione">Four Factors <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-four-factors-comp [ff]="fourFactors"
+                                [nomeNoi]="team?.nome ?? ''"
+                                nomeLoro="Avversari"></app-four-factors-comp>
+         <p-table id="tabellaFourFactors"
+                  class="custom-header-table tabella-ff"
+                  styleClass="custom-table p-datatable-gridlines"
+                  [value]="ffPartite"
+                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th colspan="4"></th>
+                  <th colspan="2" class="sep gruppo">eFG%</th>
+                  <th colspan="2" class="sep gruppo">TOV%</th>
+                  <th colspan="2" class="sep gruppo">ORB%</th>
+                  <th colspan="2" class="sep gruppo">TL/TdC</th>
+                  <th colspan="4" class="sep gruppo">Per 100 possessi</th>
+               </tr>
+               <tr>
+                  <th style="width: 100px;">Data</th>
+                  <th style="width: 160px;">Squadra</th>
+                  <th style="width: 40px;" class="centro">C/T</th>
+                  <th class="centro">Ris.</th>
+                  @for (f of [0, 1, 2, 3]; track f)
+                  {
+                     <th class="sep num">Noi</th>
+                     <th class="num">Avv</th>
+                  }
+                  <th class="sep num">Poss</th>
+                  <th class="num">Fatti</th>
+                  <th class="num">Subiti</th>
+                  <th class="num">Net</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-p>
+               <tr>
+                  <td>{{ p.riga.data }}</td>
+                  <td>{{ p.riga.squadra }}</td>
+                  <td class="centro">{{ p.riga.casaTrasf }}</td>
+                  <td class="centro">{{ p.riga.puntiF }}-{{ p.riga.puntiS }}</td>
+                  @for (f of p.ff.fattori; track f.sigla)
+                  {
+                     <td class="sep num" [class.valore-migliore]="MiglioreFF(f) > 0">{{ NumFF(f.noi) }}</td>
+                     <td class="num" [class.valore-migliore]="MiglioreFF(f) < 0">{{ NumFF(f.loro) }}</td>
+                  }
+                  <td class="sep num">{{ NumFF(p.ff.possessi) }}</td>
+                  <td class="num">{{ NumFF(p.ff.offRtg) }}</td>
+                  <td class="num">{{ NumFF(p.ff.difRtg) }}</td>
+                  <td class="num"
+                      [class.valore-migliore]="(NetRtg(p.ff) ?? 0) > 0"
+                      [class.valore-peggiore]="(NetRtg(p.ff) ?? 0) < 0">{{ NumFF(NetRtg(p.ff), true) }}</td>
+               </tr>
+            </ng-template>
+         </p-table>
+         <div id="stat-camp-legenda-ff">
+            <span class="legenda-migliore">■ squadra messa meglio nel fattore (Net: positivo)</span>
+            <span class="legenda-peggiore">■ Net negativo</span>
+         </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
          <!-- statistiche dei giocatori a referto nelle partite selezionate -->
          <h3 class="titolo-sezione">Statistiche giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
          <p-table id="tabellaStatGiocatori"
@@ -337,6 +401,22 @@
                </tr>
             </ng-template>
          </p-table>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- quintetti della squadra sulle partite selezionate -->
+         <h3 class="titolo-sezione">Quintetti <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-quintetti-comp [quintetti]="quintetti"
+                             [conPartite]="true"></app-quintetti-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <h3 class="titolo-sezione">On/Off e coppie <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-coppie-onoff-comp [quintetti]="quintetti"></app-coppie-onoff-comp>
       }
    </div>
 

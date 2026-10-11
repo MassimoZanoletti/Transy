@@ -1,0 +1,98 @@
+@if (onOff.length === 0)
+{
+   <div class="co-vuoto">Nessun dato: servono il quintetto base e le sostituzioni.</div>
+}
+@else
+{
+   <div class="co-sezioni">
+      <!-- On/Off -->
+      <div class="co-sezione">
+         <h4 class="co-titolo" [pTooltip]="tooltipOnOff" [escape]="false" tooltipPosition="top">
+            On/Off <i class="pi pi-question-circle co-help"></i>
+         </h4>
+         <div class="co-scorrimento">
+            <table class="co-tabella">
+               <thead>
+                  <tr>
+                     <th></th>
+                     <th colspan="3" class="co-sep">In campo (On)</th>
+                     <th colspan="3" class="co-sep">In panchina (Off)</th>
+                     <th class="co-sep">On - Off</th>
+                  </tr>
+                  <tr>
+                     <th class="co-sinistra">Giocatore</th>
+                     <th class="co-num co-sep">Min</th>
+                     <th class="co-num">+/-</th>
+                     <th class="co-num">Net</th>
+                     <th class="co-num co-sep">Min</th>
+                     <th class="co-num">+/-</th>
+                     <th class="co-num">Net</th>
+                     <th class="co-num co-sep">Net</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (r of onOff; track r.giocatore.id)
+                  {
+                     <tr>
+                        <td class="co-sinistra"><b class="co-numero">{{ r.giocatore.numero }}</b> {{ r.giocatore.nome }}</td>
+                        <td class="co-num co-sep">{{ Min(r.on) }}</td>
+                        <td class="co-num" [class.co-positivo]="(Pm(r.on) ?? 0) > 0" [class.co-negativo]="(Pm(r.on) ?? 0) < 0">{{ Num(Pm(r.on), true) }}</td>
+                        <td class="co-num">{{ Num(Net(r.on), true) }}</td>
+                        <td class="co-num co-sep">{{ Min(r.off) }}</td>
+                        <td class="co-num" [class.co-positivo]="(Pm(r.off) ?? 0) > 0" [class.co-negativo]="(Pm(r.off) ?? 0) < 0">{{ Num(Pm(r.off), true) }}</td>
+                        <td class="co-num">{{ Num(Net(r.off), true) }}</td>
+                        <td class="co-num co-sep" [class.co-positivo]="(Diff(r) ?? 0) > 0" [class.co-negativo]="(Diff(r) ?? 0) < 0">{{ Num(Diff(r), true) }}</td>
+                     </tr>
+                  }
+               </tbody>
+            </table>
+         </div>
+      </div>
+
+      <!-- matrice delle coppie -->
+      <div class="co-sezione">
+         <div class="co-intest-matrice">
+            <h4 class="co-titolo">Coppie</h4>
+            <p-selectButton [options]="opzioniMetrica"
+                            [(ngModel)]="metrica"
+                            (ngModelChange)="AggiornaScala()"
+                            optionLabel="label"
+                            optionValue="value"
+                            [allowEmpty]="false"
+                            size="small"/>
+         </div>
+         <div class="co-scorrimento">
+            <table class="co-matrice" [attr.aria-label]="EtichettaMetrica()">
+               <thead>
+                  <tr>
+                     <th></th>
+                     @for (g of matrice.giocatori; track g.id)
+                     {
+                        <th class="co-col" [title]="g.numero + ' ' + g.nome">{{ g.numero }}</th>
+                     }
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (g of matrice.giocatori; track g.id; let i = $index)
+                  {
+                     <tr>
+                        <th class="co-sinistra co-riga"><b class="co-numero">{{ g.numero }}</b> {{ g.nome }}</th>
+                        @for (c of matrice.celle[i]; track j; let j = $index)
+                        {
+                           <td class="co-cella"
+                               [class.co-diagonale]="i === j"
+                               [style.background-color]="Fondo(c)"
+                               [title]="TitoloCella(i, j)">{{ Testo(c, metrica) }}</td>
+                        }
+                     </tr>
+                  }
+               </tbody>
+            </table>
+         </div>
+         <div class="co-nota">
+            {{ EtichettaMetrica() }}. Sulla diagonale il giocatore da solo. Blu positivo, arancio negativo;
+            più intenso = valore più grande. Passa sopra una cella per i dettagli.
+         </div>
+      </div>
+   </div>
+}

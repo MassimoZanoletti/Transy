@@ -1,0 +1,123 @@
+.gd-contenitore {
+   position: relative;
+   width: 100%;
+   max-width: 1100px;
+}
+
+.gd-contenitore svg {
+   width: 100%;
+   height: auto;
+   display: block;
+   touch-action: pan-y;
+}
+
+.gd-griglia {
+   stroke: #334155;
+   stroke-width: 1;
+}
+
+.gd-zero {
+   stroke: #94a3b8;
+   stroke-width: 1.5;
+}
+
+.gd-quarto {
+   stroke: #64748b;
+   stroke-width: 1;
+   stroke-dasharray: 4 4;
+}
+
+.gd-asse {
+   font-size: 12px;
+   fill: #94a3b8;
+}
+
+.gd-etichetta-quarto {
+   font-weight: bold;
+   fill: #cbd5e1;
+}
+
+.gd-area {
+   opacity: 0.55;
+}
+
+.gd-linea {
+   fill: none;
+   stroke: #e2e8f0;
+   stroke-width: 2;
+   stroke-linejoin: round;
+}
+
+.gd-max {
+   font-size: 13px;
+   font-weight: bold;
+   fill: #e2e8f0;
+}
+
+.gd-timeout {
+   stroke: #121212;
+   stroke-width: 1.5;
+}
+
+.gd-cursore {
+   stroke: #e2e8f0;
+   stroke-width: 1;
+   stroke-dasharray: 3 3;
+   pointer-events: none;
+}
+
+.gd-sensibile {
+   fill: transparent;
+   cursor: crosshair;
+}
+
+.gd-tooltip {
+   position: absolute;
+   top: 4px;
+   margin-left: 10px;
+   padding: 4px 8px;
+   background-color: #1e293b;
+   border: 1px solid #475569;
+   border-radius: 4px;
+   color: #e2e8f0;
+   font-size: 0.85rem;
+   white-space: nowrap;
+   pointer-events: none;
+}
+
+/* nella parte destra del grafico il riquadro va a sinistra della linea */
+.gd-tooltip-sinistra {
+   transform: translateX(-100%);
+   margin-left: -10px;
+}
+
+.gd-legenda {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 18px;
+   margin-top: 4px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.gd-legenda > span {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.gd-quadratino {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 2px;
+}
+
+.gd-nota {
+   color: #94a3b8;
+}
+
+.gd-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

@@ -1,0 +1,72 @@
+@if (quintetti.length === 0)
+{
+   <div class="q-vuoto">Nessun quintetto: servono il quintetto base e le sostituzioni.</div>
+}
+@else
+{
+   <div class="q-scorrimento">
+      <table class="q-tabella">
+         <thead>
+            <tr>
+               <th class="q-sinistra">Quintetto</th>
+               @if (conPartite) { <th class="q-num">Part</th> }
+               <th class="q-num">Min</th>
+               <th class="q-num">Fatti</th>
+               <th class="q-num">Subiti</th>
+               <th class="q-pm">+/-</th>
+               <th class="q-num q-sep" [pTooltip]="tooltipPoss" [escape]="false" tooltipPosition="top">Poss <i class="pi pi-question-circle q-help"></i></th>
+               <th class="q-num" [pTooltip]="tooltipRating" [escape]="false" tooltipPosition="top">Fatti/100 <i class="pi pi-question-circle q-help"></i></th>
+               <th class="q-num">Subiti/100</th>
+               <th class="q-num">Net</th>
+            </tr>
+         </thead>
+         <tbody>
+            @for (q of Visibili(); track q.chiave)
+            {
+               <tr>
+                  <td class="q-sinistra">
+                     <span class="q-giocatori">
+                        @for (g of Giocatori(q); track g.id)
+                        {
+                           <span class="q-giocatore"><b>{{ g.numero }}</b> {{ g.nome }}</span>
+                        }
+                     </span>
+                  </td>
+                  @if (conPartite) { <td class="q-num">{{ q.partite }}</td> }
+                  <td class="q-num">{{ Minuti(q) }}</td>
+                  <td class="q-num">{{ q.noi.punti }}</td>
+                  <td class="q-num">{{ q.loro.punti }}</td>
+                  <td class="q-pm">
+                     <span class="q-pm-cella">
+                        <span class="q-pm-barra" [attr.aria-hidden]="true">
+                           <span class="q-pm-meta q-pm-neg">
+                              @if (Pm(q) < 0) { <span class="q-pm-fill" [style.width.%]="LarghezzaPm(q)" [style.background-color]="coloreSvantaggio"></span> }
+                           </span>
+                           <span class="q-pm-meta q-pm-pos">
+                              @if (Pm(q) > 0) { <span class="q-pm-fill" [style.width.%]="LarghezzaPm(q)" [style.background-color]="coloreVantaggio"></span> }
+                           </span>
+                        </span>
+                        <span class="q-pm-valore" [class.q-positivo]="Pm(q) > 0" [class.q-negativo]="Pm(q) < 0">{{ Num(Pm(q), true) }}</span>
+                     </span>
+                  </td>
+                  <td class="q-num q-sep">{{ Possessi(q) }}</td>
+                  <td class="q-num">{{ Num(Rating(q, q.noi.punti)) }}</td>
+                  <td class="q-num">{{ Num(Rating(q, q.loro.punti)) }}</td>
+                  <td class="q-num" [class.q-positivo]="(Net(q) ?? 0) > 0" [class.q-negativo]="(Net(q) ?? 0) < 0">{{ Num(Net(q), true) }}</td>
+               </tr>
+            }
+         </tbody>
+      </table>
+   </div>
+   <div class="q-piede">
+      @if (quintetti.length > PRIMI)
+      {
+         <p-button [label]="tutti ? 'Mostra i primi ' + PRIMI : 'Mostra tutti (' + quintetti.length + ')'"
+                   severity="secondary"
+                   size="small"
+                   [text]="true"
+                   (onClick)="tutti = !tutti"></p-button>
+      }
+      <span class="q-nota">In ordine di minuti giocati insieme. Barra del +/-: blu positivo, arancio negativo.</span>
+   </div>
+}

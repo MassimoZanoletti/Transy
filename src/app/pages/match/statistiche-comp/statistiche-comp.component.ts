@@ -4,12 +4,22 @@ import {TableModule} from 'primeng/table';
 import {TooltipModule} from 'primeng/tooltip';
 import {ButtonModule} from 'primeng/button';
 import {DividerModule} from 'primeng/divider';
+import {MenuModule} from 'primeng/menu';
+import {MenuItem} from 'primeng/api';
 import {IDSMatchHeader} from "../../../models/datamod";
 import {matchGlobs} from "../../../common/curr-match";
 import {globs} from "../../../common/utils";
 import {PdfSaveService} from "../../../services/pdf-save.service";
 import {AndamentoQuarti, MinutiPerQuarto, TabellaSquadra, TContestoLive, TQuartoAndamento, TRigaStat, TTabellaStat, TTiriStat} from "../../../common/statistiche";
 import { UnaAllaVolta } from '../../../common/una-alla-volta';
+import {CalcolaFourFactors, TabellaFourFactorsPdf, TFourFactors} from "../../../common/four-factors";
+import {DisegnaDifferenzaPdf, SerieDifferenza, TSerieDiff} from "../../../common/grafico-differenza";
+import {FourFactorsCompComponent} from "../../../common/four-factors-comp/four-factors-comp.component";
+import {GraficoDifferenzaCompComponent} from "../../../common/grafico-differenza-comp/grafico-differenza-comp.component";
+import {AnalisiInCampo, TabellaQuintettiPdf, TQuintettoStat} from "../../../common/quintetti";
+import {QuintettiCompComponent} from "../../../common/quintetti-comp/quintetti-comp.component";
+import {CoppieOnoffCompComponent} from "../../../common/coppie-onoff-comp/coppie-onoff-comp.component";
+import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../../common/coppie-onoff";
 
 
 // Tab "Statistiche" della partita: stessa impostazione della pagina "Tabelle" di nebula (intestazione,
@@ -23,7 +33,12 @@ import { UnaAllaVolta } from '../../../common/una-alla-volta';
       TableModule,
       TooltipModule,
       ButtonModule,
-      DividerModule
+      DividerModule,
+      MenuModule,
+      FourFactorsCompComponent,
+      GraficoDifferenzaCompComponent,
+      QuintettiCompComponent,
+      CoppieOnoffCompComponent
    ],
    templateUrl: './statistiche-comp.component.html',
    styleUrl:    './statistiche-comp.component.css'
@@ -42,12 +57,14 @@ export class StatisticheCompComponent
    // Spiegazione delle ultime 4 colonne: tooltip delle intestazioni in pagina e legenda in fondo al PDF
    private static readonly INDICI: { sigla: string, titolo: string, descrizione: string }[] = [
       { sigla: 'PIR',  titolo: 'Performance Index Rating',   descrizione: 'Indice di valutazione globale che tiene conto di tutto ma non dei minuti giocati.' },
+      { sigla: '+/-',  titolo: 'Plus/minus',                 descrizione: 'Differenza fra punti fatti e subiti dalla squadra mentre il giocatore era in campo.' },
       { sigla: 'OER',  titolo: 'Offensive Efficency Rating', descrizione: 'Indice di efficienza offensiva.' },
       { sigla: 'eFG%', titolo: 'Effective Field Goal perc.', descrizione: 'Indice di efficienza nel tiro dal campo (senza liberi), con peso maggiore per tiri da 3. Può superare il 100% (fino al 150%) con pochi tiri quasi tutti segnati.' },
       { sigla: 'TS%',  titolo: 'True Shooting perc.',        descrizione: 'Indice di efficienza realizzativa considerando anche i liberi. Può superare il 100% (fino al 150%) con pochi tiri quasi tutti segnati.' }
    ];
 
    public readonly tooltipPir  = this.TooltipIndice('PIR');
+   public readonly tooltipPm   = this.TooltipIndice('+/-');
    public readonly tooltipOer  = this.TooltipIndice('OER');
    public readonly tooltipEfg  = this.TooltipIndice('eFG%');
    public readonly tooltipTs   = this.TooltipIndice('TS%');
@@ -56,7 +73,18 @@ export class StatisticheCompComponent
    public punteggio: string = '';
    public andamento: TQuartoAndamento[] = [];
    public tabelle: TTabellaStat[] = [];
+   // analisi della partita: scarto lungo la partita e Four Factors delle due squadre
+   public serieDiff: TSerieDiff | null = null;
+   public fourFactors: TFourFactors | null = null;
+   // quintetti di MyTeam (minuti insieme, punti fatti/subiti, possessi)
+   public quintetti: TQuintettoStat[] = [];
    public aggiornatoAlle: string = '';
+   // menu del bottone "Esporta in PDF": l'esportazione semplice si ferma alla seconda tabella (va anche ai
+   // giornalisti), quella completa aggiunge le analisi (scarto, Four Factors, quintetti, On/Off) per lo staff
+   public readonly vociPdf: MenuItem[] = [
+      { label: 'SEMPLICE: Solo tabelle', icon: 'pi pi-file', command: () => this.EsportaPdf(false) },
+      { label: 'COMPLETA: con analisi',    icon: 'pi pi-chart-line', command: () => this.EsportaPdf(true) }
+   ];
 
 
    Aggiorna (): void
@@ -78,6 +106,8 @@ export class StatisticheCompComponent
       }
       const giocatori = [...(myTeam?.Roster ?? []), ...(oppTeam?.Roster ?? [])];
       const minuti = MinutiPerQuarto(ops, giocatori, live);
+      const inCampo = AnalisiInCampo(ops, giocatori, true, live);
+      this.quintetti = inCampo.quintetti;
 
       const myNome = mh.myTeamNome_lk;
       const oppNome = mh.oppoTeamNome_lk;
@@ -89,9 +119,11 @@ export class StatisticheCompComponent
       // la pagina della partita usa l'id ("0") quando l'allenatore non è indicato
       const coach = (c: string) => ((c ?? '').trim() === '0') ? '' : c;
       this.tabelle = [
-         TabellaSquadra(myTeam, myNome, true, minuti, quartiGiocati, coach(this.myCoach1), coach(this.myCoach2)),
-         TabellaSquadra(oppTeam, oppNome, false, minuti, quartiGiocati, coach(this.oppoCoach1), coach(this.oppoCoach2))
+         TabellaSquadra(myTeam, myNome, true, minuti, quartiGiocati, coach(this.myCoach1), coach(this.myCoach2), inCampo.plusMinus),
+         TabellaSquadra(oppTeam, oppNome, false, minuti, quartiGiocati, coach(this.oppoCoach1), coach(this.oppoCoach2), inCampo.plusMinus)
       ];
+      this.serieDiff = SerieDifferenza(ops, quartiGiocati, live);
+      this.fourFactors = CalcolaFourFactors(this.tabelle[0].totali, this.tabelle[1].totali);
       const ora = new Date();
       this.aggiornatoAlle = `${String(ora.getHours()).padStart(2, '0')}:${String(ora.getMinutes()).padStart(2, '0')}:${String(ora.getSeconds()).padStart(2, '0')}`;
    }
@@ -117,6 +149,13 @@ export class StatisticheCompComponent
    }
 
 
+   // plus/minus col segno (+5 / -3 / 0); vuoto se non calcolato
+   PmStr (pm: number | null): string
+   {
+      return (pm === null) ? '' : ((pm > 0) ? `+${pm}` : String(pm));
+   }
+
+
    // "realizzati/tentati" + percentuale (troncata, come nebula); vuoto se nessun tentativo
    TiriStr (t: TTiriStat): string
    {
@@ -133,13 +172,14 @@ export class StatisticheCompComponent
    // Esporta in PDF intestazione, andamento per quarto e le due tabelle dei giocatori (stesso impaginato di
    // PDFExport_Tabelle di nebula: A4 orizzontale, jsPDF + jspdf-autotable). Le librerie si caricano solo qui
    // (import dinamico), per non appesantire l'avvio dell'app.
+   // completa = false: intestazione, andamento per quarto, tabelle e legenda (niente analisi)
    @UnaAllaVolta()
-   async EsportaPdf (): Promise<void>
+   async EsportaPdf (completa: boolean): Promise<void>
    {
       this.Aggiorna();
       if ((this.tabelle.length === 0) || (!this.matchHeader))
          return;
-      const destinazione = await this.pdfSave.ChiediDestinazione(`T_${this.matchHeader.title || 'partita'}-tabelle.pdf`);
+      const destinazione = await this.pdfSave.ChiediDestinazione(`T_${this.matchHeader.title || 'partita'}-${completa ? 'analisi' : 'tabelle'}.pdf`);
       if (!destinazione)
          return;
       const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
@@ -189,7 +229,7 @@ export class StatisticheCompComponent
 
       // tabelle dei giocatori
       const colonne = ['Giocatore', 'Pti', 'Min.', 'TL', 'T2', 'T3', 'TdC', 'FF', 'FS', 'RD', 'RA', 'RTot', 'PP', 'PR', 'As',
-                       'St.F', 'St.S', 'Q1', 'Q2', 'Q3', 'Q4', 'ET', 'PIR', 'OER', 'eFG%', 'TS%'];
+                       'St.F', 'St.S', 'Q1', 'Q2', 'Q3', 'Q4', 'ET', 'PIR', '+/-', 'OER', 'eFG%', 'TS%'];
       const tiri = (t: TTiriStat) => (t.tentati > 0) ? `${this.TiriStr(t)}\n${this.TiriPerc(t)}` : '';
       const riga = (r: TRigaStat, nome: string, totali: boolean): string[] =>
       {
@@ -200,7 +240,7 @@ export class StatisticheCompComponent
             String(r.ff), String(r.fs), String(r.rd), String(r.ra), String(r.rtot), String(r.pp), String(r.pr),
             String(r.as), String(r.stf), String(r.sts),
             ...r.quarti.map(q => q ? (totali ? String(q.punti) : `${q.punti}\n${q.min}`) : ''),
-            String(r.pir), r.oer, r.efg, r.ts
+            String(r.pir), this.PmStr(r.pm), r.oer, r.efg, r.ts
          ];
       };
       const columnStyles: any = { 0: { cellWidth: 32, halign: 'left' } };
@@ -285,6 +325,42 @@ export class StatisticheCompComponent
             pdf.text(r, 5 + pdf.getTextWidth(`${ind.sigla} - `), y);
          }
          y += 3.5;
+      }
+
+      if (!completa)
+      {
+         await destinazione.Salva(pdf);
+         return;
+      }
+
+      // solo esportazione completa: scarto lungo la partita e Four Factors
+      pdf.addPage();
+      pdf.setFontSize(14);
+      pdf.setFont(font, 'bold');
+      pdf.text(`Andamento dello scarto - ${this.titolo}  ${this.punteggio}`, pageWidth / 2, 8, { align: 'center' });
+      const myNome = this.tabelle[0]?.squadra ?? '';
+      const oppNome = this.tabelle[1]?.squadra ?? '';
+      if (this.serieDiff)
+         DisegnaDifferenzaPdf(pdf, this.serieDiff, myNome, oppNome, 15, 18, pageWidth - 25, 95, font);
+      if (this.fourFactors)
+         TabellaFourFactorsPdf(pdf, autoTable, this.fourFactors, myNome, oppNome, 140, font, 15);
+
+      // quintetti di MyTeam, su una pagina a parte
+      if (this.quintetti.length > 0)
+      {
+         pdf.addPage();
+         pdf.setFontSize(14);
+         pdf.setFont(font, 'bold');
+         pdf.text(`Quintetti ${myNome}`, pageWidth / 2, 8, { align: 'center' });
+         TabellaQuintettiPdf(pdf, autoTable, this.quintetti, false, 13, font);
+
+         // On/Off e coppie (+/-) su un'altra pagina
+         pdf.addPage();
+         pdf.setFontSize(14);
+         pdf.setFont(font, 'bold');
+         pdf.text(`On/Off e coppie ${myNome}`, pageWidth / 2, 8, { align: 'center' });
+         const yOnOff = TabellaOnOffPdf(pdf, autoTable, OnOff(this.quintetti), 13, font);
+         MatriceCoppiePdf(pdf, autoTable, MatriceCoppie(this.quintetti), 'pm', yOnOff + 8, font);
       }
       await destinazione.Salva(pdf);
    }
