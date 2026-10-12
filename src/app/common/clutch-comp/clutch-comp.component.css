@@ -1,0 +1,106 @@
+/* stessi colori delle altre tabelle delle statistiche (parziali-timeout-comp, quintetti-comp) */
+.cl-intro {
+   display: inline-block;
+   margin-bottom: 8px;
+   color: #cbd5e1;
+}
+
+.cl-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.cl-sezioni {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px 40px;
+   align-items: flex-start;
+   margin-bottom: 12px;
+}
+
+.cl-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.cl-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.cl-tabella th,
+.cl-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.cl-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.cl-tabella tbody tr {
+   background-color: #1f2938;
+}
+
+.cl-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+.cl-tabella tbody tr.cl-gruppo td {
+   background-color: #171f2b;
+   color: #ffe378;
+   font-weight: bold;
+}
+
+.cl-durata {
+   color: #94a3b8;
+   font-weight: normal;
+}
+
+.cl-sinistra {
+   text-align: left !important;
+}
+
+.cl-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.cl-numero {
+   color: #ffaa00;
+}
+
+/* nomi nei colori delle squadre: rosso noi, azzurro loro */
+.cl-noi {
+   color: #ff8888;
+   font-weight: bold;
+}
+
+.cl-loro {
+   color: #3a8bd8;
+   font-weight: bold;
+}
+
+.cl-positivo {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.cl-negativo {
+   color: #ff6666;
+   font-weight: bold;
+}
+
+.cl-titolo {
+   margin: 6px 0;
+}
+
+.cl-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

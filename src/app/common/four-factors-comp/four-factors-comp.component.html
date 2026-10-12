@@ -24,6 +24,11 @@
       </span>
       <span class="ff-num ff-stacco ff-centro" style="grid-column: span 3;">{{ Num(ff.possessi) }}</span>
 
+      <span class="ff-nome" [pTooltip]="tooltipPace" [escape]="false" tooltipPosition="top">
+         Pace <span class="ff-peso">possessi ogni {{ minutiPartita }}'</span> <i class="pi pi-question-circle ff-help"></i>
+      </span>
+      <span class="ff-num ff-centro" style="grid-column: span 3;">{{ Num(ff.pace) }}</span>
+
       <span class="ff-nome" [pTooltip]="tooltipRating" [escape]="false" tooltipPosition="top">
          Punti ogni 100 possessi <i class="pi pi-question-circle ff-help"></i>
       </span>

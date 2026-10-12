@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {TooltipModule} from 'primeng/tooltip';
 import {COLORE_LORO, COLORE_NOI} from "../grafico-differenza";
-import {MiglioreFF, NetRtg, NumFF, TFattore, TFourFactors} from "../four-factors";
+import {MiglioreFF, MINUTI_PARTITA, NetRtg, NumFF, TFattore, TFourFactors} from "../four-factors";
 
 
 // Riquadro dei Four Factors (tab "Statistiche" della partita e pagina "Statistiche campionato"): per ogni
@@ -26,6 +26,8 @@ export class FourFactorsCompComponent
    public readonly Migliore = MiglioreFF;
    public readonly tooltipPossessi = this.Tooltip('Possessi stimati', 'Tiri dal campo tentati - rimbalzi offensivi + palle perse + 0,44 x liberi tentati; media delle due squadre.');
    public readonly tooltipRating = this.Tooltip('Punti ogni 100 possessi', 'Offensive rating (punti fatti) e defensive rating (punti subiti): confrontano partite giocate a ritmi diversi.');
+   public readonly minutiPartita = MINUTI_PARTITA;
+   public readonly tooltipPace = this.Tooltip('Pace (ritmo)', `Possessi riportati a ${MINUTI_PARTITA} minuti: con i supplementari i possessi totali non si confrontano. Pochi possessi = partita lenta, molti = partita veloce. Dà il contesto ai punti: 70 punti in 65 possessi valgono più di 70 in 85.`);
    public readonly tooltipNet = this.Tooltip('Net rating', 'Differenza fra punti fatti e subiti ogni 100 possessi.');
 
 

@@ -163,178 +163,6 @@
             layout="horizontal"
             styleClass="my-3"></p-divider>
 
-         <!-- contributo dei quarti: punti fatti, subiti e differenza (sui totali) -->
-         <h3 class="titolo-sezione">Contributo dei quarti <span class="evidenziato">{{ team?.nome }}</span></h3>
-         <div id="stat-camp-torte">
-            @for (torta of torte; track torta.titolo; let iTorta = $index)
-            {
-               <figure class="torta">
-                  <figcaption>
-                     <div class="torta-titolo">{{ torta.titolo }}</div>
-                     <div class="torta-totale">Totale: {{ ValoreTorta(torta.totale, iTorta === 2) }}</div>
-                  </figcaption>
-                  <svg viewBox="-190 -150 380 300" role="img" [attr.aria-label]="torta.titolo + ' per quarto'">
-                     <defs>
-                        <!-- tratteggio dei quarti persi (differenza negativa), sopra il colore del quarto -->
-                        <pattern [attr.id]="'tratteggio-' + iTorta" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
-                           <line x1="0" y1="0" x2="0" y2="9" class="linea-tratteggio"/>
-                        </pattern>
-                     </defs>
-                     @for (f of torta.fette; track f.etichetta)
-                     {
-                        <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
-                              [attr.fill]="f.colore"
-                              class="fetta">
-                           <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%)</title>
-                        </path>
-                        @if (f.negativo)
-                        {
-                           <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
-                                 [attr.fill]="'url(#tratteggio-' + iTorta + ')'"
-                                 class="fetta tratteggio-negativo">
-                              <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%) - a sfavore</title>
-                           </path>
-                        }
-                     }
-                     @for (f of torta.fette; track f.etichetta)
-                     {
-                        <text [attr.x]="PosEtichetta(f).x"
-                              [attr.y]="PosEtichetta(f).y"
-                              [attr.text-anchor]="PosEtichetta(f).ancora"
-                              class="etichetta-fetta">
-                           <tspan class="etichetta-valore">{{ f.etichetta }} {{ ValoreTorta(f.valore, iTorta === 2) }}</tspan>
-                           <tspan [attr.x]="PosEtichetta(f).x" dy="1.2em" class="etichetta-perc">{{ PercFetta(f) }}%</tspan>
-                        </text>
-                     }
-                     @if (torta.fette.length === 0)
-                     {
-                        <text x="0" y="0" text-anchor="middle" class="etichetta-fetta">nessun valore</text>
-                     }
-                  </svg>
-               </figure>
-            }
-         </div>
-         <div id="stat-camp-legenda-torte">
-            @for (v of VociLegenda(); track v.etichetta)
-            {
-               <span class="voce-legenda"><span class="quadratino" [style.background-color]="v.colore"></span>{{ (v.etichetta === 'Et') ? 'Supplementari' : v.etichetta }}</span>
-            }
-            <span class="voce-legenda"><span class="quadratino quadratino-negativo"></span>tratteggiato: a sfavore (punti subiti; quarti persi nella differenza, spicchio grande quanto lo scarto)</span>
-         </div>
-
-         <p-divider
-            layout="horizontal"
-            styleClass="my-3"></p-divider>
-
-         <!-- andamento partita per partita (una metrica alla volta) -->
-         <h3 class="titolo-sezione">Andamento partita per partita <span class="evidenziato">{{ team?.nome }}</span></h3>
-         <app-andamento-campionato-comp [partite]="ffPartite"
-                                        [nomeNoi]="team?.nome ?? ''"></app-andamento-campionato-comp>
-
-         <p-divider
-            layout="horizontal"
-            styleClass="my-3"></p-divider>
-
-         <!-- Four Factors: sui totali delle partite selezionate e partita per partita -->
-         <h3 class="titolo-sezione">Four Factors <span class="evidenziato">{{ team?.nome }}</span></h3>
-         <app-four-factors-comp [ff]="fourFactors"
-                                [nomeNoi]="team?.nome ?? ''"
-                                nomeLoro="Avversari"></app-four-factors-comp>
-         <p-table id="tabellaFourFactors"
-                  class="custom-header-table tabella-ff"
-                  styleClass="custom-table p-datatable-gridlines"
-                  [value]="ffPartite"
-                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
-            <ng-template pTemplate="header">
-               <tr>
-                  <th colspan="4"></th>
-                  <th colspan="2" class="sep gruppo">eFG%</th>
-                  <th colspan="2" class="sep gruppo">TOV%</th>
-                  <th colspan="2" class="sep gruppo">ORB%</th>
-                  <th colspan="2" class="sep gruppo">TL/TdC</th>
-                  <th colspan="4" class="sep gruppo">Per 100 possessi</th>
-               </tr>
-               <tr>
-                  <th style="width: 100px;">Data</th>
-                  <th style="width: 160px;">Squadra</th>
-                  <th style="width: 40px;" class="centro">C/T</th>
-                  <th class="centro">Ris.</th>
-                  @for (f of [0, 1, 2, 3]; track f)
-                  {
-                     <th class="sep num">Noi</th>
-                     <th class="num">Avv</th>
-                  }
-                  <th class="sep num">Poss</th>
-                  <th class="num">Fatti</th>
-                  <th class="num">Subiti</th>
-                  <th class="num">Net</th>
-               </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-p>
-               <tr>
-                  <td>{{ p.riga.data }}</td>
-                  <td>{{ p.riga.squadra }}</td>
-                  <td class="centro">{{ p.riga.casaTrasf }}</td>
-                  <td class="centro">{{ p.riga.puntiF }}-{{ p.riga.puntiS }}</td>
-                  @for (f of p.ff.fattori; track f.sigla)
-                  {
-                     <td class="sep num" [class.valore-migliore]="MiglioreFF(f) > 0">{{ NumFF(f.noi) }}</td>
-                     <td class="num" [class.valore-migliore]="MiglioreFF(f) < 0">{{ NumFF(f.loro) }}</td>
-                  }
-                  <td class="sep num">{{ NumFF(p.ff.possessi) }}</td>
-                  <td class="num">{{ NumFF(p.ff.offRtg) }}</td>
-                  <td class="num">{{ NumFF(p.ff.difRtg) }}</td>
-                  <td class="num"
-                      [class.valore-migliore]="(NetRtg(p.ff) ?? 0) > 0"
-                      [class.valore-peggiore]="(NetRtg(p.ff) ?? 0) < 0">{{ NumFF(NetRtg(p.ff), true) }}</td>
-               </tr>
-            </ng-template>
-         </p-table>
-         <div id="stat-camp-legenda-ff">
-            <span class="legenda-migliore">■ squadra messa meglio nel fattore (Net: positivo)</span>
-            <span class="legenda-peggiore">■ Net negativo</span>
-         </div>
-
-         <p-divider
-            layout="horizontal"
-            styleClass="my-3"></p-divider>
-
-         <!-- tiri a zone sulle partite selezionate: fatti dalla squadra o subiti -->
-         <div class="intest-zone">
-            <h3 class="titolo-sezione">Mappa di tiro a zone <span class="evidenziato">{{ team?.nome }}</span></h3>
-            <p-selectButton [options]="opzioniZone"
-                            [(ngModel)]="vistaZone"
-                            optionLabel="label"
-                            optionValue="value"
-                            [allowEmpty]="false"
-                            size="small"/>
-         </div>
-         @if (ZoneMostrate()?.conPosizione)
-         {
-            <app-zone-tiro-comp [mappa]="ZoneMostrate()"
-                                [altezza]="ALTEZZA_ZONE"></app-zone-tiro-comp>
-         }
-         @else
-         {
-            <div class="nota-zone">Nessun tiro con posizione registrata{{ (vistaZone === 'subiti') ? ' per gli avversari' : '' }}.</div>
-         }
-
-         <p-divider
-            layout="horizontal"
-            styleClass="my-3"></p-divider>
-
-         <!-- timeout e parziali sulle partite selezionate -->
-         <h3 class="titolo-sezione">Timeout e parziali <span class="evidenziato">{{ team?.nome }}</span></h3>
-         <div class="testo-conta-parziali">{{ TestoContaParziali() }}</div>
-         <app-parziali-timeout-comp [parziali]="parzialiCamp"
-                                    [riepilogo]="riepilogoTimeout"
-                                    [nomeNoi]="team?.nome ?? ''"
-                                    nomeLoro="Avversari"></app-parziali-timeout-comp>
-
-         <p-divider
-            layout="horizontal"
-            styleClass="my-3"></p-divider>
-
          <!-- statistiche dei giocatori a referto nelle partite selezionate -->
          <h3 class="titolo-sezione">Statistiche giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
          <p-table id="tabellaStatGiocatori"
@@ -446,6 +274,226 @@
                </tr>
             </ng-template>
          </p-table>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- contributo dei quarti: punti fatti, subiti e differenza (sui totali) -->
+         <h3 class="titolo-sezione">Contributo dei quarti <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <div id="stat-camp-torte">
+            @for (torta of torte; track torta.titolo; let iTorta = $index)
+            {
+               <figure class="torta">
+                  <figcaption>
+                     <div class="torta-titolo">{{ torta.titolo }}</div>
+                     <div class="torta-totale">Totale: {{ ValoreTorta(torta.totale, iTorta === 2) }}</div>
+                  </figcaption>
+                  <svg viewBox="-190 -150 380 300" role="img" [attr.aria-label]="torta.titolo + ' per quarto'">
+                     <defs>
+                        <!-- tratteggio dei quarti persi (differenza negativa), sopra il colore del quarto -->
+                        <pattern [attr.id]="'tratteggio-' + iTorta" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)">
+                           <line x1="0" y1="0" x2="0" y2="9" class="linea-tratteggio"/>
+                        </pattern>
+                     </defs>
+                     @for (f of torta.fette; track f.etichetta)
+                     {
+                        <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
+                              [attr.fill]="f.colore"
+                              class="fetta">
+                           <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%)</title>
+                        </path>
+                        @if (f.negativo)
+                        {
+                           <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
+                                 [attr.fill]="'url(#tratteggio-' + iTorta + ')'"
+                                 class="fetta tratteggio-negativo">
+                              <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%) - a sfavore</title>
+                           </path>
+                        }
+                     }
+                     @for (f of torta.fette; track f.etichetta)
+                     {
+                        <text [attr.x]="PosEtichetta(f).x"
+                              [attr.y]="PosEtichetta(f).y"
+                              [attr.text-anchor]="PosEtichetta(f).ancora"
+                              class="etichetta-fetta">
+                           <tspan class="etichetta-valore">{{ f.etichetta }} {{ ValoreTorta(f.valore, iTorta === 2) }}</tspan>
+                           <tspan [attr.x]="PosEtichetta(f).x" dy="1.2em" class="etichetta-perc">{{ PercFetta(f) }}%</tspan>
+                        </text>
+                     }
+                     @if (torta.fette.length === 0)
+                     {
+                        <text x="0" y="0" text-anchor="middle" class="etichetta-fetta">nessun valore</text>
+                     }
+                  </svg>
+               </figure>
+            }
+         </div>
+         <div id="stat-camp-legenda-torte">
+            @for (v of VociLegenda(); track v.etichetta)
+            {
+               <span class="voce-legenda"><span class="quadratino" [style.background-color]="v.colore"></span>{{ (v.etichetta === 'Et') ? 'Supplementari' : v.etichetta }}</span>
+            }
+            <span class="voce-legenda"><span class="quadratino quadratino-negativo"></span>tratteggiato: a sfavore (punti subiti; quarti persi nella differenza, spicchio grande quanto lo scarto)</span>
+         </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- andamento partita per partita (una metrica alla volta) -->
+         <h3 class="titolo-sezione">Andamento partita per partita <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-andamento-campionato-comp [partite]="ffPartite"
+                                        [nomeNoi]="team?.nome ?? ''"></app-andamento-campionato-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- partite vinte e perse a confronto -->
+         <h3 class="titolo-sezione">Partite vinte e perse a confronto <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-confronto-comp [confronto]="confronto"></app-confronto-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- Four Factors: sui totali delle partite selezionate e partita per partita -->
+         <h3 class="titolo-sezione">Four Factors <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-four-factors-comp [ff]="fourFactors"
+                                [nomeNoi]="team?.nome ?? ''"
+                                nomeLoro="Avversari"></app-four-factors-comp>
+         <p-table id="tabellaFourFactors"
+                  class="custom-header-table tabella-ff"
+                  styleClass="custom-table p-datatable-gridlines"
+                  [value]="ffPartite"
+                  [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
+            <ng-template pTemplate="header">
+               <tr>
+                  <th colspan="4"></th>
+                  <th colspan="2" class="sep gruppo">eFG%</th>
+                  <th colspan="2" class="sep gruppo">TOV%</th>
+                  <th colspan="2" class="sep gruppo">ORB%</th>
+                  <th colspan="2" class="sep gruppo">TL/TdC</th>
+                  <th colspan="2" class="sep gruppo">Ritmo</th>
+                  <th colspan="3" class="sep gruppo">Per 100 possessi</th>
+               </tr>
+               <tr>
+                  <th style="width: 100px;">Data</th>
+                  <th style="width: 160px;">Squadra</th>
+                  <th style="width: 40px;" class="centro">C/T</th>
+                  <th class="centro">Ris.</th>
+                  @for (f of [0, 1, 2, 3]; track f)
+                  {
+                     <th class="sep num">Noi</th>
+                     <th class="num">Avv</th>
+                  }
+                  <th class="sep num">Poss</th>
+                  <th class="num">Pace</th>
+                  <th class="sep num">Fatti</th>
+                  <th class="num">Subiti</th>
+                  <th class="num">Net</th>
+               </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-p>
+               <tr>
+                  <td>{{ p.riga.data }}</td>
+                  <td>{{ p.riga.squadra }}</td>
+                  <td class="centro">{{ p.riga.casaTrasf }}</td>
+                  <td class="centro">{{ p.riga.puntiF }}-{{ p.riga.puntiS }}</td>
+                  @for (f of p.ff.fattori; track f.sigla)
+                  {
+                     <td class="sep num" [class.valore-migliore]="MiglioreFF(f) > 0">{{ NumFF(f.noi) }}</td>
+                     <td class="num" [class.valore-migliore]="MiglioreFF(f) < 0">{{ NumFF(f.loro) }}</td>
+                  }
+                  <td class="sep num">{{ NumFF(p.ff.possessi) }}</td>
+                  <td class="num">{{ NumFF(p.ff.pace) }}</td>
+                  <td class="sep num">{{ NumFF(p.ff.offRtg) }}</td>
+                  <td class="num">{{ NumFF(p.ff.difRtg) }}</td>
+                  <td class="num"
+                      [class.valore-migliore]="(NetRtg(p.ff) ?? 0) > 0"
+                      [class.valore-peggiore]="(NetRtg(p.ff) ?? 0) < 0">{{ NumFF(NetRtg(p.ff), true) }}</td>
+               </tr>
+            </ng-template>
+         </p-table>
+         <div id="stat-camp-legenda-ff">
+            <span class="legenda-migliore">■ squadra messa meglio nel fattore (Net: positivo)</span>
+            <span class="legenda-peggiore">■ Net negativo</span>
+         </div>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- tiri a zone sulle partite selezionate: fatti dalla squadra o subiti -->
+         <div class="intest-zone">
+            <h3 class="titolo-sezione">Mappa di tiro a zone <span class="evidenziato">{{ team?.nome }}</span></h3>
+            <p-selectButton [options]="opzioniZone"
+                            [(ngModel)]="vistaZone"
+                            optionLabel="label"
+                            optionValue="value"
+                            [allowEmpty]="false"
+                            size="small"/>
+         </div>
+         @if (ZoneMostrate()?.conPosizione)
+         {
+            <app-zone-tiro-comp [mappa]="ZoneMostrate()"
+                                [altezza]="ALTEZZA_ZONE"></app-zone-tiro-comp>
+         }
+         @else
+         {
+            <div class="nota-zone">Nessun tiro con posizione registrata{{ (vistaZone === 'subiti') ? ' per gli avversari' : '' }}.</div>
+         }
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- finali punto a punto sulle partite selezionate -->
+         <h3 class="titolo-sezione">Finali punto a punto (clutch) <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-clutch-comp [clutch]="clutch"
+                          [nomeNoi]="team?.nome ?? ''"
+                          nomeLoro="Avversari"
+                          [campionato]="true"></app-clutch-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- timeout e parziali sulle partite selezionate -->
+         <h3 class="titolo-sezione">Timeout e parziali <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <div class="testo-conta-parziali">{{ TestoContaParziali() }}</div>
+         <app-parziali-timeout-comp [parziali]="parzialiCamp"
+                                    [riepilogo]="riepilogoTimeout"
+                                    [nomeNoi]="team?.nome ?? ''"
+                                    nomeLoro="Avversari"></app-parziali-timeout-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- usage ed efficienza dei giocatori -->
+         <h3 class="titolo-sezione">Volume ed efficienza <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-usage-comp [usage]="usage"
+                         [campionato]="true"></app-usage-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- radar dei giocatori -->
+         <h3 class="titolo-sezione">Radar dei giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-radar-comp [radar]="radar"></app-radar-comp>
+
+         <p-divider
+            layout="horizontal"
+            styleClass="my-3"></p-divider>
+
+         <!-- andamento stagionale dei giocatori: panoramica con i mini-grafici e grafico del giocatore scelto -->
+         <h3 class="titolo-sezione">Andamento stagionale dei giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
+         <app-andamento-giocatori-comp [andamento]="andamentoGiocatori"
+                                       [partite]="ffPartite"></app-andamento-giocatori-comp>
 
          <p-divider
             layout="horizontal"

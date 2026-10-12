@@ -1,0 +1,117 @@
+.ag-intest {
+   margin-bottom: 6px;
+}
+
+/* didascalia nel tooltip: indicazione non cliccabile */
+.ag-lettura {
+   font-size: 0.85rem;
+   color: #cbd5e1;
+   cursor: default;
+}
+
+.ag-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.ag-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.ag-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.ag-tabella th,
+.ag-tabella td {
+   padding: 0.2rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.ag-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.ag-tabella tbody tr {
+   background-color: #1f2938;
+}
+
+.ag-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+/* la riga si sceglie per vedere il grafico grande */
+.ag-riga {
+   cursor: pointer;
+}
+
+.ag-riga:hover {
+   background-color: #2f3e53 !important;
+}
+
+.ag-tabella tbody tr.ag-scelta {
+   background-color: #3b4a63 !important;
+   outline: 2px solid #ffaa00;
+   outline-offset: -2px;
+}
+
+.ag-sinistra {
+   text-align: left !important;
+}
+
+.ag-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.ag-numero {
+   color: #ffaa00;
+}
+
+.ag-sep {
+   border-left: 2px solid #94a3b8 !important;
+}
+
+.ag-spark {
+   padding: 0.1rem 0.3rem !important;
+   line-height: 0;
+}
+
+.ag-valore {
+   font-weight: bold;
+   min-width: 3rem;
+}
+
+.ag-linea {
+   fill: none;
+   stroke-width: 1.8;
+   stroke-linejoin: round;
+   stroke-linecap: round;
+}
+
+.ag-media {
+   stroke: #94a3b8;
+   stroke-width: 1;
+   stroke-dasharray: 3 3;
+}
+
+.ag-zero {
+   stroke: #475569;
+   stroke-width: 1;
+}
+
+.ag-titolo {
+   margin: 14px 0 6px 0;
+}
+
+.ag-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

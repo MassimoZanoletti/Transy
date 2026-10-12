@@ -1,0 +1,91 @@
+@if (usage && def)
+{
+   <div class="us-contenuto">
+      <!-- grafico volume / efficienza -->
+      <div class="us-grafico">
+         <div class="us-comandi">
+            <p-selectButton [options]="opzioniAsse"
+                            [(ngModel)]="asse"
+                            (ngModelChange)="Prepara()"
+                            optionLabel="label"
+                            optionValue="value"
+                            [allowEmpty]="false"/>
+            <span class="us-lettura" [pTooltip]="tooltipLettura" [escape]="false" tooltipPosition="top">
+               Come leggere il grafico <i class="pi pi-question-circle us-help"></i>
+            </span>
+         </div>
+         <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" aria-label="Volume ed efficienza dei giocatori">
+            @for (v of grigliaX; track v)
+            {
+               <line [attr.x1]="X(v)" [attr.x2]="X(v)" [attr.y1]="MT" [attr.y2]="H - MB" class="us-griglia"/>
+               <text [attr.x]="X(v)" [attr.y]="H - MB + 16" text-anchor="middle" class="us-asse">{{ Num(v) }}{{ def.unita }}</text>
+            }
+            @for (v of grigliaY; track v)
+            {
+               <line [attr.x1]="ML" [attr.x2]="W - MR" [attr.y1]="Y(v)" [attr.y2]="Y(v)" class="us-griglia"/>
+               <text [attr.x]="ML - 6" [attr.y]="Y(v) + 4" text-anchor="end" class="us-asse">{{ v }}%</text>
+            }
+            <!-- riferimenti: volume medio e TS% della squadra -->
+            <line [attr.x1]="X(def.riferimento)" [attr.x2]="X(def.riferimento)" [attr.y1]="MT" [attr.y2]="H - MB" class="us-riferimento"/>
+            <text [attr.x]="X(def.riferimento) + 4" [attr.y]="MT + 12" class="us-nota-grafico">{{ def.etichettaRif }}</text>
+            @if (usage.tsSquadra !== null)
+            {
+               <line [attr.x1]="ML" [attr.x2]="W - MR" [attr.y1]="Y(usage.tsSquadra)" [attr.y2]="Y(usage.tsSquadra)" class="us-riferimento"/>
+               <text [attr.x]="W - MR - 4" [attr.y]="Y(usage.tsSquadra) - 5" text-anchor="end" class="us-nota-grafico">TS% squadra {{ Num(usage.tsSquadra) }}%</text>
+            }
+            <text [attr.x]="(ML + W - MR) / 2" [attr.y]="H - 6" text-anchor="middle" class="us-titolo-asse">{{ def.titolo }}</text>
+            <text [attr.x]="14" [attr.y]="(MT + H - MB) / 2" text-anchor="middle" class="us-titolo-asse"
+                  [attr.transform]="'rotate(-90 14 ' + ((MT + H - MB) / 2) + ')'">TS% (efficienza)</text>
+
+            @for (g of punti; track g.id)
+            {
+               <g (pointerenter)="hover = g" (pointerleave)="hover = null">
+                  <circle [attr.cx]="X(ValoreX(g))" [attr.cy]="Y(g.ts!)" r="14" class="us-bersaglio"/>
+                  <circle [attr.cx]="X(ValoreX(g))" [attr.cy]="Y(g.ts!)" r="6" [attr.fill]="coloreNoi" class="us-punto" [class.us-punto-attivo]="hover === g"/>
+                  <text [attr.x]="X(ValoreX(g)) + 9" [attr.y]="Y(g.ts!) + 4" class="us-numero">{{ g.numero }}</text>
+                  <title>{{ Titolo(g) }}</title>
+               </g>
+            }
+         </svg>
+         <div class="us-riga-hover">@if (hover) { {{ Titolo(hover) }} } @else { Passa su un punto per i dettagli }</div>
+      </div>
+
+      <!-- tabella -->
+      <div class="us-scorrimento">
+         <table class="us-tabella">
+            <thead>
+               <tr>
+                  <th class="us-sinistra">Giocatore</th>
+                  <th class="us-num">Min</th>
+                  <th class="us-num" [pTooltip]="tooltipUsage" [escape]="false" tooltipPosition="top">USG% <i class="pi pi-question-circle us-help"></i></th>
+                  <th class="us-num" [pTooltip]="tooltipTiri" [escape]="false" tooltipPosition="top">{{ campionato ? 'Tiri/P' : 'Tiri' }} <i class="pi pi-question-circle us-help"></i></th>
+                  <th class="us-num" [pTooltip]="tooltipTs" [escape]="false" tooltipPosition="top">TS% <i class="pi pi-question-circle us-help"></i></th>
+                  <th class="us-num">Punti</th>
+                  <th class="us-num">TdC T</th>
+                  <th class="us-num">TL T</th>
+                  <th class="us-num">PP</th>
+               </tr>
+            </thead>
+            <tbody>
+               @for (g of usage.giocatori; track g.id)
+               {
+                  <tr [class.us-pochi]="g.pochiMinuti" [class.us-riga-attiva]="hover === g">
+                     <td class="us-sinistra"><b class="us-numero-tab">{{ g.numero }}</b> {{ g.nome }}</td>
+                     <td class="us-num">{{ Min(g.secondi) }}</td>
+                     <td class="us-num">{{ g.pochiMinuti ? 'pochi min.' : Num(g.usage) }}</td>
+                     <td class="us-num">{{ Num(g.tiri) }}</td>
+                     <td class="us-num" [class.us-sotto]="(g.ts !== null) && (usage.tsSquadra !== null) && (g.ts < usage.tsSquadra)">{{ Num(g.ts) }}</td>
+                     <td class="us-num">{{ g.punti }}</td>
+                     <td class="us-num">{{ g.fga }}</td>
+                     <td class="us-num">{{ g.fta }}</td>
+                     <td class="us-num">{{ g.pp }}</td>
+                  </tr>
+               }
+            </tbody>
+         </table>
+         <div class="us-nota">
+            Usage e tiri solo con almeno {{ SogliaMinuti() }} minuti giocati. TS% in arancio: sotto quello della squadra.
+         </div>
+      </div>
+   </div>
+}

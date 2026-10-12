@@ -1,0 +1,79 @@
+@if (confronto)
+{
+   <span class="cf-lettura" [pTooltip]="tooltipConfronto" [escape]="false" tooltipPosition="top">
+      Come leggere il confronto <i class="pi pi-question-circle cf-help"></i>
+   </span>
+   @if ((confronto.partiteA === 0) || (confronto.partiteB === 0))
+   {
+      <div class="cf-vuoto">Servono partite in entrambi i gruppi ({{ confronto.nomeA }}: {{ confronto.partiteA }}, {{ confronto.nomeB }}: {{ confronto.partiteB }}).</div>
+   }
+   @else
+   {
+      <div class="cf-contenuto">
+         <!-- squadra -->
+         <div class="cf-scorrimento">
+            <table class="cf-tabella">
+               <thead>
+                  <tr>
+                     <th class="cf-sinistra"></th>
+                     <th class="cf-num">{{ confronto.nomeA }} <span class="cf-n">({{ confronto.partiteA }})</span></th>
+                     <th class="cf-num">{{ confronto.nomeB }} <span class="cf-n">({{ confronto.partiteB }})</span></th>
+                     <th class="cf-num">Differenza</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (s of confronto.sezioni; track s.titolo)
+                  {
+                     <tr class="cf-sezione"><td colspan="4">{{ s.titolo }}</td></tr>
+                     @for (r of s.righe; track r.etichetta)
+                     {
+                        <tr>
+                           <td class="cf-sinistra">{{ r.etichetta }}</td>
+                           <td class="cf-num">{{ Num(r.a, r.decimali, r.unita) }}@if (r.dettaglioA) { <span class="cf-det">({{ r.dettaglioA }})</span> }</td>
+                           <td class="cf-num">{{ Num(r.b, r.decimali, r.unita) }}@if (r.dettaglioB) { <span class="cf-det">({{ r.dettaglioB }})</span> }</td>
+                           <td class="cf-num" [class.cf-positivo]="Esito(r) > 0" [class.cf-negativo]="Esito(r) < 0">{{ Diff(r) }}</td>
+                        </tr>
+                     }
+                  }
+               </tbody>
+            </table>
+         </div>
+
+         <!-- giocatori -->
+         <div class="cf-scorrimento">
+            <table class="cf-tabella">
+               <thead>
+                  <tr>
+                     <th class="cf-sinistra" rowspan="2">Giocatore</th>
+                     <th colspan="2">Punti</th>
+                     <th colspan="2">Minuti</th>
+                     <th colspan="2">TS%</th>
+                  </tr>
+                  <tr>
+                     @for (k of [0, 1, 2]; track k)
+                     {
+                        <th class="cf-num cf-sotto">{{ confronto.nomeA }}</th>
+                        <th class="cf-num cf-sotto">{{ confronto.nomeB }}</th>
+                     }
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (g of confronto.giocatori; track g.id)
+                  {
+                     <tr>
+                        <td class="cf-sinistra"><b class="cf-numero">{{ g.numero }}</b> {{ g.nome }}</td>
+                        <td class="cf-num">{{ Num(g.puntiA) }}</td>
+                        <td class="cf-num">{{ Num(g.puntiB) }}</td>
+                        <td class="cf-num">{{ Num(g.minA, 0) }}</td>
+                        <td class="cf-num">{{ Num(g.minB, 0) }}</td>
+                        <td class="cf-num">{{ Num(g.tsA, 0, '%') }}</td>
+                        <td class="cf-num">{{ Num(g.tsB, 0, '%') }}</td>
+                     </tr>
+                  }
+               </tbody>
+            </table>
+            <div class="cf-nota">Medie a partita nelle partite in cui il giocatore è entrato.</div>
+         </div>
+      </div>
+   }
+}

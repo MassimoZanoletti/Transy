@@ -1,0 +1,113 @@
+@if (clutch)
+{
+   <div class="cl-intro" [pTooltip]="tooltipClutch" [escape]="false" tooltipPosition="top">
+      @if (campionato)
+      {
+         Partite arrivate punto a punto: <b>{{ clutch.partite }}</b>
+         @if (clutch.partite > 0) { (vinte <b>{{ clutch.vinte }}</b>, perse <b>{{ clutch.perse }}</b>) }
+         · tempo di clutch <b>{{ Min(clutch.secondi) }}</b>
+      }
+      @else
+      {
+         Tempo di clutch: <b>{{ Min(clutch.secondi) }}</b>
+      }
+      <i class="pi pi-question-circle cl-help"></i>
+   </div>
+
+   @if (clutch.secondi <= 0)
+   {
+      <div class="cl-vuoto">Nessun finale punto a punto.</div>
+   }
+   @else
+   {
+      <div class="cl-sezioni">
+         <!-- squadre: in clutch e nel resto della partita -->
+         <div class="cl-scorrimento">
+            <table class="cl-tabella">
+               <thead>
+                  <tr>
+                     <th class="cl-sinistra"></th>
+                     <th class="cl-num">Punti</th>
+                     <th class="cl-num">Punti/10'</th>
+                     <th class="cl-num">TdC</th>
+                     <th class="cl-num">T3</th>
+                     <th class="cl-num">TL</th>
+                     <th class="cl-num">PP</th>
+                     <th class="cl-num">RA</th>
+                     <th class="cl-num">RD</th>
+                     <th class="cl-num">As</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (gruppo of Righe(clutch); track gruppo.titolo)
+                  {
+                     <tr class="cl-gruppo"><td colspan="10">{{ gruppo.titolo }} <span class="cl-durata">({{ Min(gruppo.secondi) }})</span></td></tr>
+                     @for (s of gruppo.squadre; track s.nome)
+                     {
+                        <tr>
+                           <td class="cl-sinistra" [class.cl-noi]="s.noi" [class.cl-loro]="!s.noi">{{ s.nome }}</td>
+                           <td class="cl-num">{{ s.b.punti }}</td>
+                           <td class="cl-num">{{ Ogni10(s.b.punti, gruppo.secondi) }}</td>
+                           <td class="cl-num">{{ Tiri(TdC(s.b)) }}</td>
+                           <td class="cl-num">{{ Tiri(s.b.t3) }}</td>
+                           <td class="cl-num">{{ Tiri(s.b.tl) }}</td>
+                           <td class="cl-num">{{ s.b.pp }}</td>
+                           <td class="cl-num">{{ s.b.ra }}</td>
+                           <td class="cl-num">{{ s.b.rd }}</td>
+                           <td class="cl-num">{{ s.b.as }}</td>
+                        </tr>
+                     }
+                  }
+               </tbody>
+            </table>
+         </div>
+
+         <!-- giocatori della squadra in clutch -->
+         @if (clutch.giocatori.length > 0)
+         {
+            <div class="cl-scorrimento">
+               <table class="cl-tabella">
+                  <thead>
+                     <tr>
+                        <th class="cl-sinistra">Giocatori in clutch</th>
+                        <th class="cl-num">Min</th>
+                        <th class="cl-num">Punti</th>
+                        <th class="cl-num">TdC</th>
+                        <th class="cl-num">T3</th>
+                        <th class="cl-num">TL</th>
+                        <th class="cl-num">PP</th>
+                        <th class="cl-num">Rimb</th>
+                        <th class="cl-num">As</th>
+                        <th class="cl-num">+/-</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     @for (g of clutch.giocatori; track g.id)
+                     {
+                        <tr>
+                           <td class="cl-sinistra"><b class="cl-numero">{{ g.numero }}</b> {{ g.nome }}</td>
+                           <td class="cl-num">{{ Min(g.secondi) }}</td>
+                           <td class="cl-num">{{ g.box.punti }}</td>
+                           <td class="cl-num">{{ Tiri(TdC(g.box)) }}</td>
+                           <td class="cl-num">{{ Tiri(g.box.t3) }}</td>
+                           <td class="cl-num">{{ Tiri(g.box.tl) }}</td>
+                           <td class="cl-num">{{ g.box.pp }}</td>
+                           <td class="cl-num">{{ g.box.ra + g.box.rd }}</td>
+                           <td class="cl-num">{{ g.box.as }}</td>
+                           <td class="cl-num" [class.cl-positivo]="g.pm > 0" [class.cl-negativo]="g.pm < 0">{{ Pm(g.pm) }}</td>
+                        </tr>
+                     }
+                  </tbody>
+               </table>
+            </div>
+         }
+      </div>
+
+      @if (clutch.quintetti.length > 0)
+      {
+         <h4 class="cl-titolo">Quintetti in clutch</h4>
+         <app-quintetti-comp [quintetti]="clutch.quintetti"
+                             [conPartite]="campionato"></app-quintetti-comp>
+      }
+   }
+}

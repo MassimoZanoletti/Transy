@@ -11,7 +11,7 @@ import {COLORE_LORO, COLORE_NOI, COLORE_NOI_PDF, ColorePdf} from "./grafico-diff
 export const MEDIA_MOBILE = 3;
 
 
-export type TMetricaAndamento = 'punti' | 'diff' | 'net' | 'rating' | 'efg' | 'tov' | 'orb' | 'ftr' | 'poss';
+export type TMetricaAndamento = 'punti' | 'diff' | 'net' | 'rating' | 'efg' | 'tov' | 'orb' | 'ftr' | 'pace' | 'poss';
 
 
 export const METRICHE_ANDAMENTO: { value: TMetricaAndamento, label: string }[] = [
@@ -23,6 +23,7 @@ export const METRICHE_ANDAMENTO: { value: TMetricaAndamento, label: string }[] =
    { value: 'tov',    label: 'Palle perse %' },
    { value: 'orb',    label: 'Rimb. off. %' },
    { value: 'ftr',    label: 'TL/TdC' },
+   { value: 'pace',   label: 'Pace (ritmo)' },
    { value: 'poss',   label: 'Possessi' }
 ];
 
@@ -76,6 +77,7 @@ export function DatiAndamento (partite: TPartitaAndamento[],
       case 'tov':    serie = coppia('TOV%'); break;
       case 'orb':    serie = coppia('ORB%'); break;
       case 'ftr':    serie = coppia('TL/TdC'); break;
+      case 'pace':   serie = [noi(partite.map(p => p.ff.pace))]; serie[0].nome = 'Pace'; break;
       case 'poss':   serie = [noi(partite.map(p => p.ff.possessi))]; serie[0].nome = 'Possessi'; break;
    }
    return {

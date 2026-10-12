@@ -1,0 +1,65 @@
+@if (andamento.length > 0)
+{
+   <div class="ag-intest">
+      <span class="ag-lettura" [pTooltip]="tooltipLettura" [escape]="false" tooltipPosition="top">
+         Come leggere i mini-grafici <i class="pi pi-question-circle ag-help"></i>
+      </span>
+   </div>
+   <div class="ag-scorrimento">
+      <table class="ag-tabella">
+         <thead>
+            <tr>
+               <th class="ag-sinistra">Giocatore</th>
+               <th class="ag-num">Part</th>
+               @for (m of metriche; track m.value)
+               {
+                  <th colspan="2" class="ag-sep">{{ m.label }}</th>
+               }
+            </tr>
+         </thead>
+         <tbody>
+            @for (g of andamento; track g.id)
+            {
+               <tr class="ag-riga" [class.ag-scelta]="g.id === idScelto" (click)="Scegli(g.id)">
+                  <td class="ag-sinistra"><b class="ag-numero">{{ g.numero }}</b> {{ g.nome }}</td>
+                  <td class="ag-num">{{ g.partite }}</td>
+                  @for (m of metriche; track m.value)
+                  {
+                     <td class="ag-spark ag-sep" [title]="Dettaglio(g, m.value)">
+                        <svg [attr.width]="SW" [attr.height]="SH" [attr.viewBox]="'0 0 ' + SW + ' ' + SH">
+                           @if (Spark(g, m.value).yZero !== null)
+                           {
+                              <line x1="2" [attr.x2]="SW - 2" [attr.y1]="Spark(g, m.value).yZero" [attr.y2]="Spark(g, m.value).yZero" class="ag-zero"/>
+                           }
+                           @if (Spark(g, m.value).yMedia !== null)
+                           {
+                              <line x1="2" [attr.x2]="SW - 2" [attr.y1]="Spark(g, m.value).yMedia" [attr.y2]="Spark(g, m.value).yMedia" class="ag-media"/>
+                           }
+                           <path [attr.d]="Linea(Spark(g, m.value))" [attr.stroke]="coloreNoi" class="ag-linea"/>
+                           @for (p of Pallini(Spark(g, m.value)); track $index)
+                           {
+                              <circle [attr.cx]="p.x" [attr.cy]="p.y" [attr.r]="(p.tipo === 'solo') ? 2 : 2.8"
+                                      [attr.fill]="(p.tipo === 'min') ? '#1f2938' : coloreNoi"
+                                      [attr.stroke]="coloreNoi" stroke-width="1.5"/>
+                           }
+                        </svg>
+                     </td>
+                     <td class="ag-num ag-valore">{{ Media(g, m.value) }}</td>
+                  }
+               </tr>
+            }
+         </tbody>
+      </table>
+   </div>
+
+   @if (Scelto(); as g)
+   {
+      <h4 class="ag-titolo">Andamento di <span class="ag-numero">{{ g.numero }}</span> {{ g.nome }}</h4>
+      <app-andamento-campionato-comp [metricheEsterne]="metriche"
+                                     [calcola]="calcola"></app-andamento-campionato-comp>
+   }
+}
+@else
+{
+   <div class="ag-vuoto">Nessun giocatore.</div>
+}

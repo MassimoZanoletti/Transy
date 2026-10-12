@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {Router} from "@angular/router";
 import {firstValueFrom} from "rxjs";
 import {ButtonModule} from "primeng/button";
@@ -41,7 +41,7 @@ import {TabellaQuintettiPdf, TQuintettoStat} from "../../common/quintetti";
 import {QuintettiCompComponent} from "../../common/quintetti-comp/quintetti-comp.component";
 import {CoppieOnoffCompComponent} from "../../common/coppie-onoff-comp/coppie-onoff-comp.component";
 import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../common/coppie-onoff";
-import {SerieDifferenza} from "../../common/grafico-differenza";
+import {COLORE_LORO, COLORE_NOI_PDF, MinutiDiGioco, SerieDifferenza} from "../../common/grafico-differenza";
 import {
    AccumulaTimeout,
    EsitiTimeout,
@@ -55,6 +55,16 @@ import {
    TRiepilogoTimeout
 } from "../../common/parziali-timeout";
 import {ParzialiTimeoutCompComponent} from "../../common/parziali-timeout-comp/parziali-timeout-comp.component";
+import {CalcolaClutch, ClutchVuoto, SommaClutch, TabelleClutchPdf, TClutch} from "../../common/clutch";
+import {ClutchCompComponent} from "../../common/clutch-comp/clutch-comp.component";
+import {CalcolaUsage, DisegnaUsagePdf, MinSecondiCampionato, TabellaUsagePdf, TUsageSquadra} from "../../common/usage";
+import {UsageCompComponent} from "../../common/usage-comp/usage-comp.component";
+import {CalcolaRadar, PagineRadarPdf, TRadar} from "../../common/radar";
+import {RadarCompComponent} from "../../common/radar-comp/radar-comp.component";
+import {AndamentoGiocatori, TabellaSparklinePdf, TAndamentoGiocatore} from "../../common/andamento-giocatori";
+import {AndamentoGiocatoriCompComponent} from "../../common/andamento-giocatori-comp/andamento-giocatori-comp.component";
+import {ConfrontoVintePerse, TabelleConfrontoPdf, TConfronto, TPartitaConfronto} from "../../common/confronto";
+import {ConfrontoCompComponent} from "../../common/confronto-comp/confronto-comp.component";
 import {CalcolaZone, CaricaImmagineCampo, PaginaZonePdf, SommaZone, TMappaZone, ZoneVuote} from "../../common/zone-tiro";
 import {ZoneTiroCompComponent} from "../../common/zone-tiro-comp/zone-tiro-comp.component";
 import {DatiAndamento, DisegnaAndamentoPdf, TMetricaAndamento} from "../../common/andamento-campionato";
@@ -85,6 +95,11 @@ export interface TStatCampionatoParams
                   QuintettiCompComponent,
                   CoppieOnoffCompComponent,
                   ParzialiTimeoutCompComponent,
+                  ClutchCompComponent,
+                  UsageCompComponent,
+                  RadarCompComponent,
+                  AndamentoGiocatoriCompComponent,
+                  ConfrontoCompComponent,
                   ZoneTiroCompComponent,
                   AndamentoCampionatoCompComponent,
                   FormsModule,
@@ -93,7 +108,7 @@ export interface TStatCampionatoParams
                templateUrl: './stat-campionato-page.component.html',
                styleUrl:    './stat-campionato-page.component.css'
             })
-export class StatCampionatoPageComponent
+export class StatCampionatoPageComponent implements OnInit
 {
    public team: IDSTeam | null = null;
    public champ: IDSChamp | null = null;
@@ -121,6 +136,16 @@ export class StatCampionatoPageComponent
    public riepilogoTimeout: { noi: TRiepilogoTimeout, loro: TRiepilogoTimeout } | null = null;
    public parzialiCamp: Array<{ partita: string, p: TParziale }> = [];
    public contaParziali: { fatti: number, subiti: number } = { fatti: 0, subiti: 0 };
+   // finali punto a punto sommati sulle partite selezionate
+   public clutch: TClutch | null = null;
+   // usage ed efficienza dei giocatori sulle partite selezionate
+   public usage: TUsageSquadra | null = null;
+   // radar dei giocatori (confronto con la media della squadra)
+   public radar: TRadar | null = null;
+   // andamento stagionale dei giocatori (valori partita per partita)
+   public andamentoGiocatori: TAndamentoGiocatore[] = [];
+   // confronto fra partite vinte e perse
+   public confronto: TConfronto | null = null;
    public readonly MIN_PARZIALE = MIN_PARZIALE;
    private readonly PARZIALI_MOSTRATI = 10;
    // tiri a zone sulle partite selezionate: fatti dalla squadra e subiti (tiri degli avversari)
@@ -197,6 +222,14 @@ export class StatCampionatoPageComponent
    }
 
 
+   // arrivando dalla finestra di selezione l'elaborazione parte da sola (il bottone resta per rifarla)
+   ngOnInit (): void
+   {
+      if (this.team)
+         this.ElaboraStatistiche ();
+   }
+
+
    // Ricalcola da zero la tabella, rileggendo roster ed eventi di ogni partita selezionata
    async ElaboraStatistiche ()
    {
@@ -213,11 +246,14 @@ export class StatCampionatoPageComponent
          const boxNoi: TBoxSquadra = BoxVuoto ();
          const boxLoro: TBoxSquadra = BoxVuoto ();
          const ffPartite: Array<{ riga: TRigaStatCamp, ff: TFourFactors }> = [];
+         let minutiTot = 0;
          const quintetti = new Map<string, TQuintettoStat> ();
          const toNoi = RiepilogoVuoto ();
          const toLoro = RiepilogoVuoto ();
          const parziali: Array<{ partita: string, p: TParziale }> = [];
          const zoneFatti = ZoneVuote ();
+         const clutch = ClutchVuoto ();
+         const partiteConfronto: Array<TPartitaConfronto> = [];
          const zoneSubiti = ZoneVuote ();
          for (const mh of this.matches)
          {
@@ -235,11 +271,15 @@ export class StatCampionatoPageComponent
             const box = BoxPartita (mh, cm, teamId);
             SommaBox (boxNoi, box.noi);
             SommaBox (boxLoro, box.loro);
-            ffPartite.push ({ riga, ff: CalcolaFourFactors (box.noi, box.loro) });
-            AccumulaGiocatori (giocatori, quintetti, mh, cm, ops, teamId);
+            const minuti = MinutiDiGioco (QuartiGiocati (ops));
+            minutiTot += minuti;
+            ffPartite.push ({ riga, ff: CalcolaFourFactors (box.noi, box.loro, 1, minuti) });
+            AccumulaGiocatori (giocatori, quintetti, mh, cm, ops, teamId, righe.length - 1);
             // parziali e timeout: la serie è sempre dal punto di vista di MyTeam della partita, si gira se la
             // squadra scelta è l'altra
             const isMy = (Number (mh.myTeamId_link) === teamId);
+            SommaClutch (clutch, CalcolaClutch (ops, [...(cm.myTeam ()?.Roster ?? []), ...(cm.oppTeam ()?.Roster ?? [])], isMy,
+                                                { quarto: 0, tempo: 0, quartoGiocato: () => false }));
             SommaZone (zoneFatti, CalcolaZone ((isMy ? cm.myTeam () : cm.oppTeam ())?.Roster ?? []));
             SommaZone (zoneSubiti, CalcolaZone ((isMy ? cm.oppTeam () : cm.myTeam ())?.Roster ?? []));
             const serie = SerieDifferenza (ops, QuartiGiocati (ops), { quarto: 0, tempo: 0, quartoGiocato: () => false });
@@ -251,22 +291,35 @@ export class StatCampionatoPageComponent
             // dettaglio per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto
             // per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto. Servono sempre
             // (grafici a torta); in tabella solo con il dettaglio per quarto
+            const difQuarti: Array<number | null> = [null, null, null, null];
             for (const q of QuartiGiocati (ops))
             {
                const cmQ = new TCurrMatch (this.servMatchHeader, this.servMatchRoster, this.servTeam);
                RicostruisciPartita (cmQ, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), await TOperationList.Create (), q);
                const rigaQ = RigaQuarto (mh, cmQ, teamId, q);
                righeQuarti.push (rigaQ);
+               if (q <= 4)
+                  difQuarti[q - 1] = rigaQ.dif;
                if (this.dettaglioQuarti)
                   righeTabella.push (rigaQ);
             }
+            partiteConfronto.push ({ indice: righe.length - 1, riga, noi: box.noi, loro: box.loro, minuti, difQuarti });
          }
          this.righe = righe;
-         this.fourFactors = (righe.length > 0) ? CalcolaFourFactors (boxNoi, boxLoro, righe.length) : null;
+         this.fourFactors = (righe.length > 0) ? CalcolaFourFactors (boxNoi, boxLoro, righe.length, minutiTot) : null;
          this.ffPartite = ffPartite;
          this.quintetti = [...quintetti.values ()].sort ((a, b) => b.secondi - a.secondi);
          this.riepilogoTimeout = { noi: toNoi, loro: toLoro };
          this.zoneFatti = zoneFatti;
+         this.clutch = clutch;
+         this.usage = CalcolaUsage (
+            [...giocatori.values ()].map (g => ({ id: g.id, numero: g.numero, nome: g.nome, secondi: g.secondi, partite: g.partite,
+                                                  punti: g.punti, fga: g.tdc.tentati, fta: g.tl.tentati, pp: g.pp })),
+            { punti: boxNoi.punti, fga: boxNoi.t2.tentati + boxNoi.t3.tentati, fta: boxNoi.tl.tentati, pp: boxNoi.pp },
+            MinSecondiCampionato (righe.length));
+         this.radar = CalcolaRadar ([...giocatori.values ()], this.usage, MinSecondiCampionato (righe.length));
+         this.andamentoGiocatori = AndamentoGiocatori ([...giocatori.values ()], righe.length);
+         this.confronto = ConfrontoVintePerse (partiteConfronto, [...giocatori.values ()]);
          this.zoneSubiti = zoneSubiti;
          this.contaParziali = { fatti: parziali.filter (x => x.p.myTeam).length, subiti: parziali.filter (x => !x.p.myTeam).length };
          const piuAmpi = (nostri: boolean) => parziali.filter (x => x.p.myTeam === nostri)
@@ -685,87 +738,7 @@ export class StatCampionatoPageComponent
       });
       legenda ((pdf as any).lastAutoTable.finalY + 5);
 
-      // ---- pagina 2: contributo dei quarti (torte) ----
-      pdf.addPage ();
-      titolo (`Contributo dei quarti - ${nomeTeam}`, 10);
-      this.DisegnaTortePdf (pdf, font);
-
-      // ---- pagina 3: Four Factors complessivi e partita per partita ----
-      if (this.fourFactors)
-      {
-         pdf.addPage ();
-         titolo (`Four Factors - ${nomeTeam}`, 10);
-         const yFF = TabellaFourFactorsPdf (pdf, autoTable, this.fourFactors, nomeTeam, 'Avversari', 15, font);
-         const ffCella = (v: number | null, meglio: boolean) => cella (NumFF (v), meglio ? 'valore-migliore' : '');
-         autoTable (pdf, {
-            startY: yFF + 8,
-            head: [
-               [{ content: '', colSpan: 4 }, { content: 'eFG%', colSpan: 2 }, { content: 'TOV%', colSpan: 2 }, { content: 'ORB%', colSpan: 2 },
-                { content: 'TL/TdC', colSpan: 2 }, { content: 'Per 100 possessi', colSpan: 4 }],
-               ['Data', 'Squadra', 'C/T', 'Ris.', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Poss', 'Fatti', 'Subiti', 'Net']
-            ],
-            body: this.ffPartite.map (({ riga, ff }) =>
-            {
-               const net = NetRtg (ff);
-               return [
-                  cella (riga.data), cella (riga.squadra), cella (riga.casaTrasf), cella (`${riga.puntiF}-${riga.puntiS}`),
-                  ...ff.fattori.flatMap (f => [ffCella (f.noi, MiglioreFF (f) > 0), ffCella (f.loro, MiglioreFF (f) < 0)]),
-                  cella (NumFF (ff.possessi)), cella (NumFF (ff.offRtg)), cella (NumFF (ff.difRtg)),
-                  cella (NumFF (net, true), ((net ?? 0) > 0) ? 'valore-migliore' : ((net ?? 0) < 0) ? 'valore-peggiore' : '')
-               ];
-            }),
-            columnStyles: { 0: { halign: 'left' }, 1: { halign: 'left' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
-            didDrawCell: separatoriDi (new Set ([3, 5, 7, 9, 11])),
-            ...stile
-         });
-         pdf.setFontSize (8);
-         pdf.setFont (font, 'normal');
-         pdf.setTextColor (0, 140, 0);
-         pdf.text ('verde: squadra messa meglio nel fattore (Net: positivo)', 5, (pdf as any).lastAutoTable.finalY + 5);
-         pdf.setTextColor (0, 0, 0);
-      }
-
-      // ---- andamento partita per partita: quattro grafici (con almeno due partite) ----
-      if (this.ffPartite.length >= 2)
-      {
-         pdf.addPage ();
-         titolo (`Andamento partita per partita - ${nomeTeam}`, 10);
-         const metriche: TMetricaAndamento[] = ['punti', 'diff', 'net', 'efg'];
-         metriche.forEach ((m, i) =>
-         {
-            const x = 20 + (i % 2) * 140;
-            const y = 26 + Math.floor (i / 2) * 92;
-            DisegnaAndamentoPdf (pdf, DatiAndamento (this.ffPartite, m, nomeTeam), x, y, 120, 66, font, true);
-         });
-      }
-
-      // ---- timeout e parziali ----
-      if (this.riepilogoTimeout)
-      {
-         pdf.addPage ();
-         titolo (`Timeout e parziali - ${nomeTeam}`, 10);
-         const yPt = TabelleParzialiTimeoutPdf (pdf, autoTable, this.parzialiCamp, null, this.riepilogoTimeout, [nomeTeam, 'Avversari'], 18, font);
-         pdf.setFontSize (9);
-         pdf.setFont (font, 'normal');
-         pdf.text (this.TestoContaParziali (), 5, yPt + 6);
-      }
-
-      // ---- tiri a zone: fatti e subiti (solo se c'è almeno un tiro con posizione) ----
-      const pagineZone = [{ titolo: `Tiri fatti a zone - ${nomeTeam}`, m: this.zoneFatti },
-                          { titolo: `Tiri subiti a zone - ${nomeTeam}`, m: this.zoneSubiti }]
-         .filter (z => (z.m) && (z.m.conPosizione > 0));
-      if (pagineZone.length > 0)
-      {
-         const campo = await CaricaImmagineCampo ();
-         for (const z of pagineZone)
-         {
-            pdf.addPage ();
-            titolo (z.titolo, 10);
-            await PaginaZonePdf (pdf, autoTable, z.m!, campo, 10, 16, 175, font);
-         }
-      }
-
-      // ---- pagina 4: le due tabelle dei giocatori ----
+      // ---- pagina 2: le due tabelle dei giocatori, subito dopo le statistiche di squadra ----
       pdf.addPage ();
       titolo (`Statistiche giocatori ${nomeTeam}`, 10);
       autoTable (pdf, {
@@ -808,6 +781,127 @@ export class StatCampionatoPageComponent
          ...stile
       });
       legenda ((pdf as any).lastAutoTable.finalY + 5);
+
+      // ---- contributo dei quarti (torte) ----
+      pdf.addPage ();
+      titolo (`Contributo dei quarti - ${nomeTeam}`, 10);
+      this.DisegnaTortePdf (pdf, font);
+
+      // ---- Four Factors complessivi e partita per partita ----
+      if (this.fourFactors)
+      {
+         pdf.addPage ();
+         titolo (`Four Factors - ${nomeTeam}`, 10);
+         const yFF = TabellaFourFactorsPdf (pdf, autoTable, this.fourFactors, nomeTeam, 'Avversari', 15, font);
+         const ffCella = (v: number | null, meglio: boolean) => cella (NumFF (v), meglio ? 'valore-migliore' : '');
+         autoTable (pdf, {
+            startY: yFF + 8,
+            head: [
+               [{ content: '', colSpan: 4 }, { content: 'eFG%', colSpan: 2 }, { content: 'TOV%', colSpan: 2 }, { content: 'ORB%', colSpan: 2 },
+                { content: 'TL/TdC', colSpan: 2 }, { content: 'Ritmo', colSpan: 2 }, { content: 'Per 100 possessi', colSpan: 3 }],
+               ['Data', 'Squadra', 'C/T', 'Ris.', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Noi', 'Avv', 'Poss', 'Pace', 'Fatti', 'Subiti', 'Net']
+            ],
+            body: this.ffPartite.map (({ riga, ff }) =>
+            {
+               const net = NetRtg (ff);
+               return [
+                  cella (riga.data), cella (riga.squadra), cella (riga.casaTrasf), cella (`${riga.puntiF}-${riga.puntiS}`),
+                  ...ff.fattori.flatMap (f => [ffCella (f.noi, MiglioreFF (f) > 0), ffCella (f.loro, MiglioreFF (f) < 0)]),
+                  cella (NumFF (ff.possessi)), cella (NumFF (ff.pace)), cella (NumFF (ff.offRtg)), cella (NumFF (ff.difRtg)),
+                  cella (NumFF (net, true), ((net ?? 0) > 0) ? 'valore-migliore' : ((net ?? 0) < 0) ? 'valore-peggiore' : '')
+               ];
+            }),
+            columnStyles: { 0: { halign: 'left' }, 1: { halign: 'left' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
+            didDrawCell: separatoriDi (new Set ([3, 5, 7, 9, 11, 13])),
+            ...stile
+         });
+         pdf.setFontSize (8);
+         pdf.setFont (font, 'normal');
+         pdf.setTextColor (0, 140, 0);
+         pdf.text ('verde: squadra messa meglio nel fattore (Net: positivo)', 5, (pdf as any).lastAutoTable.finalY + 5);
+         pdf.setTextColor (0, 0, 0);
+      }
+
+      // ---- andamento partita per partita: quattro grafici (con almeno due partite) ----
+      if (this.ffPartite.length >= 2)
+      {
+         pdf.addPage ();
+         titolo (`Andamento partita per partita - ${nomeTeam}`, 10);
+         const metriche: TMetricaAndamento[] = ['punti', 'diff', 'net', 'efg'];
+         metriche.forEach ((m, i) =>
+         {
+            const x = 20 + (i % 2) * 140;
+            const y = 26 + Math.floor (i / 2) * 92;
+            DisegnaAndamentoPdf (pdf, DatiAndamento (this.ffPartite, m, nomeTeam), x, y, 120, 66, font, true);
+         });
+      }
+
+      // ---- timeout e parziali ----
+      if (this.riepilogoTimeout)
+      {
+         pdf.addPage ();
+         titolo (`Timeout e parziali - ${nomeTeam}`, 10);
+         const yPt = TabelleParzialiTimeoutPdf (pdf, autoTable, this.parzialiCamp, null, this.riepilogoTimeout, [nomeTeam, 'Avversari'], 18, font);
+         pdf.setFontSize (9);
+         pdf.setFont (font, 'normal');
+         pdf.text (this.TestoContaParziali (), 5, yPt + 6);
+      }
+
+      // ---- finali punto a punto ----
+      if (this.clutch && (this.clutch.secondi > 0))
+      {
+         pdf.addPage ();
+         titolo (`Finali punto a punto (clutch) - ${nomeTeam}`, 10);
+         const rgb = (hex: string) => [1, 3, 5].map (i => parseInt (hex.substring (i, i + 2), 16));
+         const yCl = TabelleClutchPdf (pdf, autoTable, this.clutch, [nomeTeam, 'Avversari'], rgb (COLORE_NOI_PDF), rgb (COLORE_LORO), 16, font);
+         if (this.clutch.quintetti.length > 0)
+            TabellaQuintettiPdf (pdf, autoTable, this.clutch.quintetti, true, yCl, font);
+      }
+
+      // ---- confronto vinte/perse (con partite in entrambi i gruppi) ----
+      if (this.confronto && (this.confronto.partiteA > 0) && (this.confronto.partiteB > 0))
+      {
+         pdf.addPage ();
+         titolo (`Partite vinte e perse a confronto - ${nomeTeam}`, 10);
+         TabelleConfrontoPdf (pdf, autoTable, this.confronto, 15, font);
+      }
+
+      // ---- tiri a zone: fatti e subiti (solo se c'è almeno un tiro con posizione) ----
+      const pagineZone = [{ titolo: `Tiri fatti a zone - ${nomeTeam}`, m: this.zoneFatti },
+                          { titolo: `Tiri subiti a zone - ${nomeTeam}`, m: this.zoneSubiti }]
+         .filter (z => (z.m) && (z.m.conPosizione > 0));
+      if (pagineZone.length > 0)
+      {
+         const campo = await CaricaImmagineCampo ();
+         for (const z of pagineZone)
+         {
+            pdf.addPage ();
+            titolo (z.titolo, 10);
+            await PaginaZonePdf (pdf, autoTable, z.m!, campo, 10, 16, 175, font);
+         }
+      }
+
+      // ---- volume ed efficienza: usage e tentativi di tiro per partita ----
+      if (this.usage && (this.usage.giocatori.length > 0))
+         for (const [asse, nome] of [['usage', 'Usage ed efficienza'], ['tiri', 'Tiri ed efficienza']] as const)
+         {
+            pdf.addPage ();
+            titolo (`${nome} - ${nomeTeam}`, 10);
+            DisegnaUsagePdf (pdf, this.usage, 22, 18, 120, 150, font, asse, true);
+            TabellaUsagePdf (pdf, autoTable, this.usage, 18, 158, pageWidth - 158 - 5, font, true);
+         }
+
+      // ---- radar dei giocatori (8 per pagina) ----
+      if (this.radar && (this.radar.giocatori.length > 0))
+         PagineRadarPdf (pdf, this.radar, titolo, font);
+
+      // ---- andamento stagionale dei giocatori: tabella con i mini-grafici (con almeno due partite) ----
+      if ((this.andamentoGiocatori.length > 0) && (this.righe.length >= 2))
+      {
+         pdf.addPage ();
+         titolo (`Andamento stagionale dei giocatori - ${nomeTeam}`, 10);
+         TabellaSparklinePdf (pdf, autoTable, this.andamentoGiocatori, 15, font);
+      }
 
       // ---- ultima pagina: quintetti ----
       if (this.quintetti.length > 0)

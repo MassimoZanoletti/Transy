@@ -37,6 +37,20 @@ export interface TRigaStatCamp
 }
 
 
+// Valori di un giocatore in una partita (per l'andamento stagionale); entrato = false se a referto ma mai in campo
+export interface TPartitaGiocatore
+{
+   indice: number;             // posizione della partita fra quelle selezionate
+   entrato: boolean;
+   secondi: number;
+   punti: number;
+   pir: number;
+   pm: number;
+   fga: number;                // tiri dal campo tentati
+   fta: number;                // liberi tentati
+}
+
+
 // Statistiche di un giocatore sommate sulle partite selezionate
 export interface TGiocatoreStatCamp
 {
@@ -59,6 +73,7 @@ export interface TGiocatoreStatCamp
    as: number;
    pir: number;
    pm: number;                 // plus/minus
+   serie: TPartitaGiocatore[]; // una voce per partita in cui era a referto, in ordine
 }
 
 
@@ -123,7 +138,8 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
                                    mh: IDSMatchHeader,
                                    cm: TCurrMatch,
                                    ops: TOperation[],
-                                   teamId: number): void
+                                   teamId: number,
+                                   indicePartita: number = 0): void
 {
    const isMy = (Number(mh.myTeamId_link) === teamId);
    const team = isMy ? cm.myTeam() : cm.oppTeam();
@@ -150,15 +166,23 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
          g = { id: p.playerRecID, nome: '', numero: '', partite: 0, secondi: 0, punti: 0,
                tl: { realizzati: 0, tentati: 0 }, t2: { realizzati: 0, tentati: 0 },
                t3: { realizzati: 0, tentati: 0 }, tdc: { realizzati: 0, tentati: 0 },
-               ff: 0, fs: 0, rd: 0, ra: 0, pp: 0, pr: 0, as: 0, pir: 0, pm: 0 };
+               ff: 0, fs: 0, rd: 0, ra: 0, pp: 0, pr: 0, as: 0, pir: 0, pm: 0, serie: [] };
          giocatori.set(p.playerRecID, g);
       }
       // nome e numero dall'ultima partita in cui compare (le partite arrivano in ordine di data)
       g.nome = p.playName();
       g.numero = p.playNumber();
       g.partite++;
-      g.secondi += (minuti.get(p) ?? []).reduce((a, b) => a + b, 0);
-      g.punti += p.CalcolaPunti();
+      const secondi = (minuti.get(p) ?? []).reduce((a, b) => a + b, 0);
+      const punti = p.CalcolaPunti();
+      const pir = p.CalcPIR();
+      const pm = plusMinus.get(p) ?? 0;
+      const tiri = p.realizzazioni();
+      g.serie.push({ indice: indicePartita, entrato: (secondi > 0) || (punti > 0), secondi, punti, pir, pm,
+                     fga: tiri.filter(x => (x.rTipo === TTipoRealizzazione.trT2) || (x.rTipo === TTipoRealizzazione.trT3)).length,
+                     fta: tiri.filter(x => x.rTipo === TTipoRealizzazione.trTL).length });
+      g.secondi += secondi;
+      g.punti += punti;
       somma(g.tl, p, TTipoRealizzazione.trTL);
       somma(g.t2, p, TTipoRealizzazione.trT2);
       somma(g.t3, p, TTipoRealizzazione.trT3);
@@ -170,8 +194,8 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
       g.pp += p.pPerse();
       g.pr += p.pRecuperate();
       g.as += p.assist();
-      g.pir += p.CalcPIR();
-      g.pm += plusMinus.get(p) ?? 0;
+      g.pir += pir;
+      g.pm += pm;
    }
 }
 

@@ -206,12 +206,20 @@
          </div>
       </div>
       <p-divider />
+      <h3 class="stat-titolo-sezione">Volume ed efficienza {{ tabelle[0].squadra }}</h3>
+      <app-usage-comp [usage]="usage"></app-usage-comp>
+      <p-divider />
       <h3 class="stat-titolo-sezione">Timeout e parziali</h3>
       <app-parziali-timeout-comp [parziali]="parzialiTabella"
                                  [esiti]="esitiTimeout"
                                  [riepilogo]="riepilogoTimeout"
                                  [nomeNoi]="tabelle[0].squadra"
                                  [nomeLoro]="tabelle[1].squadra"></app-parziali-timeout-comp>
+      <p-divider />
+      <h3 class="stat-titolo-sezione">Finale punto a punto (clutch)</h3>
+      <app-clutch-comp [clutch]="clutch"
+                       [nomeNoi]="tabelle[0].squadra"
+                       [nomeLoro]="tabelle[1].squadra"></app-clutch-comp>
       <p-divider />
       <h3 class="stat-titolo-sezione">Quintetti {{ tabelle[0].squadra }}</h3>
       <app-quintetti-comp [quintetti]="quintetti"></app-quintetti-comp>

@@ -4,6 +4,7 @@ import {TTiriStat} from "./statistiche";
 // "Four Factors" di Dean Oliver e indici per possesso, calcolati dai totali di squadra delle due squadre
 // (tab "Statistiche" della partita e pagina "Statistiche campionato"). I possessi sono stimati con la
 // formula classica FGA - RA + PP + 0.44 TLA; quelli della partita sono la media delle due squadre.
+// Il pace è il ritmo: possessi riportati a 40 minuti (con i supplementari i possessi totali non si confrontano).
 
 
 // Totali di squadra che servono al calcolo (TRigaStat va bene così com'è)
@@ -36,6 +37,7 @@ export interface TFourFactors
    fattori: TFattore[];
    partite: number;
    possessi: number | null;    // possessi per partita (media delle due squadre)
+   pace: number | null;        // possessi ogni 40 minuti di gioco
    offRtg: number | null;      // punti fatti ogni 100 possessi
    difRtg: number | null;      // punti subiti ogni 100 possessi
 }
@@ -68,12 +70,18 @@ export function Possessi (b: TBoxSquadra): number
 }
 
 
+// Durata regolamentare di una partita (4 quarti da 10'): il pace è riferito a questa
+export const MINUTI_PARTITA = 40;
+
+
 const Quoziente = (num: number, den: number): number | null => (den > 0) ? (100 * num / den) : null;
 
 
+// minuti: minuti di gioco complessivi (somma delle partite, supplementari compresi); 0 = pace non calcolabile
 export function CalcolaFourFactors (noi: TBoxSquadra,
                                     loro: TBoxSquadra,
-                                    partite: number = 1): TFourFactors
+                                    partite: number = 1,
+                                    minuti: number = 0): TFourFactors
 {
    const fga = (b: TBoxSquadra) => b.t2.tentati + b.t3.tentati;
    const fgm = (b: TBoxSquadra) => b.t2.realizzati + b.t3.realizzati;
@@ -96,6 +104,7 @@ export function CalcolaFourFactors (noi: TBoxSquadra,
       fattori,
       partite,
       possessi: (possTot > 0) ? possTot / Math.max(1, partite) : null,
+      pace:     ((possTot > 0) && (minuti > 0)) ? possTot * MINUTI_PARTITA / minuti : null,
       offRtg:   Quoziente(noi.punti, possTot),
       difRtg:   Quoziente(loro.punti, possTot)
    };
@@ -148,6 +157,7 @@ export function TabellaFourFactorsPdf (pdf: any,
       body: [
          ...ff.fattori.map(f => [f.titolo, `${f.peso}%`, cella(f.noi, MiglioreFF(f) > 0), cella(f.loro, MiglioreFF(f) < 0)]),
          [(ff.partite > 1) ? 'Possessi per partita' : 'Possessi', '', { content: NumFF(ff.possessi), colSpan: 2, styles: { halign: 'center' } }],
+         [`Pace (possessi ogni ${MINUTI_PARTITA}')`, '', { content: NumFF(ff.pace), colSpan: 2, styles: { halign: 'center' } }],
          ['Punti ogni 100 possessi', '', cella(ff.offRtg, (net ?? 0) > 0), cella(ff.difRtg, (net ?? 0) < 0)],
          ['Net rating', '', { content: NumFF(net, true), colSpan: 2, styles: { halign: 'center', fontStyle: 'bold' } }]
       ],

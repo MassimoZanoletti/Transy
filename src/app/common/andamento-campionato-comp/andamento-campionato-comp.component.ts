@@ -39,9 +39,25 @@ export class AndamentoCampionatoCompComponent
       this.Prepara();
    }
    private _nomeNoi = '';
+   // in alternativa a partite/nomeNoi: metriche e dati forniti da fuori (es. andamento del singolo giocatore)
+   @Input() set metricheEsterne (m: { value: string, label: string }[] | null)
+   {
+      if (!m)
+         return;
+      this.metriche = m;
+      if (!m.some(x => x.value === this.metrica))
+         this.metrica = m[0]?.value ?? '';
+      this.Prepara();
+   }
+   @Input() set calcola (f: ((metrica: string) => TDatiAndamento) | null)
+   {
+      this._calcola = f;
+      this.Prepara();
+   }
+   private _calcola: ((metrica: string) => TDatiAndamento) | null = null;
 
-   public readonly metriche = METRICHE_ANDAMENTO;
-   public metrica: TMetricaAndamento = 'punti';
+   public metriche: { value: string, label: string }[] = METRICHE_ANDAMENTO;
+   public metrica: string = 'punti';
    public mediaMobile: boolean = true;
    public readonly MEDIA_MOBILE = MEDIA_MOBILE;
 
@@ -68,12 +84,17 @@ export class AndamentoCampionatoCompComponent
    Prepara (): void
    {
       this.hover = null;
-      if (this._partite.length === 0)
+      if ((!this._calcola) && (this._partite.length === 0))
       {
          this.dati = null;
          return;
       }
-      const dati = DatiAndamento(this._partite, this.metrica, this._nomeNoi);
+      const dati = this._calcola ? this._calcola(this.metrica) : DatiAndamento(this._partite, this.metrica as TMetricaAndamento, this._nomeNoi);
+      if (dati.etichette.length === 0)
+      {
+         this.dati = null;
+         return;
+      }
       this.dati = dati;
       this.scala = ScalaY(dati);
       this.griglia = [];

@@ -43,6 +43,24 @@ export interface TSerieDiff
 
 export const DurataQuarto = (q: number) => (q <= globs.MaxRegQuarters) ? globs.DurationRegulTime : globs.DurationExtraTime;
 
+// Clutch (finale punto a punto), definizione standard: ultimi 5 minuti del 4° quarto e dei supplementari,
+// con scarto di 5 punti o meno nel momento dell'azione
+export const CLUTCH_SECONDI = 300;
+export const CLUTCH_SCARTO = 5;
+
+export const InClutch = (quarto: number, tempo: number, my: number, opp: number) =>
+   (quarto >= globs.MaxRegQuarters) && (tempo <= CLUTCH_SECONDI) && (Math.abs(my - opp) <= CLUTCH_SCARTO);
+
+
+// Minuti di gioco di una partita fino all'ultimo quarto giocato (supplementari compresi)
+export const MinutiDiGioco = (quartiGiocati: number[]) =>
+{
+   let secondi = 0;
+   for (let q = 1; q <= Math.max(0, ...quartiGiocati); q++)
+      secondi += DurataQuarto(q);
+   return secondi / 60;
+};
+
 export const EtichettaQuarto = (q: number) => (q <= globs.MaxRegQuarters) ? `Q${q}` : `ET${q - globs.MaxRegQuarters}`;
 
 

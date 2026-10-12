@@ -1,0 +1,186 @@
+.ra-comandi {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: flex-end;
+   gap: 10px 20px;
+   margin-bottom: 10px;
+}
+
+.ra-campo {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+/* didascalia nel tooltip: indicazione non cliccabile */
+.ra-lettura {
+   font-size: 0.85rem;
+   color: #cbd5e1;
+   cursor: default;
+   padding-bottom: 8px;
+}
+
+.ra-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.ra-contenuto {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 16px 32px;
+   align-items: flex-start;
+}
+
+.ra-grafico {
+   flex: 1 1 360px;
+   max-width: 520px;
+   min-width: 0;
+}
+
+.ra-grafico svg {
+   width: 100%;
+   height: auto;
+   display: block;
+}
+
+.ra-anello {
+   fill: none;
+   stroke: #334155;
+   stroke-width: 1;
+}
+
+.ra-asse {
+   stroke: #334155;
+   stroke-width: 1;
+}
+
+.ra-etichetta {
+   font-size: 13px;
+   font-weight: bold;
+   fill: #cbd5e1;
+}
+
+.ra-giocatore {
+   fill-opacity: 0.25;
+   stroke-width: 2;
+   stroke-linejoin: round;
+}
+
+.ra-confronto {
+   fill-opacity: 0.18;
+}
+
+.ra-media {
+   fill: none;
+   stroke: #cbd5e1;
+   stroke-width: 1.5;
+   stroke-dasharray: 5 4;
+   pointer-events: none;
+}
+
+/* anello del colore del fondo intorno ai vertici */
+.ra-vertice {
+   stroke: #121212;
+   stroke-width: 2;
+}
+
+.ra-legenda {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px 18px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.ra-legenda > span {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.ra-quadratino {
+   display: inline-block;
+   width: 12px;
+   height: 12px;
+   border-radius: 2px;
+}
+
+.ra-linea-media {
+   display: inline-block;
+   width: 18px;
+   border-top: 2px dashed #cbd5e1;
+}
+
+.ra-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.ra-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.ra-tabella th,
+.ra-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.ra-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.ra-tabella tbody tr:nth-child(odd) {
+   background-color: #1f2938;
+}
+
+.ra-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+.ra-sinistra {
+   text-align: left !important;
+}
+
+.ra-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.ra-nome-asse {
+   color: #94a3b8;
+   font-size: 0.85rem;
+}
+
+/* intestazioni nei colori delle serie */
+.ra-tabella thead th.ra-noi {
+   color: #ff8888;
+}
+
+.ra-tabella thead th.ra-viola {
+   color: #b48cff;
+}
+
+.ra-media-val {
+   color: #94a3b8;
+}
+
+.ra-nota {
+   margin-top: 4px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.ra-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}

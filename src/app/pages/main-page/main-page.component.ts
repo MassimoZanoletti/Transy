@@ -118,6 +118,9 @@ import { UnaAllaVolta } from '../../common/una-alla-volta';
             })
 export class MainPageComponent implements OnInit, OnDestroy
 {
+   // squadra preselezionata nella finestra "Statistiche campionato" (se è fra quelle del campionato)
+   private static readonly SQUADRA_PREDEFINITA = 'Sarezzo';
+
    /*
    isLoadingEv: boolean = false;
    isLoadingSea: boolean = false;
@@ -915,6 +918,12 @@ export class MainPageComponent implements OnInit, OnDestroy
                           });
          partite.sort ((a, b) => (a.matchDate.getTime () - b.matchDate.getTime ()) || (a.matchNumber - b.matchNumber));
          this.statCamp_AllMatches = partite;
+         // squadra preselezionata: la nostra, se è fra quelle del campionato (nome uguale, altrimenti che lo contiene)
+         const nostra = MainPageComponent.SQUADRA_PREDEFINITA.toLowerCase ();
+         this.statCamp_Team = this.statCamp_Teams.find (t => (t.nome ?? '').trim ().toLowerCase () === nostra)
+                              ?? this.statCamp_Teams.find (t => (t.nome ?? '').toLowerCase ().includes (nostra))
+                              ?? null;
+         this.OnStatCampTeamChange ();
          this.dialogVisible_StatCamp = true;
       }
       catch (err)

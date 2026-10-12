@@ -22,6 +22,11 @@ import {CoppieOnoffCompComponent} from "../../../common/coppie-onoff-comp/coppie
 import {MatriceCoppie, MatriceCoppiePdf, OnOff, TabellaOnOffPdf} from "../../../common/coppie-onoff";
 import {AccumulaTimeout, EsitiTimeout, Parziali, RiepilogoVuoto, TabelleParzialiTimeoutPdf, TParziale, TRiepilogoTimeout, TTimeoutEsito} from "../../../common/parziali-timeout";
 import {ParzialiTimeoutCompComponent} from "../../../common/parziali-timeout-comp/parziali-timeout-comp.component";
+import {CalcolaClutch, TabelleClutchPdf, TClutch} from "../../../common/clutch";
+import {ClutchCompComponent} from "../../../common/clutch-comp/clutch-comp.component";
+import {BaseDaGiocatori, CalcolaUsage, DisegnaUsagePdf, MIN_SECONDI_PARTITA, TabellaUsagePdf, TUsageSquadra} from "../../../common/usage";
+import {UsageCompComponent} from "../../../common/usage-comp/usage-comp.component";
+import {COLORE_LORO, COLORE_NOI_PDF} from "../../../common/grafico-differenza";
 
 
 // Tab "Statistiche" della partita: stessa impostazione della pagina "Tabelle" di nebula (intestazione,
@@ -41,7 +46,9 @@ import {ParzialiTimeoutCompComponent} from "../../../common/parziali-timeout-com
       GraficoDifferenzaCompComponent,
       QuintettiCompComponent,
       CoppieOnoffCompComponent,
-      ParzialiTimeoutCompComponent
+      ParzialiTimeoutCompComponent,
+      ClutchCompComponent,
+      UsageCompComponent
    ],
    templateUrl: './statistiche-comp.component.html',
    styleUrl:    './statistiche-comp.component.css'
@@ -86,6 +93,10 @@ export class StatisticheCompComponent
    public parzialiTabella: { p: TParziale }[] = [];
    public esitiTimeout: TTimeoutEsito[] = [];
    public riepilogoTimeout: { noi: TRiepilogoTimeout, loro: TRiepilogoTimeout } | null = null;
+   // finale punto a punto di MyTeam
+   public clutch: TClutch | null = null;
+   // usage ed efficienza dei giocatori di MyTeam
+   public usage: TUsageSquadra | null = null;
    public aggiornatoAlle: string = '';
    // menu del bottone "Esporta in PDF": l'esportazione semplice si ferma alla seconda tabella (va anche ai
    // giornalisti), quella completa aggiunge le analisi (scarto, Four Factors, quintetti, On/Off) per lo staff
@@ -139,7 +150,12 @@ export class StatisticheCompComponent
       AccumulaTimeout(noi, this.esitiTimeout, true);
       AccumulaTimeout(loro, this.esitiTimeout, false);
       this.riepilogoTimeout = { noi, loro };
-      this.fourFactors = CalcolaFourFactors(this.tabelle[0].totali, this.tabelle[1].totali);
+      this.clutch = CalcolaClutch(ops, giocatori, true, live);
+      const totNoi = this.tabelle[0].totali;
+      this.usage = CalcolaUsage(BaseDaGiocatori(myTeam?.Roster ?? [], minuti),
+                                { punti: totNoi.punti, fga: totNoi.tdc.tentati, fta: totNoi.tl.tentati, pp: totNoi.pp }, MIN_SECONDI_PARTITA);
+      // minuti giocati fino al cronometro (la serie dello scarto arriva fin lì): pace anche a partita in corso
+      this.fourFactors = CalcolaFourFactors(this.tabelle[0].totali, this.tabelle[1].totali, 1, this.serieDiff.durata / 60);
       const ora = new Date();
       this.aggiornatoAlle = `${String(ora.getHours()).padStart(2, '0')}:${String(ora.getMinutes()).padStart(2, '0')}:${String(ora.getSeconds()).padStart(2, '0')}`;
    }
@@ -361,6 +377,18 @@ export class StatisticheCompComponent
       if (this.fourFactors)
          TabellaFourFactorsPdf(pdf, autoTable, this.fourFactors, myNome, oppNome, 140, font, 15);
 
+      // volume ed efficienza: grafico a sinistra (usage, poi tentativi di tiro su un'altra pagina), tabella a destra
+      if (this.usage && (this.usage.giocatori.length > 0))
+         for (const [asse, nome] of [['usage', 'Usage ed efficienza'], ['tiri', 'Tiri ed efficienza']] as const)
+         {
+            pdf.addPage();
+            pdf.setFontSize(14);
+            pdf.setFont(font, 'bold');
+            pdf.text(`${nome} - ${myNome}`, pageWidth / 2, 8, { align: 'center' });
+            DisegnaUsagePdf(pdf, this.usage, 22, 18, 120, 150, font, asse, false);
+            TabellaUsagePdf(pdf, autoTable, this.usage, 18, 158, pageWidth - 158 - 5, font, false);
+         }
+
       // timeout e parziali
       if (this.riepilogoTimeout)
       {
@@ -369,6 +397,19 @@ export class StatisticheCompComponent
          pdf.setFont(font, 'bold');
          pdf.text(`Timeout e parziali - ${this.titolo}  ${this.punteggio}`, pageWidth / 2, 8, { align: 'center' });
          TabelleParzialiTimeoutPdf(pdf, autoTable, this.parzialiTabella, this.esitiTimeout, this.riepilogoTimeout, [myNome, oppNome], 16, font);
+      }
+
+      // finale punto a punto (solo se c'è stato)
+      if (this.clutch && (this.clutch.secondi > 0))
+      {
+         pdf.addPage();
+         pdf.setFontSize(14);
+         pdf.setFont(font, 'bold');
+         pdf.text(`Finale punto a punto (clutch) - ${this.titolo}  ${this.punteggio}`, pageWidth / 2, 8, { align: 'center' });
+         const rgb = (hex: string) => [1, 3, 5].map(i => parseInt(hex.substring(i, i + 2), 16));
+         const yCl = TabelleClutchPdf(pdf, autoTable, this.clutch, [myNome, oppNome], rgb(COLORE_NOI_PDF), rgb(COLORE_LORO), 15, font);
+         if (this.clutch.quintetti.length > 0)
+            TabellaQuintettiPdf(pdf, autoTable, this.clutch.quintetti, false, yCl, font);
       }
 
       // quintetti di MyTeam, su una pagina a parte

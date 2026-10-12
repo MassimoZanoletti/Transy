@@ -1,0 +1,160 @@
+.us-contenuto {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 16px 32px;
+   align-items: flex-start;
+}
+
+.us-grafico {
+   flex: 1 1 420px;
+   max-width: 640px;
+   min-width: 0;
+}
+
+.us-grafico svg {
+   width: 100%;
+   height: auto;
+   display: block;
+}
+
+.us-comandi {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px 16px;
+   margin-bottom: 6px;
+}
+
+/* didascalia del grafico nel tooltip: indicazione non cliccabile */
+.us-lettura {
+   display: inline-block;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+   cursor: default;
+}
+
+.us-griglia {
+   stroke: #334155;
+   stroke-width: 1;
+}
+
+.us-riferimento {
+   stroke: #94a3b8;
+   stroke-width: 1.5;
+   stroke-dasharray: 5 4;
+}
+
+.us-asse {
+   font-size: 12px;
+   fill: #94a3b8;
+}
+
+.us-titolo-asse {
+   font-size: 12px;
+   fill: #cbd5e1;
+}
+
+.us-nota-grafico {
+   font-size: 11px;
+   fill: #94a3b8;
+}
+
+/* area sensibile più grande del punto */
+.us-bersaglio {
+   fill: transparent;
+}
+
+/* anello del colore del fondo: punti vicini restano distinguibili */
+.us-punto {
+   stroke: #121212;
+   stroke-width: 2;
+}
+
+.us-punto-attivo {
+   stroke: #ffffff;
+}
+
+.us-numero {
+   font-size: 12px;
+   font-weight: bold;
+   fill: #e2e8f0;
+   pointer-events: none;
+}
+
+.us-riga-hover {
+   min-height: 1.3em;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+}
+
+.us-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.us-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.us-tabella th,
+.us-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.us-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.us-tabella tbody tr:nth-child(odd) {
+   background-color: #1f2938;
+}
+
+.us-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+.us-tabella tbody tr.us-riga-attiva {
+   background-color: #3b4a63;
+}
+
+.us-pochi td {
+   color: #7c8798;
+   font-style: italic;
+}
+
+.us-sinistra {
+   text-align: left !important;
+}
+
+.us-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.us-numero-tab {
+   color: #ffaa00;
+}
+
+.us-sotto {
+   color: #d9782a;
+   font-weight: bold;
+}
+
+.us-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.us-nota {
+   margin-top: 4px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+   max-width: 520px;
+}

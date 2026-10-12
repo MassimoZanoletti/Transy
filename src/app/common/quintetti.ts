@@ -1,6 +1,7 @@
 import {TMatchPlayer} from "../models/datamod";
 import {TOperation, TOperationType} from "./operation";
 import {TContestoLive} from "./statistiche";
+import {CLUTCH_SECONDI, InClutch} from "./grafico-differenza";
 import {globs} from "./utils";
 
 
@@ -61,11 +62,14 @@ export const BoxVuotoQ = (): TBoxQuintetto => ({ punti: 0, fga: 0, fta: 0, ra: 0
 
 
 // giocatori: quelli di entrambe le squadre (per il plus/minus); latoMyTeam: squadra di cui si vogliono i
-// quintetti (true = MyTeam). live: fine dell'ultimo quarto (cronometro, o 0 a partita finita)
+// quintetti (true = MyTeam). live: fine dell'ultimo quarto (cronometro, o 0 a partita finita).
+// soloClutch: contano solo il tempo e le azioni nel finale punto a punto (InClutch, sul punteggio prima
+// dell'azione): minuti, +/- e quintetti "in clutch"
 export function AnalisiInCampo (ops: TOperation[],
                                 giocatori: TMatchPlayer[],
                                 latoMyTeam: boolean,
-                                live: TContestoLive): TAnalisiInCampo
+                                live: TContestoLive,
+                                soloClutch: boolean = false): TAnalisiInCampo
 {
    const pm = new Map<TMatchPlayer, number>(giocatori.map(p => [p, 0]));
    const quintetti = new Map<string, TQuintettoStat>();
@@ -75,6 +79,10 @@ export function AnalisiInCampo (ops: TOperation[],
    let quintTeam: boolean | null = null;
    let quintIds = new Set<number>();
    let prevCounter = -1;
+   // punteggio (MyTeam, OppoTeam) prima dell'azione corrente: serve per il clutch
+   let my = 0;
+   let opp = 0;
+   const conta = (tempo: number) => !soloClutch || InClutch(currQ, tempo, my, opp);
 
    // quintetto attuale della squadra scelta
    const attuale = (): TQuintettoStat =>
@@ -91,11 +99,13 @@ export function AnalisiInCampo (ops: TOperation[],
       }
       return q;
    };
-   // il tempo da ultimoTempo a tempo va al quintetto in campo
+   // il tempo da ultimoTempo a tempo va al quintetto in campo (in clutch: solo la parte negli ultimi minuti,
+   // se lo scarto, costante nel tratto, è entro la soglia)
    const avanza = (tempo: number) =>
    {
-      if (ultimoTempo > tempo)
-         attuale().secondi += ultimoTempo - tempo;
+      const da = (soloClutch && conta(tempo)) ? Math.min(ultimoTempo, CLUTCH_SECONDI) : ultimoTempo;
+      if ((da > tempo) && conta(tempo))
+         attuale().secondi += da - tempo;
       ultimoTempo = tempo;
    };
 
@@ -147,6 +157,16 @@ export function AnalisiInCampo (ops: TOperation[],
             const punti = (tipo === TOperationType.totTLYes) ? 1 :
                           (tipo === TOperationType.totT2Yes) ? 2 :
                           (tipo === TOperationType.totT3Yes) ? 3 : 0;
+            const valida = conta(op.time());
+            if (op.myTeam())
+               my += punti;
+            else
+               opp += punti;
+            if (!valida)
+            {
+               prevCounter = op.counter();
+               continue;
+            }
             if (punti > 0)
                for (const p of inCampo)
                   if (pm.has(p))

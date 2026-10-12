@@ -1,0 +1,93 @@
+@if (radar && radar.giocatori.length > 0)
+{
+   <div class="ra-comandi">
+      <label class="ra-campo">
+         Giocatore
+         <p-dropdown [options]="opzioni"
+                     [(ngModel)]="idScelto"
+                     optionLabel="label"
+                     optionValue="value"
+                     [style]="{ 'min-width': '14rem' }"></p-dropdown>
+      </label>
+      <label class="ra-campo">
+         Confronta con
+         <p-dropdown [options]="opzioniConfronto"
+                     [(ngModel)]="idConfronto"
+                     optionLabel="label"
+                     optionValue="value"
+                     [style]="{ 'min-width': '14rem' }"></p-dropdown>
+      </label>
+      <span class="ra-lettura" [pTooltip]="tooltipRadar" [escape]="false" tooltipPosition="top">
+         Come leggere il radar <i class="pi pi-question-circle ra-help"></i>
+      </span>
+   </div>
+
+   @if (Scelto(); as g)
+   {
+      <div class="ra-contenuto">
+         <div class="ra-grafico">
+            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" [attr.aria-label]="'Radar di ' + g.nome">
+               @for (r of anelli; track r)
+               {
+                  <polygon [attr.points]="Anello(r)" class="ra-anello"/>
+               }
+               @for (a of radar.assi; track a.sigla; let i = $index)
+               {
+                  <line [attr.x1]="CX" [attr.y1]="CY" [attr.x2]="Punto(i, 1)[0]" [attr.y2]="Punto(i, 1)[1]" class="ra-asse"/>
+                  <text [attr.x]="Etichetta(i).x" [attr.y]="Etichetta(i).y" [attr.text-anchor]="Etichetta(i).ancora" class="ra-etichetta">{{ a.sigla }}<title>{{ a.nome }}</title></text>
+               }
+               <!-- giocatore (e confronto) sotto, media della squadra sopra per non nasconderla -->
+               <polygon [attr.points]="Poligono(g.norm)" [attr.fill]="coloreNoi" [attr.stroke]="coloreNoi" class="ra-giocatore"/>
+               @if (Confronto(); as c)
+               {
+                  <polygon [attr.points]="Poligono(c.norm)" [attr.fill]="coloreConfronto" [attr.stroke]="coloreConfronto" class="ra-giocatore ra-confronto"/>
+               }
+               <polygon [attr.points]="Poligono(radar.media.norm)" class="ra-media"/>
+               @for (a of radar.assi; track a.sigla; let i = $index)
+               {
+                  <circle [attr.cx]="Punto(i, Raggio(g.norm[i]))[0]" [attr.cy]="Punto(i, Raggio(g.norm[i]))[1]" r="4" [attr.fill]="coloreNoi" class="ra-vertice">
+                     <title>{{ a.nome }}: {{ Num(g.valori[i], a.unita) }}</title>
+                  </circle>
+               }
+            </svg>
+            <div class="ra-legenda">
+               <span><span class="ra-quadratino" [style.background-color]="coloreNoi"></span>{{ g.numero }} {{ g.nome }} <span class="ra-nota">({{ Minuti(g) }})</span></span>
+               @if (Confronto(); as c)
+               {
+                  <span><span class="ra-quadratino" [style.background-color]="coloreConfronto"></span>{{ c.numero }} {{ c.nome }} <span class="ra-nota">({{ Minuti(c) }})</span></span>
+               }
+               <span><span class="ra-linea-media"></span>media della squadra</span>
+            </div>
+         </div>
+
+         <div class="ra-scorrimento">
+            <table class="ra-tabella">
+               <thead>
+                  <tr>
+                     <th class="ra-sinistra"></th>
+                     <th class="ra-num ra-noi">{{ g.numero }} {{ g.nome }}</th>
+                     @if (Confronto(); as c) { <th class="ra-num ra-viola">{{ c.numero }} {{ c.nome }}</th> }
+                     <th class="ra-num">Media squadra</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @for (a of radar.assi; track a.sigla; let i = $index)
+                  {
+                     <tr>
+                        <td class="ra-sinistra"><b>{{ a.sigla }}</b> <span class="ra-nome-asse">{{ a.nome }}</span></td>
+                        <td class="ra-num">{{ Num(g.valori[i], a.unita) }}</td>
+                        @if (Confronto(); as c) { <td class="ra-num">{{ Num(c.valori[i], a.unita) }}</td> }
+                        <td class="ra-num ra-media-val">{{ Num(radar.media.valori[i], a.unita) }}</td>
+                     </tr>
+                  }
+               </tbody>
+            </table>
+            <div class="ra-nota">Solo giocatori con almeno {{ SogliaMinuti() }} minuti giocati.</div>
+         </div>
+      </div>
+   }
+}
+@else
+{
+   <div class="ra-vuoto">Nessun giocatore con abbastanza minuti.</div>
+}

@@ -1,0 +1,108 @@
+/* didascalia nel tooltip: indicazione non cliccabile */
+.cf-lettura {
+   display: inline-block;
+   margin-bottom: 8px;
+   font-size: 0.85rem;
+   color: #cbd5e1;
+   cursor: default;
+}
+
+.cf-help {
+   font-size: 0.7rem;
+   color: #77ff77;
+}
+
+.cf-contenuto {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px 40px;
+   align-items: flex-start;
+}
+
+.cf-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+}
+
+.cf-tabella {
+   border-collapse: collapse;
+   width: max-content;
+}
+
+.cf-tabella th,
+.cf-tabella td {
+   padding: 0.3rem 0.5rem;
+   border: 1px solid #334155;
+   white-space: nowrap;
+}
+
+.cf-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+   text-align: center;
+}
+
+.cf-tabella thead th.cf-sotto {
+   font-size: 0.85rem;
+}
+
+.cf-tabella tbody tr {
+   background-color: #1f2938;
+}
+
+.cf-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+.cf-tabella tbody tr.cf-sezione td {
+   background-color: #171f2b;
+   color: #ffe378;
+   font-weight: bold;
+}
+
+.cf-sinistra {
+   text-align: left !important;
+}
+
+.cf-num {
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+}
+
+.cf-n {
+   font-weight: normal;
+   color: #cbd5e1;
+}
+
+.cf-det {
+   margin-left: 6px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.cf-numero {
+   color: #ffaa00;
+}
+
+.cf-positivo {
+   color: #77ff77;
+   font-weight: bold;
+}
+
+.cf-negativo {
+   color: #ff6666;
+   font-weight: bold;
+}
+
+.cf-nota {
+   margin-top: 4px;
+   font-size: 0.8rem;
+   color: #94a3b8;
+}
+
+.cf-vuoto {
+   color: #94a3b8;
+   font-style: italic;
+}
