@@ -1,0 +1,149 @@
+<div id="guida-container">
+   <div id="guida-inizio"></div>
+
+   @if (errore())
+   {
+      <div class="guida-errore">{{ errore() }}</div>
+   }
+
+   <!-- testo in linea con il grassetto -->
+   <ng-template #inLinea let-parti>
+      @for (p of parti; track $index)
+      {
+         @if (p.grassetto) { <b>{{ p.testo }}</b> } @else { {{ p.testo }} }
+      }
+   </ng-template>
+
+   @for (b of blocchi(); track $index; let primo = $first)
+   {
+      @switch (b.tipo)
+      {
+         @case ('titolo')
+         {
+            @if (b.livello === 1)
+            {
+               <h1 class="guida-h1">{{ b.testo }}</h1>
+               <!-- indice dei capitoli subito sotto il titolo -->
+               @if (Capitoli().length > 0)
+               {
+                  <nav class="guida-indice">
+                     <div class="guida-indice-titolo">Indice</div>
+                     <ol>
+                        @for (c of Capitoli(); track c.id)
+                        {
+                           <li><a href="#" (click)="VaiA(c.id, $event)">{{ c.testo }}</a></li>
+                        }
+                     </ol>
+                  </nav>
+               }
+            }
+            @else if (b.livello === 2)
+            {
+               <h2 class="guida-h2" [id]="'guida-' + b.id">
+                  {{ b.testo }}
+                  <button type="button" class="guida-su" title="Torna all'indice" (click)="TornaSu()"><i class="pi pi-arrow-up"></i></button>
+               </h2>
+            }
+            @else if (b.livello === 3)
+            {
+               <h3 class="guida-h3">{{ b.testo }}</h3>
+            }
+            @else
+            {
+               <h4 class="guida-h4">{{ b.testo }}</h4>
+            }
+         }
+         @case ('paragrafo')
+         {
+            <p class="guida-p"><ng-container *ngTemplateOutlet="inLinea; context: { $implicit: b.parti }"></ng-container></p>
+         }
+         @case ('elenco')
+         {
+            @if (b.ordinato)
+            {
+               <ol class="guida-elenco">
+                  @for (v of b.voci; track $index) { <li><ng-container *ngTemplateOutlet="inLinea; context: { $implicit: v }"></ng-container></li> }
+               </ol>
+            }
+            @else
+            {
+               <ul class="guida-elenco">
+                  @for (v of b.voci; track $index) { <li><ng-container *ngTemplateOutlet="inLinea; context: { $implicit: v }"></ng-container></li> }
+               </ul>
+            }
+         }
+         @case ('tabella')
+         {
+            <div class="guida-scorrimento">
+               <table class="guida-tabella">
+                  <thead>
+                     <tr>
+                        @for (c of b.intestazione; track $index) { <th><ng-container *ngTemplateOutlet="inLinea; context: { $implicit: c }"></ng-container></th> }
+                     </tr>
+                  </thead>
+                  <tbody>
+                     @for (r of b.righe; track $index)
+                     {
+                        <tr>
+                           @for (c of r; track $index) { <td><ng-container *ngTemplateOutlet="inLinea; context: { $implicit: c }"></ng-container></td> }
+                        </tr>
+                     }
+                  </tbody>
+               </table>
+            </div>
+         }
+         @case ('formula')
+         {
+            @if (b.frazione)
+            {
+               <div class="guida-formula" [attr.aria-label]="b.testo">
+                  <span>{{ b.frazione.prima }}</span>
+                  <span class="guida-frazione">
+                     <span class="guida-num">{{ b.frazione.numeratore }}</span>
+                     <span class="guida-den">{{ b.frazione.denominatore }}</span>
+                  </span>
+               </div>
+            }
+            @else
+            {
+               <div class="guida-formula">{{ b.testo }}</div>
+            }
+         }
+         @case ('codice')
+         {
+            <pre class="guida-codice">{{ b.testo }}</pre>
+         }
+         @case ('schema')
+         {
+            @if (b.nome === 'schema-quattro-zone')
+            {
+               <!-- le quattro zone del grafico volume/efficienza -->
+               <figure class="guida-schema">
+                  <svg viewBox="0 0 760 430" role="img" aria-label="Volume ed efficienza: il caso da correggere sta in basso a destra">
+                     <text x="24" y="32" class="sc-titolo">Il caso da correggere sta in basso a destra</text>
+                     <rect x="410" y="220" width="290" height="150" class="sc-evidenza"/>
+                     <rect x="120" y="70" width="580" height="300" rx="8" class="sc-cornice"/>
+                     <line x1="410" y1="70" x2="410" y2="370" class="sc-riferimento"/>
+                     <line x1="120" y1="220" x2="700" y2="220" class="sc-riferimento"/>
+                     <text x="418" y="88" class="sc-nota">volume medio</text>
+                     <text x="690" y="212" text-anchor="end" class="sc-nota">TS% della squadra</text>
+                     <text x="265" y="141" text-anchor="middle" class="sc-nome">Pochi possessi, ma efficienti</text>
+                     <text x="265" y="161" text-anchor="middle" class="sc-riga">forse da coinvolgere di più</text>
+                     <text x="555" y="141" text-anchor="middle" class="sc-nome">Tirano tanto e bene</text>
+                     <text x="555" y="161" text-anchor="middle" class="sc-riga">il vostro realizzatore</text>
+                     <text x="265" y="299" text-anchor="middle" class="sc-nome">Poco coinvolti e poco efficaci</text>
+                     <text x="555" y="291" text-anchor="middle" class="sc-nome">Tanto volume, poca resa</text>
+                     <text x="555" y="311" text-anchor="middle" class="sc-riga sc-riga-forte">il caso da correggere</text>
+                     <text x="120" y="390" class="sc-nota">basso</text>
+                     <text x="700" y="390" text-anchor="end" class="sc-nota">alto</text>
+                     <text x="410" y="414" text-anchor="middle" class="sc-asse">Volume: usage % o tentativi di tiro</text>
+                     <text x="112" y="82" text-anchor="end" class="sc-nota">alta</text>
+                     <text x="112" y="370" text-anchor="end" class="sc-nota">bassa</text>
+                     <text x="56" y="220" text-anchor="middle" transform="rotate(-90 56 220)" class="sc-asse">TS% (efficienza al tiro)</text>
+                  </svg>
+               </figure>
+            }
+         }
+      }
+   }
+</div>

@@ -61,6 +61,7 @@
                <p-dropdown [options]="opzioniCartellaPdf"
                            optionLabel="label"
                            optionValue="value"
+                           appendTo="body"
                            [ngModel]="config.cartellaPdf()"
                            (ngModelChange)="SetCartellaPdf($event)"></p-dropdown>
                <ng-container *ngIf="config.cartellaPdf() === 'custom'">

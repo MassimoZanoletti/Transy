@@ -17,6 +17,7 @@ import {TeamEditComponent} from "./forms/team-edit/team-edit.component";
 import {MatchComponent} from "./pages/match/match.component";
 import {StatCampionatoPageComponent} from "./pages/stat-campionato-page/stat-campionato-page.component";
 import {InfoPageComponent} from "./pages/info-page/info-page.component";
+import {GuidaStatistichePageComponent} from "./pages/guida-statistiche-page/guida-statistiche-page.component";
 
 
 export const routes: Routes = [
@@ -39,6 +40,7 @@ export const routes: Routes = [
    { path: 'match', component: MatchComponent, canActivate: [AuthGuard] },
    { path: 'statcampionato', component: StatCampionatoPageComponent, canActivate: [AuthGuard] },
    { path: 'info', component: InfoPageComponent, canActivate: [AuthGuard] },
+   { path: 'guida-statistiche', component: GuidaStatistichePageComponent, canActivate: [AuthGuard] },
 
    // Questa rotta dovrebbe essere l'ULTIMA.
    // Reindirizza a 'login' per qualsiasi URL che non matcha le rotte precedenti.

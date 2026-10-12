@@ -1,0 +1,254 @@
+/* colonna di lettura: righe non troppo lunghe, stessi colori scuri del resto dell'app */
+#guida-container {
+   max-width: 900px;
+   margin: 0 auto;
+   padding: 8px 16px 48px 16px;
+   color: #e2e8f0;
+   line-height: 1.55;
+   font-size: 1rem;
+}
+
+.guida-h1 {
+   font-size: 1.7rem;
+   margin: 12px 0 16px 0;
+   color: #ffe378;
+}
+
+.guida-h2 {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px;
+   font-size: 1.4rem;
+   margin: 36px 0 12px 0;
+   padding-bottom: 6px;
+   border-bottom: 2px solid #422d6b;
+   color: #ffe378;
+   scroll-margin-top: 12px;
+}
+
+.guida-h3 {
+   font-size: 1.15rem;
+   margin: 22px 0 8px 0;
+   color: darkorange;
+}
+
+.guida-h4 {
+   font-size: 1.02rem;
+   margin: 18px 0 6px 0;
+   color: #ffaa00;
+}
+
+.guida-p {
+   margin: 0 0 12px 0;
+}
+
+.guida-p b,
+.guida-elenco b,
+.guida-tabella b {
+   color: #ffffff;
+}
+
+.guida-elenco {
+   margin: 0 0 12px 0;
+   padding-left: 1.6rem;
+}
+
+.guida-elenco li {
+   margin-bottom: 4px;
+}
+
+/* indice dei capitoli */
+.guida-indice {
+   margin: 0 0 24px 0;
+   padding: 12px 16px;
+   border: 1px solid #334155;
+   border-radius: 6px;
+   background-color: #1f2937;
+}
+
+.guida-indice-titolo {
+   font-weight: bold;
+   color: #ffe378;
+   margin-bottom: 6px;
+}
+
+.guida-indice ol {
+   margin: 0;
+   padding-left: 1.4rem;
+}
+
+.guida-indice a {
+   color: #93c5fd;
+   text-decoration: none;
+}
+
+.guida-indice a:hover {
+   text-decoration: underline;
+}
+
+.guida-su {
+   flex: 0 0 auto;
+   background: none;
+   border: 1px solid #475569;
+   border-radius: 4px;
+   color: #94a3b8;
+   padding: 2px 6px;
+   cursor: pointer;
+}
+
+.guida-su:hover {
+   color: #e2e8f0;
+}
+
+/* formule in testo semplice */
+.guida-formula {
+   margin: 4px 0 14px 0;
+   padding: 10px 14px;
+   border-left: 3px solid #ffaa00;
+   background-color: #1f2937;
+   font-family: Georgia, 'Times New Roman', serif;
+   font-size: 1.05rem;
+   color: #ffffff;
+   overflow-x: auto;
+}
+
+/* frazione: numeratore sopra la riga, denominatore sotto */
+.guida-frazione {
+   display: inline-flex;
+   flex-direction: column;
+   align-items: center;
+   vertical-align: middle;
+   margin-left: 8px;
+}
+
+.guida-num {
+   padding: 0 6px 2px 6px;
+   border-bottom: 1px solid #ffffff;
+}
+
+.guida-den {
+   padding: 2px 6px 0 6px;
+}
+
+.guida-codice {
+   margin: 4px 0 14px 0;
+   padding: 10px 14px;
+   background-color: #1f2937;
+   overflow-x: auto;
+}
+
+/* tabelle come quelle delle statistiche */
+.guida-scorrimento {
+   max-width: 100%;
+   overflow-x: auto;
+   margin: 4px 0 16px 0;
+}
+
+.guida-tabella {
+   border-collapse: collapse;
+   width: 100%;
+}
+
+.guida-tabella th,
+.guida-tabella td {
+   padding: 0.35rem 0.6rem;
+   border: 1px solid #334155;
+   text-align: left;
+   vertical-align: top;
+}
+
+.guida-tabella thead th {
+   background-color: #422d6b;
+   color: #ffe378;
+   font-weight: bold;
+   border-bottom: 2px solid #3949ab;
+}
+
+.guida-tabella tbody tr:nth-child(odd) {
+   background-color: #1f2938;
+}
+
+.guida-tabella tbody tr:nth-child(even) {
+   background-color: #273345;
+}
+
+/* schema delle quattro zone (volume/efficienza) */
+.guida-schema {
+   margin: 8px 0 16px 0;
+   max-width: 720px;
+}
+
+.guida-schema svg {
+   width: 100%;
+   height: auto;
+   display: block;
+}
+
+.sc-titolo {
+   font-size: 15px;
+   font-weight: 600;
+   fill: #ffe378;
+}
+
+.sc-cornice {
+   fill: none;
+   stroke: #94a3b8;
+   stroke-width: 1.25;
+}
+
+.sc-evidenza {
+   fill: #ffaa00;
+   fill-opacity: 0.14;
+}
+
+.sc-riferimento {
+   stroke: #94a3b8;
+   stroke-width: 1.25;
+   stroke-dasharray: 6 5;
+}
+
+.sc-nome {
+   font-size: 13px;
+   font-weight: 600;
+   fill: #e2e8f0;
+}
+
+.sc-riga {
+   font-size: 11.5px;
+   fill: #94a3b8;
+}
+
+.sc-riga-forte {
+   fill: #e2e8f0;
+}
+
+.sc-nota {
+   font-size: 11.5px;
+   fill: #94a3b8;
+}
+
+.sc-asse {
+   font-size: 13px;
+   fill: #cbd5e1;
+}
+
+.guida-errore {
+   color: #ff6666;
+   margin: 16px 0;
+}
+
+/* smartphone: testo e titoli un po' più piccoli */
+@media (max-width: 600px) {
+   #guida-container {
+      font-size: 0.95rem;
+   }
+
+   .guida-h1 {
+      font-size: 1.4rem;
+   }
+
+   .guida-h2 {
+      font-size: 1.2rem;
+   }
+}

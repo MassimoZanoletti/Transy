@@ -141,6 +141,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          {
             label: "",
             items: [
+               {label: "Guida alle statistiche", icon: 'pi pi-book', styleClass: 'icona-default', routerLink: ['/guida-statistiche']},
                {label: "Info", icon: 'pi pi-info-circle', styleClass: 'icona-default', routerLink: ['/info']}
             ]
          }
