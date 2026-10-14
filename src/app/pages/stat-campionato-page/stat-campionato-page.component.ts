@@ -114,12 +114,15 @@ export class StatCampionatoPageComponent implements OnInit
    public champ: IDSChamp | null = null;
    public matches: Array<IDSMatchHeader> = [];
    public righe: Array<TRigaStatCamp> = [];
-   // righe mostrate (tabella e PDF): le partite e, se richiesto, sotto ciascuna i suoi quarti
+   // righe mostrate (tabella e PDF): le partite e, sotto quelle aperte, i loro quarti
    public righeTabella: Array<TRigaStatCamp> = [];
+   // con il dettaglio per quarto ogni partita si può aprire per vederne i quarti (all'inizio tutte chiuse)
    public dettaglioQuarti: boolean = false;
+   private quartiPartita = new Map<TRigaStatCamp, Array<TRigaStatCamp>> ();
+   private partiteAperte = new Set<TRigaStatCamp> ();
    public totali: TRigaStatCamp | null = null;
    public medie: TRigaStatCamp | null = null;
-   // con il dettaglio per quarto: totali e medie di ciascun quarto (Q1.., Et1..), sotto quelli generali
+   // totali e medie di ciascun quarto (Q1.., Et1..), sotto quelli generali (anche senza il dettaglio per quarto)
    public totaliQuarti: Array<{ totali: TRigaStatCamp, medie: TRigaStatCamp }> = [];
    // grafici a torta: quanto contribuisce ciascun quarto a punti fatti, subiti e differenza (sui totali)
    public torte: Array<TTorta> = [];
@@ -240,7 +243,7 @@ export class StatCampionatoPageComponent implements OnInit
       try
       {
          const righe: Array<TRigaStatCamp> = [];
-         const righeTabella: Array<TRigaStatCamp> = [];
+         const quartiPartita = new Map<TRigaStatCamp, Array<TRigaStatCamp>> ();
          const righeQuarti: Array<TRigaStatCamp> = [];
          const giocatori = new Map<number, TGiocatoreStatCamp> ();
          const boxNoi: TBoxSquadra = BoxVuoto ();
@@ -267,7 +270,7 @@ export class StatCampionatoPageComponent implements OnInit
             const ops = RicostruisciPartita (cm, roster, events, (ev, my, opp) => this.matchSync.EventToOperation (ev, my, opp), opList);
             const riga = RigaPartita (mh, cm, teamId);
             righe.push (riga);
-            righeTabella.push (riga);
+            quartiPartita.set (riga, []);
             const box = BoxPartita (mh, cm, teamId);
             SommaBox (boxNoi, box.noi);
             SommaBox (boxLoro, box.loro);
@@ -288,9 +291,8 @@ export class StatCampionatoPageComponent implements OnInit
             AccumulaTimeout (toLoro, esiti, false);
             for (const p of Parziali (serie))
                parziali.push ({ partita: `${riga.data} ${riga.squadra}`, p: isMy ? p : InvertiParziale (p) });
-            // dettaglio per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto
             // per quarto: la partita rigiocata ogni volta con le sole azioni di quel quarto. Servono sempre
-            // (grafici a torta); in tabella solo con il dettaglio per quarto
+            // (totali/medie per quarto e grafici a torta); le righe sotto la partita solo se aperta (dettaglio per quarto)
             const difQuarti: Array<number | null> = [null, null, null, null];
             for (const q of QuartiGiocati (ops))
             {
@@ -300,8 +302,7 @@ export class StatCampionatoPageComponent implements OnInit
                righeQuarti.push (rigaQ);
                if (q <= 4)
                   difQuarti[q - 1] = rigaQ.dif;
-               if (this.dettaglioQuarti)
-                  righeTabella.push (rigaQ);
+               quartiPartita.get (riga)!.push (rigaQ);
             }
             partiteConfronto.push ({ indice: righe.length - 1, riga, noi: box.noi, loro: box.loro, minuti, difQuarti });
          }
@@ -325,7 +326,9 @@ export class StatCampionatoPageComponent implements OnInit
          const piuAmpi = (nostri: boolean) => parziali.filter (x => x.p.myTeam === nostri)
             .sort ((a, b) => b.p.punti - a.p.punti).slice (0, this.PARZIALI_MOSTRATI);
          this.parzialiCamp = [...piuAmpi (true), ...piuAmpi (false)];
-         this.righeTabella = righeTabella;
+         this.quartiPartita = quartiPartita;
+         this.partiteAperte.clear ();
+         this.AggiornaRigheTabella ();
          this.minMax = {};
          for (const col of ['puntiF', 'puntiS', 'dif', 'ff', 'fs', 'rd', 'ra', 'rt', 'pp', 'pr', 'as', 'pir'] as const)
          {
@@ -457,14 +460,55 @@ export class StatCampionatoPageComponent implements OnInit
    }
 
 
+   // partite e, sotto quelle aperte, i loro quarti
+   private AggiornaRigheTabella ()
+   {
+      this.righeTabella = this.righe.flatMap (r => this.partiteAperte.has (r) ? [r, ...(this.quartiPartita.get (r) ?? [])] : [r]);
+   }
+
+
+   PartitaApribile (r: TRigaStatCamp): boolean
+   {
+      return this.dettaglioQuarti && (r.quarto === undefined) && ((this.quartiPartita.get (r)?.length ?? 0) > 0);
+   }
+
+
+   PartitaAperta (r: TRigaStatCamp): boolean
+   {
+      return this.partiteAperte.has (r);
+   }
+
+
+   ApriChiudiPartita (r: TRigaStatCamp)
+   {
+      if (!this.partiteAperte.delete (r))
+         this.partiteAperte.add (r);
+      this.AggiornaRigheTabella ();
+   }
+
+
+   TutteAperte (): boolean
+   {
+      return (this.righe.length > 0) && (this.partiteAperte.size === this.righe.length);
+   }
+
+
+   ApriChiudiTutte ()
+   {
+      if (this.TutteAperte ())
+         this.partiteAperte.clear ();
+      else
+         this.righe.forEach (r => this.partiteAperte.add (r));
+      this.AggiornaRigheTabella ();
+   }
+
+
    // righe in fondo alla tabella: totali e medie generali, poi quelli di ciascun quarto, ogni coppia
-   // preceduta da una riga di stacco (null)
+   // preceduta da una riga di stacco (null). Il dettaglio per quarto riguarda solo le righe delle partite
    RigheTotali (): Array<TRigaStatCamp | null>
    {
       if ((!this.totali) || (!this.medie))
          return [];
-      if (!this.dettaglioQuarti)
-         return [this.totali, this.medie];
       return [this.totali, this.medie, ...this.totaliQuarti.flatMap (tq => [null, tq.totali, tq.medie])];
    }
 
@@ -707,7 +751,7 @@ export class StatCampionatoPageComponent implements OnInit
             rigaTot (this.totali, [82, 65, 13]),
             rigaTot (this.medie, [35, 99, 83]),
             // totali e medie dei singoli quarti, ogni quarto staccato dal precedente
-            ...(this.dettaglioQuarti ? this.totaliQuarti : []).flatMap (tq => [
+            ...this.totaliQuarti.flatMap (tq => [
                [{ content: '', colSpan: 26, styles: { fillColor: [255, 255, 255], minCellHeight: 2, cellPadding: 0 } }],
                rigaTot (tq.totali, [82, 65, 13]),
                rigaTot (tq.medie, [35, 99, 83])

@@ -135,7 +135,7 @@ Dean Oliver ha mostrato che si vince soprattutto grazie a quattro fattori, in qu
 | Fattore | Peso | Cosa misura | Come si calcola | Meglio se |
 | --- | --- | --- | --- | --- |
 | Tiro (eFG%) | 40% | Quanto rendono i tiri dal campo | (canestri + 0,5 × canestri da 3) / tiri dal campo tentati | Alto |
-| Palle perse (TOV%) | 25% | Quanti possessi buttate via | palle perse ogni 100 possessi | Basso |
+| Palle perse (TOV%) | 25% | Quanti possessi buttate via | palle perse ogni 100 azioni concluse (tiri, liberi pesati, palle perse) | Basso |
 | Rimbalzi offensivi (ORB%) | 20% | Quante seconde chance vi prendete | rimbalzi offensivi / (vostri RO + loro RD) | Alto |
 | Tiri liberi (TL/TdC) | 15% | Quanto andate in lunetta e segnate | liberi segnati ogni 100 tiri dal campo | Alto |
 
@@ -158,11 +158,21 @@ Come leggerlo: più alto è meglio. Un eFG% del 50% vuol dire che ogni tiro dal 
 
 #### **2. Palle perse: TOV%**
 
-Ogni palla persa è un possesso buttato via: zero punti, senza nemmeno provare a tirare. Il **TOV%** conta quante palle perdete ogni 100 possessi.
+Ogni palla persa è un possesso buttato via: zero punti, senza nemmeno provare a tirare. Il **TOV%** conta quante palle perdete ogni 100 azioni concluse, cioè ogni 100 volte che l'attacco finisce con un tiro, dei liberi o una palla persa.
 
 Perché non guardare semplicemente il numero di palle perse? Perché in una partita veloce ci sono più possessi, e quindi più occasioni per perdere palla. 15 palle perse in 60 possessi sono tante; 15 in 85 sono meno gravi.
 
-Esempio passo passo: 14 palle perse in 70 possessi. 14 ÷ 70 × 100 = **20**. Vuol dire che un possesso su cinque finisce con una palla persa.
+```latex
+TOV\% = \frac{Palle\ perse}{TdC\ tentati + 0{,}44 \times Liberi\ tentati + Palle\ perse}
+```
+
+Sotto la riga c'è quasi la formula dei possessi, ma **senza togliere i rimbalzi offensivi**. Il motivo: dopo un rimbalzo offensivo l'azione riparte e si può perdere palla di nuovo, quindi conta ogni volta che l'attacco arriva in fondo.
+
+Esempio passo passo, con i numeri visti per i possessi: 60 tiri dal campo tentati, 20 liberi tentati, 14 palle perse.
+
+- Liberi "pesati": 0,44 × 20 = 8,8.
+- Azioni concluse: 60 + 8,8 + 14 = 82,8.
+- TOV%: 14 ÷ 82,8 = **16,9%**. Vuol dire che circa un'azione su sei finisce con una palla persa.
 
 Come leggerlo: qui più **basso** è meglio. Il TOV% degli avversari, invece, misura quanto la vostra difesa li mette in difficoltà: più è alto, meglio avete difeso.
 
@@ -268,7 +278,7 @@ Esempio passo passo. Rossi entra quando la partita è 20-20. Esce quando è 30-2
 
 - Mentre c'era lui, noi abbiamo segnato 30 − 20 = 10 punti.
 - Loro hanno segnato 24 − 20 = 4 punti.
-- Il +/- di Rossi in quel pezzo di partita è 10 − 4 = **+4**.
+- Il +/- di Rossi in quel pezzo di partita è 10 − 4 = **+6**.
 
 Se poi rientra più tardi, si sommano tutti i pezzi in cui è stato in campo.
 
@@ -334,7 +344,7 @@ Servono tutte e due le condizioni insieme:
 Conta lo scarto di quel momento, non quello finale. Esempi:
 
 - A 4' dalla fine siete +12: quei minuti **non** sono clutch, la partita è già abbastanza chiusa.
-- Poi l'avversario fa un parziale e rientra a −4 (cioè siete avanti di 4): da lì in avanti i minuti **tornano a essere** clutch.
+- Poi l'avversario fa un parziale e rientra fino a 4 punti di distanza (siete +4): da lì in avanti i minuti **tornano a essere** clutch.
 - Se a 3' dalla fine siete +2 e vincete di 15 perché l'avversario crolla, i primi minuti sono clutch e gli ultimi, quando lo scarto supera 5, non più.
 
 ### **Cosa si vede**
@@ -513,7 +523,7 @@ Come si legge il mini-grafico:
 - **pallino vuoto**: la sua partita peggiore;
 - **buchi** nella linea: partite non giocate.
 
-Ogni mini-grafico ha la scala del giocatore, con un'ampiezza minima di 10: chi è costante resta quasi piatto, chi è altalenante va su e giù. Serve a vedere a colpo d'occhio chi cresce, chi cala e chi è imprevedibile, cosa che la media non dice. Esempio: 11 punti di media possono essere 5-6-8 a inizio stagione e 15-17-18 alla fine. La media è la stessa, ma il giocatore è cresciuto tantissimo.
+Ogni mini-grafico ha la scala del giocatore, con un'ampiezza minima di 10: chi è costante resta quasi piatto, chi è altalenante va su e giù. Serve a vedere a colpo d'occhio chi cresce, chi cala e chi è imprevedibile, cosa che la media non dice. Esempio: 11 punti di media possono essere 5-6-8 a inizio stagione e 14-16-17 alla fine. La media è la stessa, ma il giocatore è cresciuto tantissimo.
 
 Cliccando su una riga compare sotto il grafico grande di quel giocatore, con date e media mobile.
 
@@ -559,6 +569,6 @@ I numeri sono buoni quanto la registrazione della partita. Ecco cosa tenere a me
 | TdC | Tiri dal campo | Tiri da 2 e da 3, esclusi i liberi |
 | TL | Tiri liberi | Tiri dalla lunetta, 1 punto ciascuno |
 | TL/TdC | Free throw rate | Liberi segnati ogni 100 tiri dal campo |
-| TOV% | Turnover % | Palle perse ogni 100 possessi |
+| TOV% | Turnover % | Palle perse ogni 100 azioni concluse |
 | TS% | True shooting % | Efficienza al tiro compresi i liberi |
 | USG% | Usage % | Quota dei possessi chiusi dal giocatore quando è in campo |

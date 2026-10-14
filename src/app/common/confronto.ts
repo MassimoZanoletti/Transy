@@ -129,7 +129,7 @@ export function CalcolaConfronto (partite: TPartitaConfronto[],
       ] },
       { titolo: 'Four Factors (noi)', righe: [
          riga('eFG%', fattore(A, 'eFG%', true), fattore(B, 'eFG%', true), 1, '%', true, 3),
-         riga('Palle perse ogni 100 possessi (TOV%)', fattore(A, 'TOV%', true), fattore(B, 'TOV%', true), 1, '%', false, 2),
+         riga('Palle perse ogni 100 azioni (TOV%)', fattore(A, 'TOV%', true), fattore(B, 'TOV%', true), 1, '%', false, 2),
          riga('Rimbalzi offensivi (ORB%)', fattore(A, 'ORB%', true), fattore(B, 'ORB%', true), 1, '%', true, 3),
          riga('Liberi segnati ogni 100 tiri (TL/TdC)', fattore(A, 'TL/TdC', true), fattore(B, 'TL/TdC', true), 1, '', true, 4)
       ] },

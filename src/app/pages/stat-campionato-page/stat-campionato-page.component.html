@@ -42,7 +42,16 @@
                   [tableStyle]="{ 'min-width': '0px', 'width': 'max-content' }">
             <ng-template pTemplate="header">
                <tr>
-                  <th colspan="5"></th>
+                  <th colspan="5" class="cella-apri-tutte">
+                     @if (dettaglioQuarti)
+                     {
+                        <!-- apre o chiude i quarti di tutte le partite -->
+                        <button type="button" class="btn-apri-quarti" (click)="ApriChiudiTutte()" [attr.aria-expanded]="TutteAperte()">
+                           <i class="pi" [class.pi-chevron-down]="TutteAperte()" [class.pi-chevron-right]="!TutteAperte()"></i>
+                           {{ TutteAperte() ? 'Chiudi tutti i quarti' : 'Apri tutti i quarti' }}
+                        </button>
+                     }
+                  </th>
                   <th colspan="3" class="sep gruppo">Risultato</th>
                   <th colspan="3" class="sep gruppo">Liberi</th>
                   <th colspan="3" class="sep gruppo">T2</th>
@@ -81,7 +90,17 @@
             </ng-template>
             <ng-template pTemplate="body" let-r>
                <tr [class.riga-quarto]="r.quarto !== undefined">
-                  <td>{{ r.fase }}</td>
+                  <td style="white-space: nowrap;">
+                     @if (PartitaApribile(r))
+                     {
+                        <!-- apre o chiude i quarti di questa partita -->
+                        <button type="button" class="btn-apri-quarti" (click)="ApriChiudiPartita(r)" [attr.aria-expanded]="PartitaAperta(r)"
+                                [attr.aria-label]="(PartitaAperta(r) ? 'Chiudi' : 'Apri') + ' i quarti della partita'">
+                           <i class="pi" [class.pi-chevron-down]="PartitaAperta(r)" [class.pi-chevron-right]="!PartitaAperta(r)"></i>
+                        </button>
+                     }
+                     {{ r.fase }}
+                  </td>
                   <td>{{ r.giornata }}</td>
                   <td>{{ r.data }}</td>
                   <td>{{ r.squadra }}</td>

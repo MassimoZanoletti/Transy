@@ -47,7 +47,7 @@
                      <th class="cf-sinistra" rowspan="2">Giocatore</th>
                      <th colspan="2">Punti</th>
                      <th colspan="2">Minuti</th>
-                     <th colspan="2">TS%</th>
+                     <th colspan="2" [pTooltip]="tooltipTs" [escape]="false" tooltipPosition="top">TS% <i class="pi pi-question-circle cf-help"></i></th>
                   </tr>
                   <tr>
                      @for (k of [0, 1, 2]; track k)
@@ -72,7 +72,7 @@
                   }
                </tbody>
             </table>
-            <div class="cf-nota">Medie a partita nelle partite in cui il giocatore è entrato.</div>
+            <div class="cf-nota">Medie a partita nelle partite in cui il giocatore è entrato. TS%: True Shooting.</div>
          </div>
       </div>
    }
