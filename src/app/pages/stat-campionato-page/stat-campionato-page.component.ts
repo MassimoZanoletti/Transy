@@ -283,8 +283,10 @@ export class StatCampionatoPageComponent implements OnInit
             const isMy = (Number (mh.myTeamId_link) === teamId);
             SommaClutch (clutch, CalcolaClutch (ops, [...(cm.myTeam ()?.Roster ?? []), ...(cm.oppTeam ()?.Roster ?? [])], isMy,
                                                 { quarto: 0, tempo: 0, quartoGiocato: () => false }));
-            SommaZone (zoneFatti, CalcolaZone ((isMy ? cm.myTeam () : cm.oppTeam ())?.Roster ?? []));
-            SommaZone (zoneSubiti, CalcolaZone ((isMy ? cm.oppTeam () : cm.myTeam ())?.Roster ?? []));
+            const nostra = isMy ? cm.myTeam () : cm.oppTeam ();
+            const avversaria = isMy ? cm.oppTeam () : cm.myTeam ();
+            SommaZone (zoneFatti, CalcolaZone (nostra?.Roster ?? [], nostra?.tiriSquadra () ?? []));
+            SommaZone (zoneSubiti, CalcolaZone (avversaria?.Roster ?? [], avversaria?.tiriSquadra () ?? []));
             const serie = SerieDifferenza (ops, QuartiGiocati (ops), { quarto: 0, tempo: 0, quartoGiocato: () => false });
             const esiti = EsitiTimeout (serie).map (e => isMy ? e : InvertiEsito (e));
             AccumulaTimeout (toNoi, esiti, true);

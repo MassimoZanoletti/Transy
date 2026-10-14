@@ -333,13 +333,33 @@ export class TOperation
 
 
    // Azioni che si possono attribuire alla squadra anziché a un giocatore (selezionando la squadra): si
-   // registrano senza giocatore e vanno nei contatori della squadra (TMatchTeam.rimbDifesa, ecc.)
+   // registrano senza giocatore e vanno nei contatori della squadra (TMatchTeam.rimbDifesa, ecc.). I tiri solo
+   // sbagliati (TMatchTeam.tiriSquadra): un canestro va sempre a un giocatore, perché i suoi punti sono suoi.
    public static readonly AZIONI_DI_SQUADRA: ReadonlySet<TOperationType> = new Set([
       TOperationType.totRimbDifesa,
       TOperationType.totRimbAttacco,
       TOperationType.totPPersa,
-      TOperationType.totPRecuperata
+      TOperationType.totPRecuperata,
+      TOperationType.totTLNo,
+      TOperationType.totT2No,
+      TOperationType.totT3No
    ]);
+
+
+   // tipo di tiro di un'operazione di tiro (fatto o sbagliato); trUndefined per le altre
+   public static TipoTiro (oper: TOperationType): TTipoRealizzazione
+   {
+      switch (oper)
+      {
+         case TOperationType.totTLYes:
+         case TOperationType.totTLNo:  return TTipoRealizzazione.trTL;
+         case TOperationType.totT2Yes:
+         case TOperationType.totT2No:  return TTipoRealizzazione.trT2;
+         case TOperationType.totT3Yes:
+         case TOperationType.totT3No:  return TTipoRealizzazione.trT3;
+         default:                      return TTipoRealizzazione.trUndefined;
+      }
+   }
 
 
    public IsAzioneDiSquadra (): boolean
@@ -884,6 +904,14 @@ export class TOperationList
          default:
             break;
       }
+      if ((tipo !== TTipoRealizzazione.trUndefined) && !pl && !fatto && team)
+      {
+         // tiro sbagliato attribuito alla squadra
+         const realizz = new TRealizzazione();
+         realizz.Add(tipo, aItem.quarter(), aItem.time(), false,
+                     Number(aItem.eventData?.courtx ?? 0) || 0, Number(aItem.eventData?.courty ?? 0) || 0);
+         team.tiriSquadra.set([...team.tiriSquadra(), realizz]);
+      }
       if ((tipo !== TTipoRealizzazione.trUndefined) && pl)
       {
          const x = Number(aItem.eventData?.courtx ?? 0) || 0;
@@ -1182,7 +1210,7 @@ export class TOperationList
          if (aOper == null)
             return result;
          if ((aOper.player1()) == null)
-            return result;
+            return this.TogliTiroSquadra(aOper);
          ot = aOper.oper();
          switch (ot)
          {
@@ -1242,6 +1270,24 @@ export class TOperationList
          result = false;
       }
       return result;
+   }
+
+
+   // Tiro sbagliato attribuito alla squadra (senza giocatore): toglie il tiro corrispondente dalla squadra
+   private TogliTiroSquadra (aOper: TOperation): boolean
+   {
+      const team = this.TeamOf(aOper);
+      const tipo = TOperation.TipoTiro(aOper.oper());
+      if (!team || (tipo === TTipoRealizzazione.trUndefined))
+         return false;
+      const idx = team.tiriSquadra().findIndex(r =>
+         (r.rTipo === tipo) && (r.rTempo === aOper.time()) && (r.rQuarto === aOper.quarter()));
+      if (idx < 0)
+         return false;
+      const arr = team.tiriSquadra().slice();
+      arr.splice(idx, 1);
+      team.tiriSquadra.set(arr);
+      return true;
    }
 
 

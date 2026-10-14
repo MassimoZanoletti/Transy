@@ -183,6 +183,10 @@
          <span class="match-header-label">1° Assistente:</span>
          <span class="match-header-value">{{ tab.coach2 }}</span>
       </div>
+      @if (tab.diSquadra)
+      {
+         <div class="stat-di-squadra">{{ tab.diSquadra }}</div>
+      }
    }
 
    <!-- analisi per lo staff, dopo le tabelle (durante la partita le tabelle vengono prima): scarto lungo la

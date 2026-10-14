@@ -97,8 +97,8 @@ export class MappaTiroCompComponent
       const roster = [...(team?.Roster ?? [])]
          .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0));
       this.nomeSquadra = this.isMyTeam ? myNome : oppoNome;
-      this.squadra = CalcolaMappaTiri(roster);
-      this.zone = CalcolaZone(roster);
+      this.squadra = CalcolaMappaTiri(roster, team?.tiriSquadra() ?? []);
+      this.zone = CalcolaZone(roster, team?.tiriSquadra() ?? []);
       this.giocatori = roster.map(p => ({
          ...CalcolaMappaTiri([p]),
          numero: p.playNumber(),

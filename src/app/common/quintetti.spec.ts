@@ -1,11 +1,12 @@
-import {TMatchPlayer} from "../models/datamod";
+import {TMatchPlayer, TMatchTeam, TRealizzazione, TTipoRealizzazione} from "../models/datamod";
 import {TOperation, TOperationType} from "./operation";
 import {AnalisiInCampo, PlusMinusQuintetto, PossessiQuintetto} from "./quintetti";
 import {CalcolaFourFactors, BoxVuoto} from "./four-factors";
 import {MinutiDiGioco, SerieDifferenza} from "./grafico-differenza";
 import {MatriceCoppie, OnOff} from "./coppie-onoff";
 import {AccumulaTimeout, EsitiTimeout, InvertiEsito, InvertiParziale, Parziali, RiepilogoVuoto} from "./parziali-timeout";
-import {SommaZone, ZonaDelTiro, ZoneVuote} from "./zone-tiro";
+import {CalcolaZone, SommaZone, ZonaDelTiro, ZoneVuote} from "./zone-tiro";
+import {TabellaSquadra} from "./statistiche";
 import {MediaMobile, ScalaY} from "./andamento-campionato";
 import {CalcolaClutch, ClutchVuoto, SommaClutch} from "./clutch";
 import {CalcolaUsage, DefAsse} from "./usage";
@@ -396,5 +397,43 @@ describe('Confronto vinte/perse', () =>
       expect(c.giocatori[0].puntiA).toBeCloseTo(12);
       expect(c.giocatori[0].puntiB).toBeCloseTo(4);
       expect(c.giocatori[0].minB).toBeCloseTo(10);
+   });
+});
+
+
+describe('Tiri sbagliati di squadra', () =>
+{
+   const tiro = (tipo: TTipoRealizzazione, fatto: boolean, x = 0, y = 0) =>
+   {
+      const r = new TRealizzazione();
+      r.Add(tipo, 1, 300, fatto, x, y);
+      return r;
+   };
+
+   it('entrano nei totali e nella nota del tabellino, non nei giocatori', () =>
+   {
+      const team = new TMatchTeam(false);
+      const p = Giocatore(7, false, true);
+      p.realizzazioni.set([tiro(TTipoRealizzazione.trT2, true), tiro(TTipoRealizzazione.trT2, true)]);
+      team.Roster = [p];
+      team.tiriSquadra.set([tiro(TTipoRealizzazione.trT2, false), tiro(TTipoRealizzazione.trT2, false), tiro(TTipoRealizzazione.trTL, false)]);
+      team.rimbDifesa.set(3);
+      const tab = TabellaSquadra(team, 'Ospiti', false, new Map(), [], '', '');
+      expect(tab.righe[0].t2).toEqual({ realizzati: 2, tentati: 2 });
+      expect(tab.totali.t2).toEqual({ realizzati: 2, tentati: 4 });
+      expect(tab.totali.tdc.tentati).toBe(4);
+      expect(tab.totali.tl).toEqual({ realizzati: 0, tentati: 1 });
+      expect(tab.totali.efg).toBe('50');
+      expect(tab.totali.rd).toBe(3);
+      expect(tab.diSquadra).toBe('Nei totali anche azioni attribuite alla squadra e non ai giocatori: tiri sbagliati 2 T2, 1 TL; 3 rimbalzi difensivi.');
+      expect(TabellaSquadra(new TMatchTeam(false), '', false, new Map(), [], '', '').diSquadra).toBe('');
+   });
+
+   it('entrano nelle zone di tiro', () =>
+   {
+      const z = CalcolaZone([], [tiro(TTipoRealizzazione.trT2, false, 287, 60), tiro(TTipoRealizzazione.trT3, false)]);
+      expect(z.conPosizione).toBe(1);
+      expect(z.senzaPosizione).toBe(1);
+      expect(z.zone.find(x => x.id === 'sotto')!.tentati).toBe(1);
    });
 });

@@ -2,7 +2,7 @@ import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule} from 'primeng/button';
 import {CampoTiriComponent, TTiroPrecedente} from "../../common/campo-tiri/campo-tiri.component";
-import {TMatchPlayer} from "../../models/datamod";
+import {TMatchPlayer, TRealizzazione} from "../../models/datamod";
 import {CalcolaMappaTiri, PercentualeTiri} from "../../common/mappa-tiri";
 
 
@@ -30,10 +30,11 @@ export class MappaTiriDlgComponent
 
 
    onComponentShow (titolo: string,
-                    giocatori: TMatchPlayer[]): void
+                    giocatori: TMatchPlayer[],
+                    tiriSquadra: TRealizzazione[] = []): void
    {
       this.titolo = titolo;
-      const mappa = CalcolaMappaTiri(giocatori);
+      const mappa = CalcolaMappaTiri(giocatori, tiriSquadra);
       this.tiri = mappa.tiri;
       this.riepilogo = mappa.riepilogo;
       this.senzaPosizione = mappa.senzaPosizione;

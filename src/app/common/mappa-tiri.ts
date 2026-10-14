@@ -1,5 +1,5 @@
 import {TTiroPrecedente} from "./campo-tiri/campo-tiri.component";
-import {TMatchPlayer, TTipoRealizzazione} from "../models/datamod";
+import {TMatchPlayer, TRealizzazione, TTipoRealizzazione} from "../models/datamod";
 
 
 // Mappa di tiro (Delphi: ShowShoots) di un giocatore o di una squadra: tiri da 2 e da 3 con posizione
@@ -13,9 +13,11 @@ export interface TMappaTiri
 }
 
 
-export function CalcolaMappaTiri (giocatori: TMatchPlayer[]): TMappaTiri
+// tiriSquadra: tiri sbagliati attribuiti alla sola squadra (TMatchTeam.tiriSquadra), per la mappa della squadra
+export function CalcolaMappaTiri (giocatori: TMatchPlayer[],
+                                  tiriSquadra: TRealizzazione[] = []): TMappaTiri
 {
-   const tiri = giocatori.flatMap(p => p.realizzazioni())
+   const tiri = [...giocatori.flatMap(p => p.realizzazioni()), ...tiriSquadra]
       .filter(r => (r.rTipo === TTipoRealizzazione.trT2) || (r.rTipo === TTipoRealizzazione.trT3));
    const conPosizione = tiri.filter(r => (r.rPosX !== 0) || (r.rPosY !== 0));
    return {

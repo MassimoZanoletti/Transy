@@ -106,6 +106,8 @@ import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 // Riga dei punteggi per quarto (vedi GetPunteggiQuarti)
 type TRigaPunteggio = { punti: string, diff: string, positivo: boolean, negativo: boolean };
+// tiro in registrazione (player null = tiro sbagliato attribuito alla squadra)
+type TTiroDaRegistrare = { oper: TOperationType, quarter: number, time: number, isMyTeam: boolean, player: TMatchPlayer | null };
 
 
 
@@ -265,7 +267,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public dialogVisible_TiroPos: boolean = false;
    public dialogVisible_MappaTiri: boolean = false;
    // contenuto della mappa di tiro da aprire (giocatore o squadra)
-   private mappaTiri: { titolo: string, giocatori: TMatchPlayer[] } | null = null;
+   private mappaTiri: { titolo: string, giocatori: TMatchPlayer[], tiriSquadra?: TRealizzazione[] } | null = null;
    // Azione in modifica dal dialog Azioni; per una modifica che la trasforma in "Fallo fatto", quella vecchia
    // si toglie solo dopo che il fallo è stato registrato nel dialog falli (vedi salvaPlayerFalli)
    private azioneInModifica: TOperation | null = null;
@@ -1806,7 +1808,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          if (this.compT2)
          {
             this.compT2.Flash();
-            await this.AddRimbalzoAttaccoOperation();
+            // tap in: canestro, quindi solo di un giocatore (niente rimbalzo di squadra se è selezionata la squadra)
+            if (this.currSelectedPlayer)
+               await this.AddRimbalzoAttaccoOperation();
             await this.RegistraRealizzazione(TTipoRealizzazione.trT2, true, this.PosizioneTap());
          }
       }
@@ -1825,7 +1829,12 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       const player = this.currSelectedPlayer;
       if (!player)
+      {
+         // tap out della squadra selezionata: rimbalzo offensivo di squadra
+         if (await this.AddTeamOperation(TOperationType.totRimbAttacco))
+            this.compRimb?.Flash();
          return;
+      }
       this.UpdateCommandsData(player);
       this.compRimb?.Flash();
       await this.AddGameOperation(TOperationType.totRimbAttacco, player);
@@ -1833,19 +1842,33 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
 
    // Tiro da 2/3 in attesa della posizione dalla finestra del campo: quarto, tempo e giocatore sono quelli del
-   // momento in cui è stato premuto il pulsante del tiro, non di quando si clicca sul campo
-   private tiroInAttesa: { oper: TOperationType, quarter: number, time: number, isMyTeam: boolean, player: TMatchPlayer } | null = null;
+   // momento in cui è stato premuto il pulsante del tiro, non di quando si clicca sul campo. player null = tiro
+   // sbagliato attribuito alla squadra
+   private tiroInAttesa: TTiroDaRegistrare | null = null;
 
 
    // posizione: undefined = da chiedere (se previsto dalla configurazione per la squadra), null = nessuna,
-   // altrimenti la posizione già decisa (es. tap in/out sotto canestro)
+   // altrimenti la posizione già decisa (es. tap in/out sotto canestro).
+   // Senza giocatore ma con una squadra selezionata, un tiro sbagliato va alla squadra (TMatchTeam.tiriSquadra)
    async RegistraRealizzazione (tipo: TTipoRealizzazione,
                                 fatto: boolean,
                                 posizione?: TPosizioneTiro | null): Promise<void>
    {
       const player = this.currSelectedPlayer;
-      if (!player || !matchGlobs.currMatch)
+      const teamIsMy = player ? null : this.SelectedTeamIsMy();
+      if (!matchGlobs.currMatch)
          return;
+      if (!player)
+      {
+         if (teamIsMy === null)
+            return;
+         if (fatto)
+         {
+            this.msgService.add({ severity: 'warn', summary: 'Tiro di squadra',
+                                  detail: 'Alla squadra si possono attribuire solo i tiri sbagliati: un canestro va a un giocatore' });
+            return;
+         }
+      }
       let oper: TOperationType;
       switch (tipo)
       {
@@ -1861,11 +1884,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          default:
             return;
       }
-      const tiro = {
+      const tiro: TTiroDaRegistrare = {
          oper,
          quarter:  this.compTimer ? this.compTimer.GetQuarterNumber() : 0,
          time:     this.compTimer ? this.compTimer.GetTimeSeconds() : 0,
-         isMyTeam: (this.currSelectedPlayer?.isMyTeam() ?? false),
+         isMyTeam: player ? player.isMyTeam() : teamIsMy!,
          player
       };
       // tiri da 2 e da 3: posizione dal campo, se la configurazione lo prevede per la squadra (come
@@ -1880,14 +1903,15 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
-   private async CompletaRealizzazione (tiro: { oper: TOperationType, quarter: number, time: number, isMyTeam: boolean, player: TMatchPlayer },
+   private async CompletaRealizzazione (tiro: TTiroDaRegistrare,
                                         posizione: TPosizioneTiro | null): Promise<void>
    {
       if (!matchGlobs.currMatch)
          return;
       const opList = await matchGlobs.currMatch.EnsureOperationList();
-      const op = new TOperation(tiro.quarter, tiro.time, tiro.oper, tiro.isMyTeam, tiro.player);
-      // la posizione finisce nella realizzazione del giocatore (ApplyOperation) e da lì nell'evento (courtx/courty)
+      const op = new TOperation(tiro.quarter, tiro.time, tiro.oper, tiro.isMyTeam, tiro.player ?? undefined);
+      // la posizione finisce nella realizzazione del giocatore o della squadra (ApplyOperation) e da lì
+      // nell'evento (courtx/courty)
       if (posizione)
          op.eventData = { courtx: posizione.x, courty: posizione.y };
       // realizzazione del giocatore e punti del quarto: vedi TOperationList.ApplyOperation
@@ -1914,11 +1938,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (this.tiroPosComp && t)
       {
          const tipo = AZIONI_MODIFICABILI.find(a => a.value === t.oper)?.label ?? '';
-         // tiri da 2 e da 3 già fatti dal giocatore, con posizione (tiri liberi e tiri senza posizione esclusi)
-         const precedenti: TTiroPrecedente[] = t.player.realizzazioni()
+         // tiri da 2 e da 3 già fatti dal giocatore (o attribuiti alla squadra), con posizione (tiri liberi e
+         // tiri senza posizione esclusi)
+         const team = t.isMyTeam ? matchGlobs.currMatch?.myTeam() : matchGlobs.currMatch?.oppTeam();
+         const precedenti: TTiroPrecedente[] = (t.player ? t.player.realizzazioni() : (team?.tiriSquadra() ?? []))
             .filter(r => ((r.rTipo === TTipoRealizzazione.trT2) || (r.rTipo === TTipoRealizzazione.trT3)) && ((r.rPosX !== 0) || (r.rPosY !== 0)))
             .map(r => ({ x: r.rPosX, y: r.rPosY, segnato: (r.rPunti > 0), quarto: r.rQuarto }));
-         this.tiroPosComp.onComponentShow(`${tipo}  -  ${t.player.playNumber()} ${t.player.playName()}`, precedenti);
+         const chi = t.player ? `${t.player.playNumber()} ${t.player.playName()}` : 'Squadra';
+         this.tiroPosComp.onComponentShow(`${tipo}  -  ${chi}`, precedenti);
       }
    }
 
@@ -1946,7 +1973,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    MostraMappaSquadra (team: TMatchTeam): void
    {
       const nome = (team === matchGlobs.currMatch?.myTeam()) ? this.matchHeader.myTeamNome_lk : this.matchHeader.oppoTeamNome_lk;
-      this.mappaTiri = { titolo: nome || 'Squadra', giocatori: [...team.Roster] };
+      this.mappaTiri = { titolo: nome || 'Squadra', giocatori: [...team.Roster], tiriSquadra: team.tiriSquadra() };
       this.dialogVisible_MappaTiri = true;
    }
 
@@ -1954,7 +1981,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    onMappaTiriDialogShow (): void
    {
       if (this.mappaTiriComp && this.mappaTiri)
-         this.mappaTiriComp.onComponentShow(this.mappaTiri.titolo, this.mappaTiri.giocatori);
+         this.mappaTiriComp.onComponentShow(this.mappaTiri.titolo, this.mappaTiri.giocatori, this.mappaTiri.tiriSquadra);
    }
 
 

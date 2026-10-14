@@ -61,6 +61,8 @@ export interface TTabellaStat
    totali: TRigaStat;
    coach1: string;
    coach2: string;
+   // azioni attribuite alla sola squadra (comprese nei totali, non nei giocatori); '' se nessuna
+   diSquadra: string;
 }
 
 
@@ -298,8 +300,8 @@ export function TabellaSquadra (team: TMatchTeam | null,
       .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0));
    const righe = giocatori.map(p => RigaGiocatore(p, minuti.get(p) ?? new Array(NUM_QUARTI).fill(0), isMyTeam, plusMinus));
 
-   // Totali: somma dei giocatori entrati (per MyTeam), più rimbalzi e palle perse/recuperate attribuiti
-   // alla sola squadra; gli indici sono calcolati sui totali di squadra
+   // Totali: somma dei giocatori entrati (per MyTeam), più rimbalzi, palle perse/recuperate e tiri sbagliati
+   // attribuiti alla sola squadra; gli indici sono calcolati sui totali di squadra
    const tot = RigaVuota();
    let secondiTot = 0;
    righe.filter(r => !r.nonEntrato).forEach(r =>
@@ -313,6 +315,11 @@ export function TabellaSquadra (team: TMatchTeam | null,
       tot.pp += r.pp; tot.pr += r.pr; tot.as += r.as; tot.stf += r.stf; tot.sts += r.sts;
       tot.pir += r.pir;
    });
+   const tiriSquadra = (tipo: TTipoRealizzazione) => (team?.tiriSquadra() ?? []).filter(r => r.rTipo === tipo).length;
+   const sbagliati = { tl: tiriSquadra(TTipoRealizzazione.trTL), t2: tiriSquadra(TTipoRealizzazione.trT2), t3: tiriSquadra(TTipoRealizzazione.trT3) };
+   tot.tl = SommaTiri(tot.tl, { realizzati: 0, tentati: sbagliati.tl });
+   tot.t2 = SommaTiri(tot.t2, { realizzati: 0, tentati: sbagliati.t2 });
+   tot.t3 = SommaTiri(tot.t3, { realizzati: 0, tentati: sbagliati.t3 });
    tot.tdc = SommaTiri(tot.t2, tot.t3);
    tot.rd += team?.rimbDifesa() ?? 0;
    tot.ra += team?.rimbAttacco() ?? 0;
@@ -320,7 +327,8 @@ export function TabellaSquadra (team: TMatchTeam | null,
    tot.pp += team?.pPerse() ?? 0;
    tot.pr += team?.pRecuperate() ?? 0;
    // il PIR di squadra conta anche le azioni attribuite alla sola squadra (come nel PIR del giocatore)
-   tot.pir += (team?.rimbDifesa() ?? 0) + (team?.rimbAttacco() ?? 0) + (team?.pRecuperate() ?? 0) - (team?.pPerse() ?? 0);
+   tot.pir += (team?.rimbDifesa() ?? 0) + (team?.rimbAttacco() ?? 0) + (team?.pRecuperate() ?? 0) - (team?.pPerse() ?? 0)
+              - (sbagliati.tl + sbagliati.t2 + sbagliati.t3);
    tot.min = TempoStr(secondiTot);
    // punti di squadra per quarto (colonna ET = somma dei supplementari)
    for (const q of quartiGiocati)
@@ -330,7 +338,26 @@ export function TabellaSquadra (team: TMatchTeam | null,
       tot.quarti[col] = { punti: (tot.quarti[col]?.punti ?? 0) + punti, min: '' };
    }
    Indici(tot);
-   return { squadra: nomeSquadra, righe, totali: tot, coach1, coach2 };
+   return { squadra: nomeSquadra, righe, totali: tot, coach1, coach2, diSquadra: DescrizioneDiSquadra(team, sbagliati) };
+}
+
+
+// Riepilogo delle azioni attribuite alla sola squadra, per la nota sotto il tabellino: senza, la somma dei
+// giocatori non torna con i totali (e le percentuali dei singoli vanno lette sapendolo)
+function DescrizioneDiSquadra (team: TMatchTeam | null,
+                               sbagliati: { tl: number, t2: number, t3: number }): string
+{
+   const voce = (n: number, uno: string, piu: string) => (n > 0) ? `${n} ${(n === 1) ? uno : piu}` : '';
+   const tiri = [[sbagliati.t2, 'T2'], [sbagliati.t3, 'T3'], [sbagliati.tl, 'TL']]
+      .filter(([n]) => (n as number) > 0).map(([n, sigla]) => `${n} ${sigla}`);
+   const voci = [
+      tiri.length ? `tiri sbagliati ${tiri.join(', ')}` : '',
+      voce(team?.rimbDifesa() ?? 0, 'rimbalzo difensivo', 'rimbalzi difensivi'),
+      voce(team?.rimbAttacco() ?? 0, 'rimbalzo offensivo', 'rimbalzi offensivi'),
+      voce(team?.pPerse() ?? 0, 'palla persa', 'palle perse'),
+      voce(team?.pRecuperate() ?? 0, 'palla recuperata', 'palle recuperate')
+   ].filter(v => v);
+   return voci.length ? `Nei totali anche azioni attribuite alla squadra e non ai giocatori: ${voci.join('; ')}.` : '';
 }
 
 

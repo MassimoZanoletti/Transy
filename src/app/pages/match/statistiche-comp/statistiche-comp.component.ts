@@ -327,6 +327,12 @@ export class StatisticheCompComponent
             pdf.text(`1° Assistente: ${tab.coach2}`, 5, y);
             y += 3;
          }
+         if (tab.diSquadra)
+         {
+            const righe = pdf.splitTextToSize(tab.diSquadra, pdf.internal.pageSize.getWidth() - 10);
+            pdf.text(righe, 5, y);
+            y += 3 * righe.length;
+         }
          y += 2;
       });
       // legenda delle ultime 4 colonne, sotto il vice allenatore dell'ultima tabella: sigla, titolo in grassetto e

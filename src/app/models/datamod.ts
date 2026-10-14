@@ -1258,6 +1258,8 @@ export class TMatchTeam
    public rimbDifesa = signal<number>(0);
    public pPerse = signal<number>(0);
    public pRecuperate = signal<number>(0);
+   // tiri sbagliati attribuiti alla sola squadra (senza giocatore): contano nei totali, non nei singoli
+   public tiriSquadra = signal<TRealizzazione[]>([]);
    public name = signal<string>("");
    public abbrev = signal<string>("");
    public color = signal<string>("#FFFFFF");
@@ -1303,6 +1305,7 @@ export class TMatchTeam
          this.pRecuperate.set(0);
          this.rimbDifesa.set(0);
          this.rimbAttacco.set(0);
+         this.tiriSquadra.set([]);
          this.QuintettoQuarto.fill(false);
 
          this.quarti.set([]);
@@ -1332,11 +1335,12 @@ export class TMatchTeam
    {
       this.SetTimeoutSnapshot('');
       this.currQuarter.set(0);
-      // rimbalzi e palle perse/recuperate attribuiti alla squadra: li ricalcolano gli eventi
+      // rimbalzi, palle perse/recuperate e tiri sbagliati attribuiti alla squadra: li ricalcolano gli eventi
       this.rimbAttacco.set(0);
       this.rimbDifesa.set(0);
       this.pPerse.set(0);
       this.pRecuperate.set(0);
+      this.tiriSquadra.set([]);
       this.QuintettoQuarto.fill(false);
       this.quarti().forEach(q => q.Reset());
    }
@@ -1352,6 +1356,7 @@ export class TMatchTeam
       this.rimbDifesa.set(0);
       this.pPerse.set(0);
       this.pRecuperate.set(0);
+      this.tiriSquadra.set([]);
       this.falliTeam.set([]);
       this.QuintettoQuarto.fill(false);
       this.quarti().forEach(q => q.Reset());
@@ -1377,6 +1382,7 @@ export class TMatchTeam
       copia.rimbDifesa.set(this.rimbDifesa());
       copia.pPerse.set(this.pPerse());
       copia.pRecuperate.set(this.pRecuperate());
+      copia.tiriSquadra.set(this.tiriSquadra().map(r => r.Clone()));
       copia.name.set(this.name());
       copia.abbrev.set(this.abbrev());
       copia.color.set(this.color());
@@ -1402,6 +1408,7 @@ export class TMatchTeam
          rimbDifesa: this.rimbDifesa(),
          pPerse: this.pPerse(),
          pRecuperate: this.pRecuperate(),
+         tiriSquadra: this.tiriSquadra().map(rrr => rrr.SaveToJson()),
          name: this.name(),
          abbrev: this.abbrev(),
          color: this.color(),
@@ -1717,6 +1724,7 @@ export class TMatchTeam
          this.pRecuperate.set(0);
          this.rimbDifesa.set(0);
          this.rimbAttacco.set(0);
+         this.tiriSquadra.set([]);
          this.quarti.set([]);
          this.ResetQuarti();
       }
@@ -1737,6 +1745,7 @@ export class TMatchTeam
       this.pRecuperate.set(0);
       this.rimbDifesa.set(0);
       this.rimbAttacco.set(0);
+      this.tiriSquadra.set([]);
       this.ResetQuarti();
       this.ResetPlayersTime();
       this.ResetPlayersData();
@@ -1875,7 +1884,8 @@ export class TMatchTeam
    public CalcTLTentati: Signal<number> = computed(() =>
    {
       this.rosterTick();
-      let result = 0;
+      // compresi i liberi sbagliati attribuiti alla sola squadra
+      let result = this.tiriSquadra().filter(r => r.rTipo === TTipoRealizzazione.trTL).length;
       try
       {
          for (let xxx=0;   xxx<this.Roster.length;  xxx++)
@@ -1910,8 +1920,8 @@ export class TMatchTeam
    public CalcPIR: Signal<number> = computed(() =>
    {
       this.rosterTick();
-      // rimbalzi e palle perse/recuperate attribuiti alla sola squadra
-      let result = this.rimbDifesa() + this.rimbAttacco() + this.pRecuperate() - this.pPerse();
+      // rimbalzi, palle perse/recuperate e tiri sbagliati attribuiti alla sola squadra
+      let result = this.rimbDifesa() + this.rimbAttacco() + this.pRecuperate() - this.pPerse() - this.tiriSquadra().length;
       for (let xxx=0;   xxx<this.Roster.length;   xxx++)
       {
          const pl: TMatchPlayer | null = this.PlayerByIdx(xxx);

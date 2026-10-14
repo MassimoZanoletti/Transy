@@ -62,6 +62,13 @@
    margin-top: 6px;
 }
 
+/* azioni attribuite alla sola squadra: spiegano perché la somma dei giocatori non torna con i totali */
+.stat-di-squadra {
+   margin-top: 4px;
+   font-size: 0.85rem;
+   color: #94a3b8;
+}
+
 .stat-nome {
    white-space: nowrap;
    overflow: hidden;

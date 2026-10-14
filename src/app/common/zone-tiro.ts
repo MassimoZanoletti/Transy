@@ -1,4 +1,4 @@
-import {TMatchPlayer, TTipoRealizzazione} from "../models/datamod";
+import {TMatchPlayer, TRealizzazione, TTipoRealizzazione} from "../models/datamod";
 
 // Scala dei punti per tiro: non indica una squadra, quindi colori diversi da quelli delle squadre
 export const COLORE_ZONA_SOPRA = '#1f9e89';
@@ -99,13 +99,15 @@ export function ZonaDelTiro (x: number,
 }
 
 
-export function CalcolaZone (giocatori: TMatchPlayer[]): TMappaZone
+// tiriSquadra: tiri sbagliati attribuiti alla sola squadra (TMatchTeam.tiriSquadra)
+export function CalcolaZone (giocatori: TMatchPlayer[],
+                             tiriSquadra: TRealizzazione[] = []): TMappaZone
 {
    const { zone } = ZoneVuote();
    const perId = new Map(zone.map(z => [z.id, z]));
    let conPosizione = 0;
    let senzaPosizione = 0;
-   for (const r of giocatori.flatMap(p => p.realizzazioni()))
+   for (const r of [...giocatori.flatMap(p => p.realizzazioni()), ...tiriSquadra])
    {
       if ((r.rTipo !== TTipoRealizzazione.trT2) && (r.rTipo !== TTipoRealizzazione.trT3))
          continue;
