@@ -280,7 +280,7 @@ export function TabelleConfrontoPdf (pdf: any,
    pdf.setTextColor(90, 90, 90);
    pdf.text(pdf.splitTextToSize(`Tra parentesi il numero di partite. Differenza = ${c.nomeA} - ${c.nomeB}; in verde/rosso solo le ` +
             `differenze nette, a favore/contro: con poche partite le piccole differenze possono essere solo il caso. ` +
-            `T/p: tentativi a partita. Giocatori: medie nelle partite in cui sono entrati.`, 287), 5, 200);
+            `T/p: tentativi a partita. Giocatori: medie nelle partite in cui sono entrati. TS%: True Shooting.`, 287), 5, 200);
    pdf.setTextColor(0, 0, 0);
    return y;
 }
