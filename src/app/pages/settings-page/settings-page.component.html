@@ -63,7 +63,7 @@
                            optionValue="value"
                            appendTo="body"
                            [ngModel]="config.cartellaPdf()"
-                           (ngModelChange)="SetCartellaPdf($event)"></p-dropdown>
+                           (onChange)="SetCartellaPdf($event.value)"></p-dropdown>
                <ng-container *ngIf="config.cartellaPdf() === 'custom'">
                   <span class="cfg-cartella"><i class="pi pi-folder"></i> {{ config.cartellaPdfHandle()?.name }}</span>
                   <p-button label="Cambia..."

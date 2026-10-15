@@ -63,9 +63,13 @@ export class SettingsPageComponent
    }
 
 
-   // "Cartella scelta..." apre subito la scelta della cartella; se l'utente annulla resta l'impostazione precedente
+   // Solo da una scelta dell'utente nella combo (onChange: ngModelChange arriva anche all'apertura della pagina e
+   // apriva la scelta della cartella). "Cartella scelta..." apre subito la scelta della cartella se non ce n'è
+   // già una; se l'utente annulla resta l'impostazione precedente
    async SetCartellaPdf (value: TCartellaPdf): Promise<void>
    {
+      if (value === this.config.cartellaPdf())
+         return;
       if ((value === 'custom') && (!this.config.cartellaPdfHandle()))
       {
          const precedente = this.config.cartellaPdf();
