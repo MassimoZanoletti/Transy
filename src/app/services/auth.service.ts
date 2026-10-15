@@ -65,7 +65,7 @@ export class AuthService
          loggedUser.attributo = 255;
          this.loggedIn = true;
          utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
-         await this.logService.AddToLog(loggedUser, "Login");
+         this.logService.AddToLog(loggedUser, "Login");
          return true;
       }
       else
@@ -94,11 +94,13 @@ export class AuthService
                loggedUser.attributo = Number(el.attributo ?? 0);
                this.loggedIn = true;
                utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
-               await this.logService.AddToLog(loggedUser, "Login");
+               this.logService.AddToLog(loggedUser, "Login");
                return true;
             }
             else
             {
+               // credenziali rifiutate dal server (se il server non risponde anche il log non arriverebbe)
+               this.logService.AddToLog({ ...loggedUser, id: 0, nome: username }, "Login fallito");
                /*
                const dlgData: MessDlgData = {
                   title:      'ERRORE',

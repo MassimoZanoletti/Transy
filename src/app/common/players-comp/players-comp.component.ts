@@ -27,6 +27,8 @@ import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
 import {PlayerEditCompComponent} from "../player-edit-comp/player-edit-comp.component";
 import { UnaAllaVolta } from '../una-alla-volta';
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 
 
 
@@ -73,7 +75,8 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
                private servPlayer: PlayerService,
                private servTeam: TeamService,
                private messageDialogService: MessageDialogService,
-               private matchSync: MatchSyncService)
+               private matchSync: MatchSyncService,
+               private logService: LogService)
    {
 
    }
@@ -216,6 +219,8 @@ export class PlayersCompComponent  implements OnInit, OnDestroy
          altezza:     newPlayer.altezza,
          teamid_link: this.teamId
       }, 0);
+      this.logService.AddToLog (loggedUser, "Giocatore creato",
+                                `${newPlayer.nomedisp} #${newPlayer.numero ?? ''} (squadra id ${this.teamId})`);
       await this.matchSync.WaitForWrites ();
       await this.LoadTabellaPlayer ();
       this.cdr.detectChanges ();

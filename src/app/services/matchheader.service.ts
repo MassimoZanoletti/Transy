@@ -13,6 +13,67 @@ import { utils,
       timeouts } from "../common/utils";
 
 
+// --- Match nel log del server ---
+
+// identificazione del match: squadre e id
+export function MatchPerLog (mh: IDSMatchHeader): string
+{
+   return `${mh.myTeamNome_lk} - ${mh.oppoTeamNome_lk} (id ${mh.id})`;
+}
+
+
+export function StatoMatchDesc (code: string): string
+{
+   return [matchStatusType.notPlayed, matchStatusType.playing, matchStatusType.terminated].find (s => s.code == code)?.desc ?? `${code ?? ''}`;
+}
+
+
+// cambio di stato del match: sempre una riga "Stato match" a sé (da qualunque punto avvenga), con vecchio e nuovo
+// stato; vuota se lo stato non cambia
+export function CambioStatoMatch (mh: IDSMatchHeader,
+                                  vecchioCode: string,
+                                  nuovoCode: string): string
+{
+   if (vecchioCode == nuovoCode)
+      return "";
+   return `${MatchPerLog (mh)}: ${StatoMatchDesc (vecchioCode)} -> ${StatoMatchDesc (nuovoCode)}`;
+}
+
+
+// differenze tra due versioni dell'intestazione (campi modificabili dall'utente), es. "data: 10/10/2026 -> 11/10/2026";
+// lo stato no: ha la sua riga (CambioStatoMatch)
+export function ModificheMatch (prima: IDSMatchHeader,
+                                dopo: IDSMatchHeader): string[]
+{
+   const campi: Array<[string, (m: IDSMatchHeader) => any]> = [
+      ["titolo",        m => m.title],
+      ["numero",        m => m.matchNumber],
+      ["data",          m => m.matchDateStr],
+      ["in casa",       m => m.atHome ? "sì" : "no"],
+      ["giornata",      m => m.giornata],
+      ["luogo",         m => m.location],
+      ["arbitro 1",     m => m.arbitro1],
+      ["arbitro 2",     m => m.arbitro2],
+      ["fase",          m => m.phaseNome_lk],
+      ["squadra",       m => m.myTeamNome_lk],
+      ["avversari",     m => m.oppoTeamNome_lk],
+      ["colore squadra",   m => m.myTeamColor],
+      ["colore avversari", m => m.oppoTeamColor],
+      ["allenatori squadra",   m => `${Number (m.myCoach1Id_link ?? 0)}/${Number (m.myCoach2Id_link ?? 0)}`],
+      ["allenatori avversari", m => `${Number (m.oppoCoach1Id_link ?? 0)}/${Number (m.oppoCoach2Id_link ?? 0)}`]
+   ];
+   const modifiche: string[] = [];
+   for (const [nome, valore] of campi)
+   {
+      const a = `${valore (prima) ?? ''}`;
+      const b = `${valore (dopo) ?? ''}`;
+      if (a !== b)
+         modifiche.push (nome.startsWith ("allenatori") ? `${nome} cambiati` : `${nome}: ${a} -> ${b}`);
+   }
+   return modifiche;
+}
+
+
 
 @Injectable({
   providedIn: 'root'

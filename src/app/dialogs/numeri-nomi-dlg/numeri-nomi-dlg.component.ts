@@ -11,6 +11,8 @@ import {matchGlobs} from "../../common/curr-match";
 import {MatchSyncService} from "../../services/match-sync.service";
 import {globs} from "../../common/utils";
 import { UnaAllaVolta } from '../../common/una-alla-volta';
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 
 
 // "numeroEdit"/"nomeEdit" sono i valori editabili (su cui l'utente digita); "origNumero"/"origNome" sono
@@ -44,7 +46,8 @@ export class NumeriNomiDlgComponent
    @Output() annulla = new EventEmitter<void>();
 
 
-   constructor (private matchSync: MatchSyncService)
+   constructor (private matchSync: MatchSyncService,
+                private logService: LogService)
    {
    }
 
@@ -78,6 +81,7 @@ export class NumeriNomiDlgComponent
    {
       this.salvando = true;
       const nameUpdates: Array<{ player: TMatchPlayer, nome: string }> = [];
+      const modifiche: string[] = [];
       for (const team of this.teams)
       {
          for (const row of team.rows)
@@ -85,14 +89,21 @@ export class NumeriNomiDlgComponent
             const numero = (row.numeroEdit ?? '').trim();
             const nome = (row.nomeEdit ?? '').trim();
             if (numero !== row.origNumero)
+            {
                row.player.playNumber.set(numero);
+               modifiche.push(`${row.origNome}: numero ${row.origNumero} -> ${numero}`);
+            }
             if (nome !== row.origNome)
             {
                row.player.playName.set(nome);
                nameUpdates.push({ player: row.player, nome });
+               modifiche.push(`nome ${row.origNome} -> ${nome}`);
             }
          }
       }
+      if (modifiche.length > 0)
+         this.logService.AddToLog(loggedUser, "Roster modificato",
+                                  `${this.teams.map(t => t.teamName).join(' - ')} (id ${globs.openedMatchHeaderId}): ${modifiche.join(', ')}`);
       for (const upd of nameUpdates)
       {
          await this.SalvaNomeSulDatabase(upd.player, upd.nome);

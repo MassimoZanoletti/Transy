@@ -12,6 +12,8 @@ import { TeamService} from "../../services/team.service";
 import { MessDlgData,
         IDSTeam } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 
 // PrimeNG modules
 import { InputTextModule } from 'primeng/inputtext';
@@ -50,7 +52,8 @@ export class TeamEditComponent implements OnInit
                 private theDataService: TeamService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -107,6 +110,7 @@ export class TeamEditComponent implements OnInit
                                                                                        if (response.ok)
                                                                                        {
                                                                                           console.log ('Item aggiornato:', response);
+                                                                                          this.logService.AddToLog (loggedUser, "Squadra modificato", `${this.nome} (${this.abbrev}), id ${this.id}`);
                                                                                           this.router.navigate(['/database']);
                                                                                        }
                                                                                        else
@@ -146,6 +150,7 @@ export class TeamEditComponent implements OnInit
                                                                                       if (response.ok)
                                                                                       {
                                                                                          console.log ('Item aggiunto:', response);
+                                                                                         this.logService.AddToLog (loggedUser, "Squadra creato", `${this.nome} (${this.abbrev})`);
                                                                                          this.router.navigate(['/database']);
                                                                                       }
                                                                                       else

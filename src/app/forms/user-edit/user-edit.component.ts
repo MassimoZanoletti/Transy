@@ -67,6 +67,8 @@ export class UserEditComponent implements OnInit
    ruoloAttrib: number = 1;
    readonly tipiUtente = TIPI_UTENTE;
    tipoUtente: TTipoUtente | null = TIPI_UTENTE[1];
+   // valori letti dal db (modifica): per scrivere nel log cosa è cambiato
+   private originale = { nome: "", password: "", ruoloDesc: "", ruoloAttrib: 0 };
    isSaving: boolean = false;
 
    theError = false;
@@ -111,6 +113,7 @@ export class UserEditComponent implements OnInit
                                                                           this.ruoloDesc = data.elements.ruolo_desc ?? "";      // l'api restituisce i nomi delle colonne del db
                                                                           this.ruoloAttrib = Number(data.elements.ruolo_attrib ?? 0);
                                                                           this.tipoUtente = this.TipoDaAttributo(this.ruoloAttrib);
+                                                                          this.originale = { nome: this.nome, password: this.password, ruoloDesc: this.ruoloDesc, ruoloAttrib: this.ruoloAttrib };
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -152,6 +155,7 @@ export class UserEditComponent implements OnInit
             : await firstValueFrom(this.resourceService.addNewData(this.nome, this.password, this.ruoloDesc, this.ruoloAttrib));
          if (response?.ok)
          {
+            this.ScriviLog();
             // se l'utente ha modificato se stesso, aggiorno anche i dati della sessione
             if ((this.id > 0) && (this.id == loggedUser.id))
             {
@@ -173,6 +177,26 @@ export class UserEditComponent implements OnInit
          this.isSaving = false;
          this.cdr.detectChanges();
       }
+   }
+
+
+   // creazione/modifica utente nel log del server (la password non viene mai scritta, solo se è cambiata)
+   private ScriviLog()
+   {
+      if (this.id > 0)
+      {
+         const modifiche: string[] = [];
+         if (this.nome != this.originale.nome)
+            modifiche.push(`nome: ${this.originale.nome} -> ${this.nome}`);
+         if (this.password != this.originale.password)
+            modifiche.push("password cambiata");
+         if ((this.ruoloDesc != this.originale.ruoloDesc) || (this.ruoloAttrib != this.originale.ruoloAttrib))
+            modifiche.push(`ruolo: ${this.originale.ruoloDesc} (${this.originale.ruoloAttrib}) -> ${this.ruoloDesc} (${this.ruoloAttrib})`);
+         this.logService.AddToLog(loggedUser, "Utente modificato",
+                                  `${this.nome} (id ${this.id}): ${modifiche.length > 0 ? modifiche.join(", ") : "nessuna modifica"}`);
+      }
+      else
+         this.logService.AddToLog(loggedUser, "Utente creato", `${this.nome} (${this.ruoloDesc}, ${this.ruoloAttrib})`);
    }
 
 

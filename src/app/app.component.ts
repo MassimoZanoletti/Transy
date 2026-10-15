@@ -132,7 +132,8 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
             label: "",
             items: [
                {label: "Configurazione", icon: 'pi pi-wrench', styleClass: 'icona-default', routerLink: ['/settings']},
-               {label: "Utenti", icon: 'pi pi-users', styleClass: 'icona-default', routerLink: ['/userstable']}
+               {label: "Utenti", icon: 'pi pi-users', styleClass: 'icona-default', routerLink: ['/userstable']},
+               {id: 'mnu-log', label: "Log", icon: 'pi pi-list', styleClass: 'icona-default', routerLink: ['/logtable'], visible: false}
             ]
          },
          {
@@ -218,6 +219,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
       this.InitServiceWorkerUpdates ();
       // Modifiche (intestazione, roster, nomi) rifiutate dal server all'invio dalla coda: possono arrivare
       // in qualunque momento e su qualunque pagina, quindi l'avviso è qui
+      // (nel log ci va già con il console.error di MatchSyncService)
       this.swSubs.push (this.matchSync.writeRejected.subscribe (msg =>
          this.msgService.add ({ key: 'sync', severity: 'error', summary: 'Salvataggio non riuscito', detail: msg, sticky: true })));
       //
@@ -307,6 +309,9 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
       const voceDatabase = this.mnuStrumenti?.flatMap (g => g.items ?? []).find (i => i.id == 'mnu-database');
       if (voceDatabase)
          voceDatabase.disabled = IsAllenatore ();      // l'allenatore non accede al database
+      const voceLog = this.mnuStrumenti?.flatMap (g => g.items ?? []).find (i => i.id == 'mnu-log');
+      if (voceLog)
+         voceLog.visible = this.IsAdmin ();             // il log lo consulta solo l'amministratore
       menu.toggle (event);
       this.cdr.detectChanges (); // Forziamo un ciclo di change detection
    }

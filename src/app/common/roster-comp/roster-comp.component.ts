@@ -34,8 +34,10 @@ import {PlayerService} from "../../services/player.service";
 import {CoachService}  from "../../services/coach.service";
 import {TeamService} from "../../services/team.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
-import {MatchrosterService} from "../../services/matchroster.service";
-import {MatchheaderService} from "../../services/matchheader.service";
+import {MatchrosterService, ModificheRoster} from "../../services/matchroster.service";
+import {MatchheaderService, MatchPerLog} from "../../services/matchheader.service";
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 import {MatchSyncService} from "../../services/match-sync.service";
 import {Table, TableModule} from "primeng/table";
 import {firstValueFrom} from "rxjs";
@@ -110,7 +112,12 @@ export class RosterCompComponent implements OnInit, OnDestroy
    // scorrimento e, se i giocatori non ci stanno, scorre solo la tabella. Minimo 150px per schermi minuscoli.
    public readonly altezzaTabelle: string = 'min(680px, max(150px, calc(90vh - 460px)))';
 
+   // roster e allenatori come letti dal db: per scrivere nel log cosa è cambiato al salvataggio
+   private rosterOriginale: TDSMatchRoster[] = [];
+   private allenatoriOriginali: number[] = [];
+
    constructor(private cdr: ChangeDetectorRef,
+               private logService: LogService,
                private servMatchRoster: MatchrosterService,
                private servMatchHeader: MatchheaderService,
                private servPlayer: PlayerService,
@@ -202,6 +209,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
       // Tutto passa dalla coda (il roster degli avversari si inserisce in palestra, spesso senza rete):
       // allenatori nuovi con id provvisorio, poi il roster completo; l'intestazione con gli allenatori la
       // salva chi riceve salvaMatchRoster
+      const allenatoriPrima = this.AllenatoriMatch();
       this.matchHeader.myCoach1Id_link = await this.CoachId(this.myHeadCoachValue, this.matchHeader.myTeamId_link, this.matchHeader.myCoach1Id_link);
       this.matchHeader.myCoach2Id_link = await this.CoachId(this.myViceValue, this.matchHeader.myTeamId_link, this.matchHeader.myCoach2Id_link);
       if (this.oppoHeadCoachValue != undefined)
@@ -211,10 +219,44 @@ export class RosterCompComponent implements OnInit, OnDestroy
       //
       const rows = this.listaRoster.map(r => ({ ...this.servMatchRoster.MatchRosterToDb(r), playername_lk: r.playerName_lk }));
       await this.matchSync.EnqueueWrite ('roster', this.matchHeader.id, { rows }, this.matchHeader.id);
+      this.ScriviLogRoster(allenatoriPrima);
       //
       //await firstValueFrom (this.servMatchHeader.updateData(this.matchHeader.id, JSON.stringify(this.matchHeader, null, -1)));
       //
       this.salvaMatchRoster.emit([this.listaRoster, this.matchHeader]);
+   }
+
+
+   private NomeSquadra (teamId: number): string
+   {
+      if (teamId == this.matchHeader.myTeamId_link)
+         return this.matchHeader.myTeamNome_lk;
+      if (teamId == this.matchHeader.oppoTeamId_link)
+         return this.matchHeader.oppoTeamNome_lk;
+      return `squadra id ${teamId}`;
+   }
+
+
+   private AllenatoriMatch (): number[]
+   {
+      return [this.matchHeader.myCoach1Id_link, this.matchHeader.myCoach2Id_link,
+              this.matchHeader.oppoCoach1Id_link, this.matchHeader.oppoCoach2Id_link].map(id => Number(id ?? 0));
+   }
+
+
+   // salvataggio del roster nel log del server: cosa è cambiato rispetto a quanto letto
+   private ScriviLogRoster (allenatoriPrima: number[])
+   {
+      const modifiche = ModificheRoster(this.rosterOriginale, this.listaRoster);
+      const nomeAll = (v: any) => (typeof v === 'string') ? v : (v?.nome ?? '-');
+      const dopo = this.AllenatoriMatch();
+      if ((allenatoriPrima[0] !== dopo[0]) || (allenatoriPrima[1] !== dopo[1]))
+         modifiche.push(`allenatori squadra: ${nomeAll(this.myHeadCoachValue)} / ${nomeAll(this.myViceValue)}`);
+      if ((allenatoriPrima[2] !== dopo[2]) || (allenatoriPrima[3] !== dopo[3]))
+         modifiche.push(`allenatori avversari: ${nomeAll(this.oppoHeadCoachValue)} / ${nomeAll(this.oppoViceValue)}`);
+      this.logService.AddToLog(loggedUser, "Roster modificato",
+                               `${MatchPerLog(this.matchHeader)}: ${modifiche.length > 0 ? modifiche.join(', ') : 'nessuna modifica'}`);
+      this.rosterOriginale = this.listaRoster.map(r => ({ ...r }));
    }
 
 
@@ -231,6 +273,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
             return 0;
          const tempId = this.matchSync.NewTempId();
          await this.matchSync.EnqueueWrite ('createcoach', tempId, { nome, teamid_link: teamId }, this.matchHeader.id);
+         this.logService.AddToLog(loggedUser, "Allenatore creato", `${nome} (${this.NomeSquadra(teamId)})`);
          return tempId;
       }
       if (value === null)
@@ -307,6 +350,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
          this.listaMyRoster.sort(this.OrdinaGiocatoriByNumero);
          this.listaOppoRoster.sort(this.OrdinaGiocatoriByNumero);
       }
+      this.rosterOriginale = [...this.listaMyRoster, ...this.listaOppoRoster].map(r => ({ ...r }));
    }
 
 
@@ -772,6 +816,7 @@ export class RosterCompComponent implements OnInit, OnDestroy
          altezza:     newPlayer.altezza,
          teamid_link: teamId
       }, this.matchHeader.id);
+      this.logService.AddToLog(loggedUser, "Giocatore creato", `${newPlayer.nomedisp} #${newPlayer.numero ?? ''} (${this.NomeSquadra(teamId)})`);
       if ((this.dialogVisible_PlayerEdit == 1) || (this.dialogVisible_PlayerEdit == 2))
       {
          let newRoster: TDSMatchRoster = CreateEmptyMatchRoster();

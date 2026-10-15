@@ -1,17 +1,17 @@
-import {ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import {BlockUIModule} from "primeng/blockui";
 import {Button, ButtonModule} from "primeng/button";
 import {CardModule} from "primeng/card";
 import {CommonModule, NgIf} from "@angular/common";
 import {PrimeTemplate} from "primeng/api";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
-import {TableModule} from "primeng/table";
+import {Table, TableModule} from "primeng/table";
 import {TooltipModule} from "primeng/tooltip";
+import {InputTextModule} from "primeng/inputtext";
 import { LogMessage,
    MessDlgData} from "../../models/datamod";
 import {Router} from "@angular/router";
 import {MessageDialogService} from "../../services/message-dialog.service";
-import {loggedUser} from "../../services/users.service";
 import {LogService} from "../../services/log.service";
 
 @Component({
@@ -27,17 +27,20 @@ import {LogService} from "../../services/log.service";
                  TooltipModule,
                  CardModule,
                  ProgressSpinnerModule,
-                 BlockUIModule
+                 BlockUIModule,
+                 InputTextModule
               ],
   templateUrl: './log-table.component.html',
   styleUrl:    './log-table.component.css'
 })
+// Consultazione del log del server (solo amministratori: voce di menu e rotta protette)
 export class LogTableComponent implements OnInit
 {
    windowHeight: number = 110;
    scrollHeight: string = "110px";
    isLoading: boolean = false;
    public tblData: Array<LogMessage> = [];
+   @ViewChild ('tabella') tabella?: Table;
 
 
    constructor (public router: Router,
@@ -66,7 +69,9 @@ export class LogTableComponent implements OnInit
                                                      {
                                                         if (data.ok)
                                                         {
-                                                           this.tblData = data.elements;
+                                                           // il server dà le righe più recenti per prime: qui le più vecchie in alto
+                                                           this.tblData = [...(data.elements ?? [])].reverse ();
+                                                           this.ScrollAllaFine ();
                                                         }
                                                         else
                                                         {
@@ -97,98 +102,15 @@ export class LogTableComponent implements OnInit
    }
 
 
-   AddEnabled (): boolean
+   // dopo il disegno delle righe: in vista le più recenti (in fondo)
+   private ScrollAllaFine ()
    {
-      return (loggedUser.attributo > 0);
-   }
-
-
-   EditEnabled (row: any): boolean
-   {
-      return (loggedUser.attributo > 0);
-   }
-
-
-   DeleteEnabled (row: any): boolean
-   {
-      return (loggedUser.attributo > 1);
-   }
-
-
-   onAdd (): void
-   {
-      this.router.navigate ([`/categoriaedit`], {state: {id: 0}});
-   }
-
-
-   onEdit (item: any): void
-   {
-      this.router.navigate ([`/categoriaedit`], {state: {id: item.id}});
-   }
-
-
-   onDelete (item: any): void
-   {
-      const dlgData: MessDlgData = {
-         title:               'Cancellazione Log',
-         subtitle:            '',
-         message:             `Sei veramente sicuro di voloer cancellare il log '<b>${item.nome}</b>' dal database?`,
-         messtype:            'warning',
-         btncaption:          'Annulla',
-         showCancelButton:    true,
-         cancelButtonCaption: 'Sì, procedi'
-      };
-
-      this.messageDialogService.showMessage (dlgData, '', true).subscribe (result =>
-                                                                           {
-                                                                              if (result === 'secondary')
-                                                                              {
-                                                                                 this.theDataService.DeleteData (item.id).subscribe (data =>
-                                                                                                                                     {
-                                                                                                                                        if (data)
-                                                                                                                                        {
-                                                                                                                                           if (data.ok)
-                                                                                                                                           {
-                                                                                                                                              this.LoadData ();
-                                                                                                                                           }
-                                                                                                                                           else
-                                                                                                                                           {
-                                                                                                                                              const dlgData: MessDlgData = {
-                                                                                                                                                 title:      'ERRORE',
-                                                                                                                                                 subtitle:   'Errore durante la cancellazione del dato',
-                                                                                                                                                 message:    `${data.message}`,
-                                                                                                                                                 messtype:   'error',
-                                                                                                                                                 btncaption: 'Chiudi'
-                                                                                                                                              };
-                                                                                                                                              this.messageDialogService.showMessage (dlgData, '600px');
-                                                                                                                                           }
-                                                                                                                                        }
-                                                                                                                                        else
-                                                                                                                                        {
-                                                                                                                                           const dlgData: MessDlgData = {
-                                                                                                                                              title:      'ERRORE',
-                                                                                                                                              subtitle:   'Errore durante la cancellazione del dato',
-                                                                                                                                              message:    `Nessun dato ritornato`,
-                                                                                                                                              messtype:   'error',
-                                                                                                                                              btncaption: 'Chiudi'
-                                                                                                                                           };
-                                                                                                                                           this.messageDialogService.showMessage (dlgData, '600px');
-                                                                                                                                        }
-                                                                                                                                        this.isLoading = false;
-                                                                                                                                     })
-                                                                              }
-                                                                              /*
-                                                                              else if (result === 'primary')
-                                                                              {
-                                                                                 console.log ('L\'utente ha premuto "No, annulla"');
-                                                                                 // Annulla l'azione
-                                                                              }
-                                                                              else
-                                                                              {
-                                                                                 console.log ('Il dialogo è stato chiuso (es. con X o ESC) o non è stato selezionato un bottone specifico:', result);
-                                                                              }
-                                                                              */
-                                                                           });
+      setTimeout (() =>
+      {
+         const contenitore: HTMLElement | null = this.tabella?.el?.nativeElement?.querySelector ('.p-datatable-wrapper') ?? null;
+         if (contenitore)
+            contenitore.scrollTop = contenitore.scrollHeight;
+      });
    }
 
 

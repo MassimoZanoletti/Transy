@@ -22,7 +22,7 @@ bootstrapApplication (AppComponent, {
 
 import {bootstrapApplication} from '@angular/platform-browser';
 import {AppComponent} from './app/app.component';
-import {importProvidersFrom, isDevMode} from '@angular/core';
+import {APP_INITIALIZER, importProvidersFrom, isDevMode} from '@angular/core';
 import {provideRouter} from '@angular/router';
 import {provideServiceWorker} from '@angular/service-worker';
 import {routes} from './app/app.routes';
@@ -31,6 +31,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {provideHttpClient} from '@angular/common/http'; // Importa la funzione
 import { DialogService } from 'primeng/dynamicdialog';
 import { utils } from './app/common/utils';
+import { LogService } from './app/services/log.service';
 
 utils.startingPath = window.location.href;
 bootstrapApplication (AppComponent, {
@@ -44,6 +45,8 @@ bootstrapApplication (AppComponent, {
          enabled: !isDevMode (),
          registrationStrategy: 'registerWhenStable:30000'
       }),
-      DialogService
+      DialogService,
+      // tutti gli errori (console.error, errori non gestiti) anche nel log del server
+      { provide: APP_INITIALIZER, multi: true, deps: [LogService], useFactory: (log: LogService) => () => log.IntercettaErrori () }
    ]
 }).catch (err => console.error (err));

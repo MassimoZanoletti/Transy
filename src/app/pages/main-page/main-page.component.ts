@@ -46,7 +46,7 @@ import {SeasonsService} from "../../services/seasons.service";
 import {SocietaService} from "../../services/societa.service";
 import {CampionatiService} from "../../services/campionati.service";
 import {PhaseService} from "../../services/phase.service";
-import {MatchheaderService} from "../../services/matchheader.service";
+import {CambioStatoMatch, MatchheaderService, MatchPerLog, ModificheMatch} from "../../services/matchheader.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {TeamService} from "../../services/team.service";
 import {
@@ -497,7 +497,6 @@ export class MainPageComponent implements OnInit, OnDestroy
       }
       catch (err)
       {
-         await this.logService.AddToLog (loggedUser, `Exception [LoadEvents]: '${JSON.stringify(err,null,-1)}'`);
          const dlgData: MessDlgData = {
             title:      'Exception',
             subtitle:   'Errore',
@@ -668,7 +667,7 @@ export class MainPageComponent implements OnInit, OnDestroy
    OnSeasonChange(evento: any)
    {
       utils.SaveToLocalStorage("BBS_CurrSeason", this.currSeason);
-      this.logService.AddToLog (loggedUser, `Eventi: selezionata stagione '${this.currSeason?.nome}'`);
+      this.logService.AddToLog (loggedUser, "Stagione", `${this.currSeason?.nome ?? ''}`);
       this.RefreshData();
    }
 
@@ -935,7 +934,6 @@ export class MainPageComponent implements OnInit, OnDestroy
       }
       catch (err)
       {
-         await this.logService.AddToLog (loggedUser, `Exception [OnStatisticheCampionato]: '${JSON.stringify(err,null,-1)}'`);
          const dlgData: MessDlgData = {
             title:      'ERRORE',
             subtitle:   'Errore durante la lettura delle partite del campionato',
@@ -1049,6 +1047,7 @@ export class MainPageComponent implements OnInit, OnDestroy
                                                                                   {
                                                                                      if (data.ok)
                                                                                      {
+                                                                                        this.logService.AddToLog (loggedUser, "Match cancellato", `${match.myTeamNome_lk} - ${match.oppoTeamNome_lk} (id ${match.id})`);
                                                                                         if ((this.currSeason) && (this.currChamp) && (this.currFase))
                                                                                         {
                                                                                            await this.LoadChamp (this.currSeason.id);
@@ -1153,6 +1152,9 @@ export class MainPageComponent implements OnInit, OnDestroy
                const rrr: any = await firstValueFrom (this.matchHeaderServ.addNewData(dataForDb));
                if (rrr?.ok === false)
                   throw new Error (rrr.message);
+               const mh = this.currMatchHeader;
+               this.logService.AddToLog (loggedUser, "Match creato",
+                                         `${mh.myTeamNome_lk} - ${mh.oppoTeamNome_lk}, ${mh.matchDateStr ?? ''} (${[mh.champNome_lk, mh.phaseNome_lk].filter (t => !!t).join (' / ')})`);
             }
             catch (err: any)
             {
@@ -1177,12 +1179,19 @@ ${err?.message ?? ''}`,
       }
       else
       {
+         const prima: IDSMatchHeader | null = this.currMatchHeader;      // il match aperto in modifica (EditMatchHeader)
          this.currMatchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
          if (this.currMatchHeader)
          {
             // in coda: salvata anche senza connessione, e la rilettura vede comunque la modifica
             await this.matchSync.EnqueueWrite ('matchheader', this.currMatchHeader.id,
                                                this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), this.currMatchHeader.id);
+            const modifiche = prima ? ModificheMatch (prima, this.currMatchHeader) : [];
+            this.logService.AddToLog (loggedUser, "Match modificato",
+                                      `${MatchPerLog (this.currMatchHeader)}: ${modifiche.length > 0 ? modifiche.join (', ') : 'nessuna modifica'}`);
+            const cambioStato = prima ? CambioStatoMatch (this.currMatchHeader, prima.matchStatus, this.currMatchHeader.matchStatus) : "";
+            if (cambioStato)
+               this.logService.AddToLog (loggedUser, "Stato match", cambioStato);
             await this.matchSync.WaitForWrites ();
             if ((this.currSeason) && (this.currChamp) && (this.currFase))
             {
@@ -1237,6 +1246,8 @@ ${err?.message ?? ''}`,
       this.dialogVisible_MatchStatus = false;
       if ((this.currMatchHeader) && (this.currMatchHeader.matchStatus != this.diagMatchStatus_Status.code))
       {
+         this.logService.AddToLog (loggedUser, "Stato match",
+                                   CambioStatoMatch (this.currMatchHeader, this.currMatchHeader.matchStatus, this.diagMatchStatus_Status.code));
          this.currMatchHeader.matchStatus = this.diagMatchStatus_Status.code;
          await this.matchSync.EnqueueWrite ('matchheader', this.currMatchHeader.id,
                                             this.matchHeaderServ.MatchHeaderToDb (this.currMatchHeader), this.currMatchHeader.id);

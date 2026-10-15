@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {CanActivate, Router} from '@angular/router';
 import {AuthService} from './services/auth.service';
-import {IsAllenatore} from './services/users.service';
+import {IsAllenatore, loggedUser} from './services/users.service';
 
 
 
@@ -56,5 +56,29 @@ export class NoAllenatoreGuard implements CanActivate
          return false;
       }
       return true;
+   }
+}
+
+
+
+// pagine riservate all'amministratore (log): gli altri tornano alla dashboard anche scrivendo l'indirizzo a mano
+@Injectable ({
+                providedIn: 'root'
+             })
+export class AdminGuard implements CanActivate
+{
+
+   constructor (private router: Router)
+   {
+
+   }
+
+
+   canActivate (): boolean
+   {
+      if (loggedUser.attributo >= 255)
+         return true;
+      this.router.navigate (['/']);
+      return false;
    }
 }

@@ -48,9 +48,9 @@
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
    padding-top: 0.08rem;
    padding-bottom: 0.08rem;
-   line-height: 1.0;
-   /* prima arrivava (per contagio) dalla regola globale di players-comp: ora è esplicita */
-   font-size: 2em;
+   padding-left: 0.5rem;
+   padding-right: 0.5rem;
+   line-height: 1.3;
 }
 
 ::ng-deep .p-card .p-card-body {
@@ -84,4 +84,25 @@
 
 .row-bck-2 {
    background-color: #1e273f; /* Un giallo chiaro */
+}
+
+
+.log-id {
+   font-size: 0.8em;
+   color: #9aa4b8;
+}
+
+.log-errore {
+   color: #ff8888;
+   font-weight: bold;
+}
+
+.log-dettagli {
+   white-space: pre-wrap;
+   word-break: break-word;
+}
+
+.log-conteggio {
+   color: #9aa4b8;
+   font-size: 0.9rem;
 }

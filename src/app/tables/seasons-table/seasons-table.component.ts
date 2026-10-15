@@ -24,6 +24,7 @@ import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {BlockUIModule} from 'primeng/blockui';
 import {MessageDialogService} from "../../services/message-dialog.service";
 import { loggedUser } from "../../services/users.service";
+import { LogService } from "../../services/log.service";
 
 
 
@@ -54,7 +55,8 @@ export class SeasonsTableComponent implements OnInit
    constructor (public router: Router,
                 private cdr: ChangeDetectorRef,
                 public theDataService: SeasonsService,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -158,6 +160,7 @@ export class SeasonsTableComponent implements OnInit
                                                                                                                                         {
                                                                                                                                            if (data.ok)
                                                                                                                                            {
+                                                                                                                                              this.logService.AddToLog (loggedUser, "Stagione cancellato", `${item.nome} (id ${item.id})`);
                                                                                                                                               this.LoadData ();
                                                                                                                                            }
                                                                                                                                            else

@@ -12,6 +12,8 @@ import { SocietaService} from "../../services/societa.service";
 import { MessDlgData,
    IDSSocieta} from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 import {ButtonDirective} from "primeng/button";
 import {CardModule} from "primeng/card";
 import {InputTextModule} from "primeng/inputtext";
@@ -48,7 +50,8 @@ export class SocietaEditComponent implements OnInit
                 private dataService: SocietaService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -98,6 +101,7 @@ export class SocietaEditComponent implements OnInit
                                                                                      if (response.ok)
                                                                                      {
                                                                                         console.log ('Item aggiornato:', response);
+                                                                                        this.logService.AddToLog (loggedUser, "Società modificato", `${this.nome}, id ${this.id}`);
                                                                                         this.router.navigate (['/database']);
                                                                                      }
                                                                                      else
@@ -134,6 +138,7 @@ export class SocietaEditComponent implements OnInit
                                                                                     if (response.ok)
                                                                                     {
                                                                                        console.log ('Item aggiunto:', response);
+                                                                                       this.logService.AddToLog (loggedUser, "Società creato", `${this.nome}`);
                                                                                        this.router.navigate (['/database']);
                                                                                     }
                                                                                     else

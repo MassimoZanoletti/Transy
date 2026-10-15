@@ -74,12 +74,12 @@ import {SocietaService} from "../../services/societa.service";
 import {CampionatiService} from "../../services/campionati.service";
 import {PhaseService} from "../../services/phase.service";
 import {MessageDialogService} from "../../services/message-dialog.service";
-import {MatchheaderService} from "../../services/matchheader.service";
+import {CambioStatoMatch, MatchheaderService, MatchPerLog, ModificheMatch} from "../../services/matchheader.service";
 import {LogService} from "../../services/log.service";
 import {TeamService} from "../../services/team.service";
 import {MatchrosterService} from "../../services/matchroster.service";
 import {PlayerService} from "../../services/player.service";
-import {IsAllenatore} from "../../services/users.service";
+import {IsAllenatore, loggedUser} from "../../services/users.service";
 import {CoachService} from "../../services/coach.service";
 import {
    matchGlobs, TCurrMatch,
@@ -303,7 +303,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                public fltrDialogService: DialogService,
                public msgService: MessageService,
                public matchSync: MatchSyncService,
-               private config: ConfigService)
+               private config: ConfigService,
+               private logService: LogService)
 
                /*
                            private seasonServ: SeasonsService,
@@ -494,7 +495,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       const opList = await matchGlobs.currMatch.EnsureOperationList();
       // Salvataggio remoto: ogni operazione aggiunta/tolta finisce nella coda di sincronizzazione
       opList.OnItemAdded   = op => { this.matchSync.EnqueueAddEvent(op, this.matchHeader.id); this.PianificaSalvataggioPunteggio(); };
-      opList.OnItemRemoved = op => { this.matchSync.EnqueueDeleteEvent(op, this.matchHeader.id); this.PianificaSalvataggioPunteggio(); };
+      opList.OnItemRemoved = op => { this.matchSync.EnqueueDeleteEvent(op, this.matchHeader.id); this.LogAzioneCancellata(op); this.PianificaSalvataggioPunteggio(); };
       //
       await this.LoadMatchHeader(globs.openedMatchHeaderId);
       await this.LoadMatchRoster(globs.openedMatchHeaderId);
@@ -708,6 +709,16 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // cancellazione di un evento della partita nel log (Undo, elimina azione, falli corretti, modifica azione)
+   private LogAzioneCancellata (op: TOperation,
+                                nota: string = ""): void
+   {
+      const azione = [this.GetOperQuarterStr(op), this.GetOperTimeStr(op), TOperationType.Desc(op.oper()), op.MyTeamStr().trim(),
+                      this.GetOperPlayerStr(op), this.GetOperDescStr(op)].filter(t => !!t).join(" ");
+      this.logService.AddToLog(loggedUser, "Azione cancellata", `${MatchPerLog(this.matchHeader)}: ${azione}${nota ? ` (${nota})` : ""}`);
+   }
+
+
    GetOperBgClass(op: TOperation): string
    {
       switch (op.oper())
@@ -878,16 +889,21 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    {
       const byId = new Map(players.map(p => [p.playerRecID, p]));
       let changed = false;
+      const modifiche: string[] = [];
       for (const entry of [...this.listaRosterCasa, ...this.listaRosterFuori])
       {
          const plr = byId.get(entry.playerId_link);
          if ((!plr) || (entry.quintetto === plr.inQuintetto()))
             continue;
          entry.quintetto = plr.inQuintetto();
+         modifiche.push(`${entry.quintetto ? '+' : '-'}${entry.playerName_lk} (${entry.isMyTeam ? 'squadra' : 'avversari'})`);
          changed = true;
       }
       if (changed)
+      {
          await this.EnqueueRosterSnapshot();
+         this.logService.AddToLog(loggedUser, "Roster modificato", `${MatchPerLog(this.matchHeader)}: quintetto ${modifiche.join(', ')}`);
+      }
    }
 
 
@@ -1305,10 +1321,17 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    async SalvaMatchHeader(datiMH: { mh: IDSMatchHeader})
    {
       this.dialogVisible_MatchHeader = false;
+      const prima: IDSMatchHeader = this.matchHeader;
       this.matchHeader = JSON.parse(JSON.stringify(datiMH.mh, null, 3));
       globs.openedMatchHeaderId = this.matchHeader.id;
       if (this.matchHeader)
       {
+         const modifiche = prima ? ModificheMatch(prima, this.matchHeader) : [];
+         this.logService.AddToLog(loggedUser, "Match modificato",
+                                  `${MatchPerLog(this.matchHeader)}: ${modifiche.length > 0 ? modifiche.join(', ') : 'nessuna modifica'}`);
+         const cambioStato = prima ? CambioStatoMatch(this.matchHeader, prima.matchStatus, this.matchHeader.matchStatus) : "";
+         if (cambioStato)
+            this.logService.AddToLog(loggedUser, "Stato match", cambioStato);
          // in coda: salvata anche senza connessione, e la rilettura vede comunque la modifica
          await this.matchSync.EnqueueWrite ('matchheader', this.matchHeader.id,
                                             this.servMatchHeader.MatchHeaderToDb (this.matchHeader), this.matchHeader.id);
@@ -1378,6 +1401,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
             if (falliAggiunti > 0)
             {
                await this.matchSync.EnqueueDeleteEvent(azioneVersoFallo, this.matchHeader.id);
+               this.LogAzioneCancellata(azioneVersoFallo, "modificata in fallo fatto");
                await this.RicostruisciPartita();
                this.msgService.add({ severity: 'success', summary: 'Modifica azione', detail: 'Azione modificata' });
             }
@@ -1613,6 +1637,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (!(this.matchHeader?.id > 0))
          return;
       const statoCambiato = (this.matchHeader.matchStatus !== stato.code);
+      if (statoCambiato)
+         this.logService.AddToLog(loggedUser, "Stato match", CambioStatoMatch(this.matchHeader, this.matchHeader.matchStatus, stato.code));
       this.matchHeader.matchStatus = stato.code;
       const puntiCambiati = this.AggiornaPuntiIntestazione();
       if (statoCambiato || puntiCambiati)
@@ -3125,6 +3151,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
       if (Object.keys(dettagli).length > 0)
          nuova.eventData = dettagli;
       await this.matchSync.EnqueueDeleteEvent(vecchia, matchId);
+      this.LogAzioneCancellata(vecchia, `modificata in ${TOperationType.Desc(nuova.oper())}`);
       await this.matchSync.EnqueueAddEvent(nuova, matchId);
       await this.RicostruisciPartita();
       this.msgService.add({ severity: 'success', summary: 'Modifica azione', detail: 'Azione modificata' });
@@ -3336,6 +3363,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          const opList = await matchGlobs.currMatch.EnsureOperationList();
          await opList.Destroy();
          await this.matchSync.EnqueueResetMatch (this.matchHeader.id);
+         this.logService.AddToLog (loggedUser, "Partita azzerata", MatchPerLog (this.matchHeader));
          matchGlobs.currMatch.myTeam()?.ResetMatchState();
          matchGlobs.currMatch.oppTeam()?.ResetMatchState();
       }

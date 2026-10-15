@@ -26,6 +26,7 @@ import {
 } from "../../models/datamod";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import {loggedUser} from "../../services/users.service";
+import {LogService} from "../../services/log.service";
 import {SocietaService} from "../../services/societa.service";
 import {SeasonsService} from "../../services/seasons.service";
 import {CampionatiService} from "../../services/campionati.service";
@@ -136,7 +137,8 @@ export class DatabaseComponent implements OnInit
                 private servTeam: TeamService,
                 private servPlayer: PlayerService,
                 private servCoach: CoachService,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -597,6 +599,7 @@ export class DatabaseComponent implements OnInit
       const liv = this.dialogLivello;
       const nuovo = (this.dialogOperation == 'ADD');
       const id: number = nuovo ? 0 : this.Selezionato (liv)?.id;
+      const prima: any = nuovo ? null : this.Selezionato (liv);
       this.dialogVisible = false;
       let richiesta: Observable<any>;
       switch (liv)
@@ -635,7 +638,10 @@ export class DatabaseComponent implements OnInit
       {
          const response = await firstValueFrom (richiesta);
          if (response?.ok)
+         {
+            this.ScriviLogAnagrafica (liv, prima, id);
             await this.RicaricaLivello (liv);
+         }
          else
             this.MostraErrore (sottotitolo, `${response?.message}`);
       }
@@ -644,6 +650,32 @@ export class DatabaseComponent implements OnInit
          this.MostraErrore (sottotitolo, e?.message ?? JSON.stringify (e));
       }
       this.cdr.detectChanges ();
+   }
+
+
+   // creazione/modifica di un'anagrafica nel log del server; per la modifica solo i campi cambiati
+   private ScriviLogAnagrafica (liv: Livello, prima: any, id: number)
+   {
+      const dopo: Array<[string, any]> = (liv == 'giocatore')
+         ? [["nome", this.dialogValue_Nome], ["anno", this.dialogValue_Anno], ["ruolo", this.dialogValue_Ruolo],
+            ["numero", this.dialogValue_Numero], ["altezza", this.dialogValue_Altezza]]
+         : (liv == 'societa') || (liv == 'allenatore')
+            ? [["nome", this.dialogValue_Nome]]
+            : [["nome", this.dialogValue_Nome], ["abbreviazione", this.dialogValue_Abbrev]];
+      if (!prima)
+      {
+         this.logService.AddToLog (loggedUser, `${NOMI_LIVELLO[liv].titolo} creato`,
+                                   dopo.map (([n, v]) => `${n}: ${v ?? ''}`).join (', '));
+         return;
+      }
+      const campoPrima: Record<string, any> = (liv == 'giocatore')
+         ? { nome: prima.nomedisp, anno: prima.anno, ruolo: prima.ruolo, numero: prima.numero, altezza: prima.altezza }
+         : { nome: prima.nome, abbreviazione: prima.abbrev ?? "" };
+      const modifiche = dopo.filter (([n, v]) => `${campoPrima[n] ?? ''}` !== `${v ?? ''}`)
+                            .map (([n, v]) => `${n}: ${campoPrima[n] ?? ''} -> ${v ?? ''}`);
+      const nomePrima = (liv == 'giocatore') ? prima.nomedisp : prima.nome;
+      this.logService.AddToLog (loggedUser, `${NOMI_LIVELLO[liv].titolo} modificato`,
+                                `${nomePrima} (id ${id}): ${modifiche.length > 0 ? modifiche.join (', ') : 'nessuna modifica'}`);
    }
 
 
@@ -683,12 +715,12 @@ export class DatabaseComponent implements OnInit
       this.messageDialogService.showMessage (dlgData, '', true).subscribe (result =>
                                                                            {
                                                                               if (result === 'secondary')
-                                                                                 this.EseguiCancellazione (liv, id);
+                                                                                 this.EseguiCancellazione (liv, id, nome);
                                                                            });
    }
 
 
-   private async EseguiCancellazione (liv: Livello, id: number)
+   private async EseguiCancellazione (liv: Livello, id: number, nome: string)
    {
       let richiesta: Observable<any>;
       switch (liv)
@@ -706,6 +738,7 @@ export class DatabaseComponent implements OnInit
          const response = await firstValueFrom (richiesta);
          if (response?.ok)
          {
+            this.logService.AddToLog (loggedUser, `${NOMI_LIVELLO[liv].titolo} cancellato`, `${nome} (id ${id})`);
             // l'elemento cancellato era quello scelto: la scelta e quelle che ne dipendono non valgono più
             switch (liv)
             {

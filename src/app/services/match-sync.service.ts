@@ -708,6 +708,7 @@ export class MatchSyncService
             }
             let processed = 0;
             let message = '';
+            let reteAssente = false;
             try
             {
                // id provvisori dei giocatori sostituiti con quelli reali (le creazioni in coda precedono gli eventi)
@@ -721,6 +722,7 @@ export class MatchSyncService
                // il server risponde 200 anche con un comando fallito; qui arrivano errori di rete/HTTP
                processed = Number(err?.error?.processed ?? 0);
                message = err?.error?.message ?? err?.message ?? 'Errore di rete';
+               reteAssente = (err?.status === 0);
             }
             await this.Serialize(async () =>
             {
@@ -731,6 +733,9 @@ export class MatchSyncService
             });
             if (processed < batch.length)
             {
+               // rifiuto del server (non la rete assente, normale in palestra): nel log (una volta per messaggio)
+               if (!reteAssente)
+                  console.error('MatchSync: invio eventi non riuscito', message);
                this.lastError.set(message);
                this.ScheduleRetry();
                break;

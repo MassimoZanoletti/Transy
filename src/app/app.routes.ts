@@ -2,7 +2,7 @@ import {Routes} from '@angular/router';
 import {LoginPageComponent} from './pages/login-page/login-page.component';
 import {MainPageComponent} from './pages/main-page/main-page.component';
 import {SettingsPageComponent} from './pages/settings-page/settings-page.component';
-import {AuthGuard, NoAllenatoreGuard} from './auth.guard';
+import {AdminGuard, AuthGuard, NoAllenatoreGuard} from './auth.guard';
 import {SeasonsTableComponent} from "./tables/seasons-table/seasons-table.component";
 import {SeasonEditComponent} from "./forms/season-edit/season-edit.component";
 import {SocietaTableComponent} from "./tables/societa-table/societa-table.component";
@@ -32,7 +32,7 @@ export const routes: Routes = [
    { path: 'societaedit', component: SocietaEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'userstable', component: UsersTableComponent, canActivate: [AuthGuard] },
    { path: 'useraedit', component: UserEditComponent, canActivate: [AuthGuard] },
-   { path: 'logtable', component: LogTableComponent, canActivate: [AuthGuard] },
+   { path: 'logtable', component: LogTableComponent, canActivate: [AuthGuard, AdminGuard] },
    { path: 'database', component: DatabaseComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'champedit', component: ChampEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'phaseedit', component: PhaseEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },

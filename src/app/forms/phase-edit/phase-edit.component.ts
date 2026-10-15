@@ -13,6 +13,8 @@ import {
    IDSPhase
 } from "../../models/datamod";
 import { MessageDialogService } from "../../services/message-dialog.service";
+import {LogService} from "../../services/log.service";
+import {loggedUser} from "../../services/users.service";
 
 // PrimeNG modules
 import { InputTextModule } from 'primeng/inputtext';
@@ -51,7 +53,8 @@ export class PhaseEditComponent implements OnInit
                 private theDataService: PhaseService,
                 private router: Router,
                 private cdr: ChangeDetectorRef,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -108,6 +111,7 @@ export class PhaseEditComponent implements OnInit
                                                                                       if (response.ok)
                                                                                       {
                                                                                          console.log ('Item aggiornato:', response);
+                                                                                         this.logService.AddToLog (loggedUser, "Fase modificato", `${this.nome} (${this.abbrev}), id ${this.id}`);
                                                                                          this.router.navigate(['/database']);
                                                                                       }
                                                                                       else
@@ -147,6 +151,7 @@ export class PhaseEditComponent implements OnInit
                                                                                      if (response.ok)
                                                                                      {
                                                                                         console.log ('Item aggiunto:', response);
+                                                                                        this.logService.AddToLog (loggedUser, "Fase creato", `${this.nome} (${this.abbrev})`);
                                                                                         this.router.navigate(['/database']);
                                                                                      }
                                                                                      else

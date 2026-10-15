@@ -2161,13 +2161,15 @@ export class TMatchPlayer
 
 
 
+// riga della tabella bbs_log (api_log.php)
 export interface LogMessage
 {
    id: number;
-   datetime: string;
-   user_id: number;
-   user: string
-   description: string;
+   timecode: string;
+   userid: number;
+   username: string;
+   operation: string;
+   parameters: string;
 }
 
 

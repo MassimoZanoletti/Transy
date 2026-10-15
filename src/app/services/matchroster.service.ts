@@ -15,6 +15,37 @@ import { utils,
 
 
 
+// differenze tra due versioni del roster di una partita, per il log del server: giocatori aggiunti/tolti,
+// numeri di maglia e capitano (le righe sono riconosciute dal giocatore, non dall'id della riga che cambia
+// ad ogni salvataggio)
+export function ModificheRoster (prima: TDSMatchRoster[],
+                                 dopo: TDSMatchRoster[]): string[]
+{
+   const squadra = (r: TDSMatchRoster) => r.isMyTeam ? "squadra" : "avversari";
+   const nome = (r: TDSMatchRoster) => `${r.playerName_lk ?? ''}`.trim() || `giocatore ${r.playerId_link}`;
+   const mappaPrima = new Map (prima.map (r => [Number (r.playerId_link), r]));
+   const mappaDopo = new Map (dopo.map (r => [Number (r.playerId_link), r]));
+   const modifiche: string[] = [];
+   for (const r of dopo)
+   {
+      const p = mappaPrima.get (Number (r.playerId_link));
+      if (!p)
+         modifiche.push (`aggiunto ${nome (r)} #${r.playNumber} (${squadra (r)})`);
+      else
+      {
+         if (`${p.playNumber}` !== `${r.playNumber}`)
+            modifiche.push (`${nome (r)}: numero ${p.playNumber} -> ${r.playNumber}`);
+         if (!!p.capitano !== !!r.capitano)
+            modifiche.push (`${nome (r)}: ${r.capitano ? 'capitano' : 'non più capitano'}`);
+      }
+   }
+   for (const p of prima)
+      if (!mappaDopo.has (Number (p.playerId_link)))
+         modifiche.push (`tolto ${nome (p)} (${squadra (p)})`);
+   return modifiche;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })

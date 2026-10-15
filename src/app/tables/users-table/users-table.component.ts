@@ -20,6 +20,7 @@ import {UserService} from "../../services/users.service";
 import {Router} from "@angular/router";
 import {MessageDialogService} from "../../services/message-dialog.service";
 import { loggedUser } from "../../services/users.service";
+import { LogService } from "../../services/log.service";
 
 
 
@@ -50,7 +51,8 @@ export class UsersTableComponent implements OnInit
    constructor (public router: Router,
                 private cdr: ChangeDetectorRef,
                 public theDataService: UserService,
-                private messageDialogService: MessageDialogService)
+                private messageDialogService: MessageDialogService,
+                private logService: LogService)
    {
    }
 
@@ -163,6 +165,7 @@ export class UsersTableComponent implements OnInit
                                                                                                                                         {
                                                                                                                                            if (data.ok)
                                                                                                                                            {
+                                                                                                                                              this.logService.AddToLog (loggedUser, "Utente cancellato", `${item.nome} (id ${item.id}, ${item.ruolo_desc ?? ''})`);
                                                                                                                                               this.LoadData ();
                                                                                                                                            }
                                                                                                                                            else
