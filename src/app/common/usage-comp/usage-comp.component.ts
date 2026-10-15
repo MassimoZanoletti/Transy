@@ -52,14 +52,14 @@ export class UsageCompComponent
    public grigliaY: number[] = [];
    public hover: TUsoGiocatore | null = null;
    public tooltipLettura = '';
-   public readonly tooltipUsage = `<span style='color: #ffff00'><b>Usage % (USG%)</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipUsage = `<span class='tt-titolo'><b>Usage % (USG%)</b></span><br><span class='tt-testo'>` +
       `Quota dei possessi della squadra che il giocatore chiude (tiro, liberi o palla persa) mentre è in campo. ` +
       `Con 5 in campo la media è 20%: sopra 25-30% è il terminale offensivo. Va letto con il TS%: usage alto e TS% ` +
       `basso vuol dire molti possessi resi poco.</span>`;
-   public readonly tooltipTiri = `<span style='color: #ffff00'><b>Tentativi di tiro</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipTiri = `<span class='tt-titolo'><b>Tentativi di tiro</b></span><br><span class='tt-testo'>` +
       `Volume grezzo: tiri dal campo tentati + 0,44 x liberi tentati (a partita nel campionato). A differenza ` +
       `dell'usage non tiene conto dei minuti: premia chi gioca di più.</span>`;
-   public readonly tooltipTs = `<span style='color: #ffff00'><b>TS% (True Shooting)</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipTs = `<span class='tt-titolo'><b>TS% (True Shooting)</b></span><br><span class='tt-testo'>` +
       `Efficienza al tiro considerando anche i liberi: punti / (2 x (TdC tentati + 0,44 x TL tentati)).</span>`;
 
 
@@ -79,7 +79,7 @@ export class UsageCompComponent
       this.grigliaY = [];
       for (let v = this.scala.yMin; v <= this.scala.yMax; v += 10)
          this.grigliaY.push(v);
-      this.tooltipLettura = `<span style='color: #ffff00'><b>Come leggere il grafico</b></span><br><span style='font-size: 0.8rem;'>` +
+      this.tooltipLettura = `<span class='tt-titolo'><b>Come leggere il grafico</b></span><br><span class='tt-testo'>` +
          `${def.didascalia.intro}<br>` + def.didascalia.zone.map(z => `&bull; ${z}`).join('<br>') + `</span>`;
    }
 

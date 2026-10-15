@@ -54,7 +54,7 @@ export class AndamentoGiocatoriCompComponent
    public idScelto = 0;
    public calcola: ((metrica: string) => TDatiAndamento) | null = null;
    public readonly Num = NumMetrica;
-   public readonly tooltipLettura = `<span style='color: #ffff00'><b>Come leggere i mini-grafici</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipLettura = `<span class='tt-titolo'><b>Come leggere i mini-grafici</b></span><br><span class='tt-testo'>` +
       `Ogni mini-grafico ha la scala del giocatore (con un'ampiezza minima di 10, così chi è costante resta piatto): mostra la forma dell'andamento (crescita, calo, costanza), il valore ` +
       `lo dice la media accanto. Linea tratteggiata: media; pallino pieno: la partita migliore; pallino vuoto: la ` +
       `peggiore. Buchi: partite non giocate. Clicca una riga per il grafico grande del giocatore.</span>`;

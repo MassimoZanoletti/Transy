@@ -25,7 +25,7 @@ export class ClutchCompComponent
    public readonly Min = MinStr;
    public readonly Ogni10 = PuntiOgni10;
    public readonly TdC = TdC;
-   public readonly tooltipClutch = `<span style='color: #ffff00'><b>Clutch</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipClutch = `<span class='tt-titolo'><b>Clutch</b></span><br><span class='tt-testo'>` +
       `Definizione standard: ${DescrizioneClutch()}, nel momento dell'azione. Con pochi minuti e pochi tiri le percentuali ` +
       `dicono poco: il dato diventa utile sommato sul campionato.</span>`;
 

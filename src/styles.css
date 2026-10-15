@@ -148,3 +148,20 @@ html.disp-mobile #router-container > :not(router-outlet) {
 :where(html.disp-mobile #router-container > :not(router-outlet)) {
    display: block;
 }
+
+
+/* Tooltip con spiegazione delle pagine statistiche (partita e campionato): titolo in giallo e testo.
+   Testo a 1.75 volte la dimensione originale (0.8rem), titolo 1.5 volte quella del tooltip; il tooltip
+   si allarga di conseguenza (il max-width di PrimeNG è 12.5rem) senza uscire dallo schermo. */
+.tt-titolo {
+   color: #ffff00;
+   font-size: 1.5em;
+}
+
+.tt-testo {
+   font-size: 1.4rem;
+}
+
+.p-tooltip:has(.tt-titolo) {
+   max-width: min(32rem, 90vw);
+}

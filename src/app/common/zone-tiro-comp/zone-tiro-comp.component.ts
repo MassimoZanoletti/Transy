@@ -50,7 +50,7 @@ export class ZoneTiroCompComponent
    public readonly coloreSotto = COLORE_ZONA_SOTTO;
    public readonly Perc = PercZona;
    public readonly Pps = PpsStr;
-   public readonly tooltipPps = `<span style='color: #ffff00'><b>Punti per tiro</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipPps = `<span class='tt-titolo'><b>Punti per tiro</b></span><br><span class='tt-testo'>` +
       `Punti segnati ogni tiro tentato dalla zona (percentuale x 2 o x 3). Permette di confrontare zone da 2 e da 3: ` +
       `50% da 2 e 33% da 3 valgono entrambi circa 1 punto per tiro.</span>`;
    // zona sotto il mouse/dito: evidenziata nella tabella

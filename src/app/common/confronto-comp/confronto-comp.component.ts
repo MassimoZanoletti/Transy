@@ -18,11 +18,11 @@ export class ConfrontoCompComponent
 
    public readonly Num = NumC;
    public readonly Esito = EsitoDiff;
-   public readonly tooltipConfronto = `<span style='color: #ffff00'><b>Come leggere il confronto</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipConfronto = `<span class='tt-titolo'><b>Come leggere il confronto</b></span><br><span class='tt-testo'>` +
       `Le stesse statistiche nelle partite vinte e in quelle perse: dicono cosa fate di diverso quando vincete. ` +
       `La differenza è in verde (a favore) o in rosso (contro) solo quando è netta: con poche partite le piccole ` +
       `differenze possono essere solo il caso. Per le percentuali al tiro, tra parentesi i tentativi a partita.</span>`;
-   public readonly tooltipTs = `<span style='color: #ffff00'><b>TS% (True Shooting)</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipTs = `<span class='tt-titolo'><b>TS% (True Shooting)</b></span><br><span class='tt-testo'>` +
       `Efficienza al tiro considerando anche i liberi: punti / (2 x (TdC tentati + 0,44 x TL tentati)). ` +
       `50% vuol dire 1 punto per tentativo; sopra il 60% è molto buona. Calcolata sulla somma delle partite del ` +
       `gruppo in cui il giocatore è entrato.</span>`;

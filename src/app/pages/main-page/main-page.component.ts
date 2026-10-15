@@ -178,8 +178,8 @@ export class MainPageComponent implements OnInit, OnDestroy
    public dialogVisible_StatCamp: boolean = false;
    public statCamp_Teams: Array<IDSTeam> = [];
    public statCamp_Team: IDSTeam | null = null;
-   // dettaglio per quarto nelle statistiche (scelta ricordata su questo dispositivo)
-   public statCamp_Quarti: boolean = (() => { try { return localStorage.getItem ('BBS_StatCampQuarti') === '1'; } catch { return false; } })();
+   // dettaglio per quarto nelle statistiche (attivo di default, scelta ricordata su questo dispositivo)
+   public statCamp_Quarti: boolean = (() => { try { return localStorage.getItem ('BBS_StatCampQuarti') !== '0'; } catch { return true; } })();
    private statCamp_AllMatches: Array<IDSMatchHeader> = [];
    public statCamp_Matches: Array<IDSMatchHeader> = [];
    public statCamp_Selected: Array<IDSMatchHeader> = [];

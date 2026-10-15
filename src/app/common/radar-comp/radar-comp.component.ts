@@ -46,7 +46,7 @@ export class RadarCompComponent
    public readonly coloreNoi = COLORE_NOI;
    public readonly coloreConfronto = COLORE_CONFRONTO;
    public readonly Num = NumR;
-   public readonly tooltipRadar = `<span style='color: #ffff00'><b>Come leggere il radar</b></span><br><span style='font-size: 0.8rem;'>` +
+   public readonly tooltipRadar = `<span class='tt-titolo'><b>Come leggere il radar</b></span><br><span class='tt-testo'>` +
       `I conteggi sono riportati a 40 minuti di gioco, così chi gioca poco non è penalizzato. Ogni asse va da 0 al ` +
       `valore più alto della squadra: il radar mostra in cosa il giocatore è forte rispetto ai compagni. ` +
       `Per le palle perse il pieno vuol dire "nessuna". In grigio tratteggiato la media della squadra.</span>`;

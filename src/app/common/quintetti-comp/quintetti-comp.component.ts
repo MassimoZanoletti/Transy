@@ -74,6 +74,6 @@ export class QuintettiCompComponent
    private Tooltip (titolo: string,
                     descrizione: string): string
    {
-      return `<span style='color: #ffff00'><b>${titolo}</b></span><br><span style='font-size: 0.8rem;'>${descrizione}</span>`;
+      return `<span class='tt-titolo'><b>${titolo}</b></span><br><span class='tt-testo'>${descrizione}</span>`;
    }
 }
