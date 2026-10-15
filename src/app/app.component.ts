@@ -32,7 +32,7 @@ import {MenuModule} from 'primeng/menu';
 import {Menu} from 'primeng/menu';
 import { PrimeNGConfig } from 'primeng/api';
 import * as currentPackage from "../../package.json";
-import {InitLoggedUser, loggedUser} from "./services/users.service";
+import {InitLoggedUser, IsAllenatore, loggedUser} from "./services/users.service";
 import { globs,
          utils} from "./common/utils";
 import {LogService} from "./services/log.service";
@@ -122,7 +122,7 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
          {
             label: "",
             items: [
-               {label: "Database", icon: 'pi pi-table', styleClass: 'icona-default', routerLink: ['/database']}
+               {id: 'mnu-database', label: "Database", icon: 'pi pi-table', styleClass: 'icona-default', routerLink: ['/database']}
             ]
          },
          {
@@ -303,6 +303,10 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    StrumentiMenuClick (event: MouseEvent, menu: Menu)
    {
       // Qui `menu` è il riferimento valido passato dal template
+      // l'utente loggato può cambiare dopo la creazione del menu: l'abilitazione si decide all'apertura
+      const voceDatabase = this.mnuStrumenti?.flatMap (g => g.items ?? []).find (i => i.id == 'mnu-database');
+      if (voceDatabase)
+         voceDatabase.disabled = IsAllenatore ();      // l'allenatore non accede al database
       menu.toggle (event);
       this.cdr.detectChanges (); // Forziamo un ciclo di change detection
    }

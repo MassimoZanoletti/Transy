@@ -54,7 +54,7 @@ import {
    matchStatusType,
    timeouts, globs
 } from "../../common/utils";
-import {loggedUser} from "../../services/users.service";
+import {IsAllenatore, loggedUser} from "../../services/users.service";
 import { LogService } from "../../services/log.service";
 import {TimerCompComponent} from "../../common/timer-comp/timer-comp.component";
 import {PlayerCompComponent} from "../../common/player-comp/player-comp.component";
@@ -616,6 +616,13 @@ export class MainPageComponent implements OnInit, OnDestroy
    DeleteEnabled (): boolean
    {
       return (loggedUser.attributo > 1);
+   }
+
+
+   // l'allenatore non crea match e non ne modifica dati, stato o esistenza (i bottoni restano visibili, disabilitati)
+   GestioneMatchEnabled (): boolean
+   {
+      return !IsAllenatore();
    }
 
 

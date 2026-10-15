@@ -16,6 +16,16 @@ export let loggedUser: IDSUser = {
 }
 
 
+// attributo del ruolo "Allenatore": consulta i match ma non li crea, modifica o cancella
+export const ATTRIB_ALLENATORE = 2;
+
+
+export function IsAllenatore(): boolean
+{
+   return (loggedUser.attributo == ATTRIB_ALLENATORE);
+}
+
+
 export function InitLoggedUser()
 {
    loggedUser = {

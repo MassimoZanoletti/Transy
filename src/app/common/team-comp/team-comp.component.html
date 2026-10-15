@@ -44,6 +44,7 @@
                   <button pButton
                           id="btnTimeout"
                           class="btn-te-timeout"
+                          [disabled]="!timeoutEnabled"
                           (click)="BtnTimeoutClick()"
                   >
                      Time<br>Out

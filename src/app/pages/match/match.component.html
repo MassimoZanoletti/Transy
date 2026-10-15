@@ -9,6 +9,7 @@
       [popup]="true"
       [style]="{'width': 'auto', 'min-width': 'max-content', 'white-space': 'nowrap'}"/>
    <p-button
+      [disabled]="!GestioneMatchEnabled()"
       (onClick)="menuPartita.toggle($event)"
       icon="pi pi-ellipsis-v"
       severity="help"
@@ -96,6 +97,7 @@
                      severity="primary"
                      pTooltip="Modifica i dati del match"
                      tooltipPosition="top"
+                     [disabled]="!GestioneMatchEnabled()"
                      (onClick)="BtnEditMatchHeader()"
                   ></p-button>
                </div>
@@ -107,6 +109,7 @@
                      severity="primary"
                      pTooltip="Modifica il roster delle due squadre"
                      tooltipPosition="top"
+                     [disabled]="!GestioneMatchEnabled()"
                      (onClick)="BtnEditMatchRoster()"
                   ></p-button>
                </div>
@@ -181,6 +184,9 @@
                header="Gioco">
       <div id="div-match-gioco"
             class="div-match-gioco">
+         <!-- l'allenatore consulta soltanto: cronometro e comandi non rispondono (inert blocca mouse, dito e
+              tastiera); su squadre, giocatori e panchine resta solo il doppio clic sui punti per le mappe dei tiri
+              (click ignorati in TeamClicked/PlayerClicked/BenchClicked, timeout disabilitato) -->
          <div id="div-gioco-alto"
               class="div-gioco-alto">
             <div id="div-gioco-myteam"
@@ -191,6 +197,7 @@
                   team__Name="{{matchHeader.myTeamNome_lk}}"
                   teamColor="{{matchHeader.myTeamColor}}"
                   [matchTeamData]="GetMyTeamData()"
+                  [timeoutEnabled]="GestioneMatchEnabled()"
                   (timeoutsChanged)="onTimeoutsChanged(true, $event)"
                   (componentClicked)="TeamClicked($event)"
                   (puntiDoubleClicked)="MostraMappaSquadra($event)"
@@ -206,7 +213,8 @@
                </div>
             </div>
             <div id="div-gioco-timer"
-                 class="div-gioco-timer">
+                 class="div-gioco-timer"
+                 [attr.inert]="SolaLettura()">
                <app-timer-comp
                   instanceId="comptimer"
                   #compTimer
@@ -234,6 +242,7 @@
                   team__Name="{{matchHeader.oppoTeamNome_lk}}"
                   teamColor="{{matchHeader.oppoTeamColor}}"
                   [matchTeamData]="GetOppoTeamData()"
+                  [timeoutEnabled]="GestioneMatchEnabled()"
                   (timeoutsChanged)="onTimeoutsChanged(false, $event)"
                   (componentClicked)="TeamClicked($event)"
                   (puntiDoubleClicked)="MostraMappaSquadra($event)"
@@ -242,7 +251,8 @@
             </div>
          </div>
          <div id="div-gioco-centro"
-              class="div-gioco-centro">
+              class="div-gioco-centro"
+              [class.gioco-sola-lettura]="!GestioneMatchEnabled()">
             <div id="div-gioco-myfield"
                  class="div-gioco-myfield">
                <app-player-comp
@@ -287,7 +297,8 @@
                </app-player-comp>
             </div>
             <div id="div-gioco-commands"
-                 class="div-gioco-commands">
+                 class="div-gioco-commands"
+                 [attr.inert]="SolaLettura()">
                <div style="display: flex; flex-direction: column; gap: 5px;">
                   <!-- -->
                   <app-points-comp
@@ -424,7 +435,8 @@
             </div>
 
             <div id="div-gioco-sostit"
-                 class="div-gioco-sostit">
+                 class="div-gioco-sostit"
+                 [attr.inert]="SolaLettura()">
                <button pButton
                        id="btn-sostit"
                        pTooltip="Sostituzione / Quintetto"

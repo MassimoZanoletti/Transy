@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {CanActivate, Router} from '@angular/router';
 import {AuthService} from './services/auth.service';
+import {IsAllenatore} from './services/users.service';
 
 
 
@@ -31,3 +32,29 @@ export class AuthGuard implements CanActivate
    }
 }
 
+
+
+// pagine del database (e relative schede di modifica): non accessibili all'allenatore, nemmeno scrivendo
+// l'indirizzo a mano (la voce di menu è già disabilitata); l'allenatore torna alla dashboard
+@Injectable ({
+                providedIn: 'root'
+             })
+export class NoAllenatoreGuard implements CanActivate
+{
+
+   constructor (private router: Router)
+   {
+
+   }
+
+
+   canActivate (): boolean
+   {
+      if (IsAllenatore ())
+      {
+         this.router.navigate (['/']);
+         return false;
+      }
+      return true;
+   }
+}

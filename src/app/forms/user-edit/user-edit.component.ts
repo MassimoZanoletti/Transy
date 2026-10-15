@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService} from "../../services/auth.service";
 import { Router} from "@angular/router";
-import {loggedUser, UserService} from "../../services/users.service";
+import {ATTRIB_ALLENATORE, loggedUser, UserService} from "../../services/users.service";
 import {firstValueFrom} from "rxjs";
 import { MessDlgData,
    IDSUser } from "../../models/datamod";
@@ -16,7 +16,6 @@ import { MessageDialogService } from "../../services/message-dialog.service";
 import {ButtonDirective} from "primeng/button";
 import {CardModule} from "primeng/card";
 import {InputTextModule} from "primeng/inputtext";
-import {InputNumberModule} from "primeng/inputnumber";
 import {NgIf} from "@angular/common";
 import {PaginatorModule} from "primeng/paginator";
 import {PrimeTemplate} from "primeng/api";
@@ -26,6 +25,20 @@ import { LogService } from "../../services/log.service";
 import { UnaAllaVolta } from '../../common/una-alla-volta';
 
 
+// tipi di utente proposti all'amministratore: ognuno fissa descrizione e attributo del ruolo
+interface TTipoUtente
+{
+   desc:   string;
+   attrib: number;
+}
+
+const TIPI_UTENTE: TTipoUtente[] = [
+   { desc: "Amministratore", attrib: 65535 },
+   { desc: "Utente",         attrib: 1 },
+   { desc: "Allenatore",     attrib: ATTRIB_ALLENATORE }
+];
+
+
 
 @Component({
   selector:    'app-user-edit',
@@ -33,7 +46,6 @@ import { UnaAllaVolta } from '../../common/una-alla-volta';
               imports: [
                  FormsModule,
                  ButtonDirective,
-                 InputNumberModule,
                  CardModule,
                  InputTextModule,
                  NgIf,
@@ -53,6 +65,8 @@ export class UserEditComponent implements OnInit
    password: string = "";
    ruoloDesc: string = "Utente";      // valori di default per un nuovo utente
    ruoloAttrib: number = 1;
+   readonly tipiUtente = TIPI_UTENTE;
+   tipoUtente: TTipoUtente | null = TIPI_UTENTE[1];
    isSaving: boolean = false;
 
    theError = false;
@@ -96,6 +110,7 @@ export class UserEditComponent implements OnInit
                                                                           this.password = (data.elements as IDSUser).password;
                                                                           this.ruoloDesc = data.elements.ruolo_desc ?? "";      // l'api restituisce i nomi delle colonne del db
                                                                           this.ruoloAttrib = Number(data.elements.ruolo_attrib ?? 0);
+                                                                          this.tipoUtente = this.TipoDaAttributo(this.ruoloAttrib);
                                                                        }
                                                                     }
                                                                     this.cdr.detectChanges();
@@ -181,6 +196,26 @@ export class UserEditComponent implements OnInit
          this.router.navigate(['/settings']);
       else
          this.router.navigate(['/userstable']);
+   }
+
+
+   // tipo di utente corrispondente all'attributo letto dal db (amministratore: da 255 in su, come nei controlli
+   // dei permessi); valori non previsti: nessuna selezione, ruolo e attributo restano quelli letti
+   private TipoDaAttributo(attrib: number): TTipoUtente | null
+   {
+      if (attrib >= 255)
+         return TIPI_UTENTE[0];
+      return TIPI_UTENTE.find(t => t.attrib == attrib) ?? null;
+   }
+
+
+   TipoUtenteCambiato()
+   {
+      if (this.tipoUtente)
+      {
+         this.ruoloDesc = this.tipoUtente.desc;
+         this.ruoloAttrib = this.tipoUtente.attrib;
+      }
    }
 
 

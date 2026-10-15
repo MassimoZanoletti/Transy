@@ -48,6 +48,7 @@ export class TeamCompComponent implements OnInit, OnDestroy
    @Input() colorSelected: string = globs.colorSelected
    @Input() isSelected: boolean = false;
    @Input() matchTeamData!: TMatchTeam | null;
+   @Input() timeoutEnabled: boolean = true;      // false: bottone del timeout disabilitato (sola consultazione)
 
    @Output() componentClicked = new EventEmitter<string>();
    @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();

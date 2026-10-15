@@ -79,6 +79,7 @@ import {LogService} from "../../services/log.service";
 import {TeamService} from "../../services/team.service";
 import {MatchrosterService} from "../../services/matchroster.service";
 import {PlayerService} from "../../services/player.service";
+import {IsAllenatore} from "../../services/users.service";
 import {CoachService} from "../../services/coach.service";
 import {
    matchGlobs, TCurrMatch,
@@ -1049,7 +1050,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                benchRef.instance.getCurrentTime = this.GetCurrClock;
                benchRef.instance.isSelected = false;
                benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-               benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+               benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                this.myBenchRefs.push(benchRef);
             }
             if (mt.Roster.length > 6)
@@ -1066,7 +1067,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                   this.myBenchRefs.push(benchRef);
                }
             }
@@ -1084,7 +1085,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                   this.myBenchRefs.push(benchRef);
                }
             }
@@ -1109,7 +1110,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                benchRef.instance.getCurrentTime = this.GetCurrClock;
                benchRef.instance.isSelected = false;
                benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-               benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+               benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                this.oppoBenchRefs.push(benchRef);
             }
             if (ot.Roster.length > 6)
@@ -1126,7 +1127,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                   this.oppoBenchRefs.push(benchRef);
                }
             }
@@ -1144,7 +1145,7 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
                   benchRef.instance.getCurrentTime = this.GetCurrClock;
                   benchRef.instance.isSelected = false;
                   benchRef.instance.componentClicked.subscribe(event => { this.BenchClicked(event)});
-                  benchRef.instance.componentDoubleClicked.subscribe(event => { this.BenchDoubleClicked(event)});
+                  benchRef.instance.puntiDoubleClicked.subscribe(player => { this.MostraMappaGiocatore(player)});
                   this.oppoBenchRefs.push(benchRef);
                }
             }
@@ -1247,6 +1248,20 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          return matchStatusType.terminated.desc;
       else
          return  matchStatusType.notPlayed.desc;
+   }
+
+
+   // l'allenatore non modifica i dati del match né il roster, e non registra eventi di gioco (sola consultazione)
+   GestioneMatchEnabled (): boolean
+   {
+      return !IsAllenatore();
+   }
+
+
+   // valore dell'attributo inert delle zone di gioco: presente (vuoto) per l'allenatore, assente per gli altri
+   SolaLettura (): string | null
+   {
+      return this.GestioneMatchEnabled() ? null : '';
    }
 
 
@@ -1416,6 +1431,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async TeamClicked(id: string)
    {
+      if (!this.GestioneMatchEnabled())      // allenatore: nessuna selezione (resta il doppio clic per la mappa)
+         return;
       await this.UpdateSelection("team", id);
       this.currTeam = id;
    }
@@ -1423,6 +1440,8 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async PlayerClicked(id: string)
    {
+      if (!this.GestioneMatchEnabled())      // allenatore: nessuna selezione (resta il doppio clic per la mappa)
+         return;
       const player = this.GetPlayerByFieldId(id);
       await this.SelectPlayer(player);
       this.currPlayer = id;
@@ -2324,23 +2343,11 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    async BenchClicked(id: string)
    {
+      if (!this.GestioneMatchEnabled())      // allenatore: nessuna selezione (resta il doppio clic per la mappa)
+         return;
       const player = this.GetPlayerByBenchId(id);
       await this.SelectPlayer(player);
       this.currBench = id;
-   }
-
-
-   BenchDoubleClicked(id: string)
-   {
-      this.currBench = id;
-      const dlgData: MessDlgData = {
-         title:      'DBLCLICK',
-         subtitle:   "",
-         message:    `Doppio click ${this.currBench}`,
-         messtype:   'info',
-         btncaption: 'Chiudi'
-      };
-      this.messageDialogService.showMessage (dlgData, '600px');
    }
 
 

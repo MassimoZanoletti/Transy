@@ -214,7 +214,7 @@ export class DatabaseComponent implements OnInit
 
    AddEnabled (): boolean
    {
-      return (loggedUser.attributo == 255);
+      return (loggedUser.attributo >= 255);
    }
 
 
@@ -226,7 +226,7 @@ export class DatabaseComponent implements OnInit
 
    DeleteEnabled (row: any): boolean
    {
-      return (loggedUser.attributo == 255);
+      return (loggedUser.attributo >= 255);
    }
 
 

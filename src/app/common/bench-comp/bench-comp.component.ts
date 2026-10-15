@@ -39,7 +39,7 @@ export class BenchCompComponent implements OnInit, OnDestroy
    @Input() getCurrentTime: () => number = () => 0;
 
    @Output() componentClicked: EventEmitter<string> = new EventEmitter<string>();
-   @Output() componentDoubleClicked: EventEmitter<string> = new EventEmitter<string>();
+   @Output() puntiDoubleClicked = new EventEmitter<TMatchPlayer>();
 
 
    constructor ()
@@ -64,9 +64,11 @@ export class BenchCompComponent implements OnInit, OnDestroy
    }
 
 
-   onDoubleClick()
+   // doppio click sui punti: mappa di tiro del giocatore
+   onPuntiDoubleClick()
    {
-      this.componentDoubleClicked.emit(this.componentId);
+      if (this.player)
+         this.puntiDoubleClicked.emit(this.player);
    }
 
 

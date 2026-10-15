@@ -529,3 +529,11 @@
    grid-template-columns: repeat(6, minmax(0, 80px));
    /*width: 100% !important;*/
 }
+
+
+/* allenatore: comandi di gioco visibilmente disattivati (le zone sono inert, vedi html) */
+.gioco-sola-lettura app-points-comp,
+.gioco-sola-lettura app-data-comp,
+.gioco-sola-lettura #div-gioco-sostit {
+   opacity: 0.4;
+}

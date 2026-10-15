@@ -19,22 +19,18 @@
                    required/>
          </div>
 
-         <!-- ruolo e livello di permessi: modificabili solo dall'amministratore -->
+         <!-- ruolo e livello di permessi: modificabili solo dall'amministratore, scegliendo il tipo di utente
+              (che imposta descrizione e attributo) -->
          <div *ngIf="ShowRuolo()" class="form-group">
-            <label for="ruolo">Ruolo:</label>
-            <input type="text"
-                   id="ruolo"
-                   [(ngModel)]="ruoloDesc"
-                   pInputText/>
-         </div>
-
-         <div *ngIf="ShowRuolo()" class="form-group">
-            <label for="attributo">Attributo:</label>
-            <p-inputNumber inputId="attributo"
-                           [(ngModel)]="ruoloAttrib"
-                           [min]="0"
-                           [max]="255"
-                           [showButtons]="true"></p-inputNumber>
+            <label for="tipo">Ruolo:</label>
+            <p-dropdown inputId="tipo"
+                        [options]="tipiUtente"
+                        [(ngModel)]="tipoUtente"
+                        (ngModelChange)="TipoUtenteCambiato()"
+                        optionLabel="desc"
+                        placeholder="Seleziona il ruolo"
+                        appendTo="body"
+                        [style]="{ 'min-width': '15rem' }"></p-dropdown>
          </div>
 
          <div *ngIf="theError" class="error-message">{{ errorMessage }}</div>

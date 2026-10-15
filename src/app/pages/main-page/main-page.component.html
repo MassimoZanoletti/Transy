@@ -410,6 +410,7 @@
                                     size="small"
                                     pTooltip="Modifica"
                                     tooltipPosition="top"
+                                    [disabled]="!GestioneMatchEnabled()"
                                     (click)="EditMatchHeader(item)">
                                  </p-button>
 
@@ -420,6 +421,7 @@
                                     size="small"
                                     pTooltip="Stato"
                                     tooltipPosition="top"
+                                    [disabled]="!GestioneMatchEnabled()"
                                     (click)="MatchStatus(item)">
                                  </p-button>
 
@@ -429,6 +431,7 @@
                                     size="small"
                                     pTooltip="Elimina match"
                                     tooltipPosition="top"
+                                    [disabled]="!GestioneMatchEnabled()"
                                     (click)="DeleteMatchHeader(item)">
                                  </p-button>
                               </div>
@@ -455,6 +458,7 @@
             <div class="bottoni-container">
                <p-button label="Nuovo match"
                          *ngIf="AddEnabled()"
+                         [disabled]="!GestioneMatchEnabled()"
                          severity="primary"
                          icon="pi pi-plus"
                          class="btn-fisso"

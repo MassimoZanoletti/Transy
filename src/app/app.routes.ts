@@ -2,7 +2,7 @@ import {Routes} from '@angular/router';
 import {LoginPageComponent} from './pages/login-page/login-page.component';
 import {MainPageComponent} from './pages/main-page/main-page.component';
 import {SettingsPageComponent} from './pages/settings-page/settings-page.component';
-import {AuthGuard} from './auth.guard';
+import {AuthGuard, NoAllenatoreGuard} from './auth.guard';
 import {SeasonsTableComponent} from "./tables/seasons-table/seasons-table.component";
 import {SeasonEditComponent} from "./forms/season-edit/season-edit.component";
 import {SocietaTableComponent} from "./tables/societa-table/societa-table.component";
@@ -27,16 +27,16 @@ export const routes: Routes = [
    { path: '', component: MainPageComponent, canActivate: [AuthGuard] },
    { path: 'settings', component: SettingsPageComponent, canActivate: [AuthGuard] },
    { path: 'seasonstable', component: SeasonsTableComponent, canActivate: [AuthGuard] },
-   { path: 'seasonedit', component: SeasonEditComponent, canActivate: [AuthGuard] },
+   { path: 'seasonedit', component: SeasonEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'societatable', component: SocietaTableComponent, canActivate: [AuthGuard] },
-   { path: 'societaedit', component: SocietaEditComponent, canActivate: [AuthGuard] },
+   { path: 'societaedit', component: SocietaEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'userstable', component: UsersTableComponent, canActivate: [AuthGuard] },
    { path: 'useraedit', component: UserEditComponent, canActivate: [AuthGuard] },
    { path: 'logtable', component: LogTableComponent, canActivate: [AuthGuard] },
-   { path: 'database', component: DatabaseComponent, canActivate: [AuthGuard] },
-   { path: 'champedit', component: ChampEditComponent, canActivate: [AuthGuard] },
-   { path: 'phaseedit', component: PhaseEditComponent, canActivate: [AuthGuard] },
-   { path: 'teamedit', component: TeamEditComponent, canActivate: [AuthGuard] },
+   { path: 'database', component: DatabaseComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
+   { path: 'champedit', component: ChampEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
+   { path: 'phaseedit', component: PhaseEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
+   { path: 'teamedit', component: TeamEditComponent, canActivate: [AuthGuard, NoAllenatoreGuard] },
    { path: 'match', component: MatchComponent, canActivate: [AuthGuard] },
    { path: 'statcampionato', component: StatCampionatoPageComponent, canActivate: [AuthGuard] },
    { path: 'info', component: InfoPageComponent, canActivate: [AuthGuard] },
