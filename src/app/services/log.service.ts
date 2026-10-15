@@ -18,6 +18,15 @@ interface TRigaLog
 }
 
 
+// aggiornamento dell'app non ancora registrato (nessun utente loggato); da = null alla prima installazione
+interface TVersioneInSospeso
+{
+   da:       string | null;
+   a:        string;
+   timecode: string;
+}
+
+
 // Log delle operazioni sul server (tabella bbs_log): login, logout, operazioni sugli utenti, errori.
 // La scrittura non deve mai disturbare l'app (in partita soprattutto): parte e non si aspetta, e usa fetch con
 // keepalive, così arriva anche se subito dopo la pagina viene ricaricata (logout). Senza rete la riga resta in
@@ -29,7 +38,9 @@ export class LogService
 {
    private apiUrl = 'https://www.basketsarezzo.com/code/backend/bbs/api_log.php';
    private static readonly CHIAVE_ATTESA = 'BBS_LogInAttesa';
-   private static readonly MAX_ATTESA = 200;          // oltre, si perdono le righe più vecchie
+   private static readonly CHIAVE_VERSIONE = 'BBS_VersioneApp';
+   private static readonly CHIAVE_VERSIONE_SOSPESA = 'BBS_VersioneDaRegistrare';
+   private static readonly MAX_ATTESA = 200;         // oltre, si perdono le righe più vecchie
    private static readonly MAX_ERRORI = 50;           // errori per sessione (un errore in un ciclo non intasa il log)
    private erroriInviati = new Set<string> ();
    private invioAttesaInCorso = false;
@@ -133,6 +144,73 @@ export class LogService
       finally
       {
          this.inRegistrazione = false;
+      }
+   }
+
+
+   // Aggiornamenti dell'app: all'avvio la versione attuale si confronta con l'ultima vista su questo dispositivo
+   // (localStorage), così si registra ogni aggiornamento, sia dal bottone "Aggiorna" sia riaprendo l'app.
+   // Se nessuno è loggato la riga resta in sospeso (con l'ora dell'aggiornamento) e va nel log al login,
+   // con l'utente. Chiamato una volta all'avvio, dopo il ripristino dell'utente dalla sessione.
+   RegistraVersione (aVersione: string): void
+   {
+      try
+      {
+         const precedente = localStorage.getItem(LogService.CHIAVE_VERSIONE);
+         if (precedente === aVersione)
+            return;
+         localStorage.setItem(LogService.CHIAVE_VERSIONE, aVersione);
+         // più aggiornamenti prima di un login: una riga sola, dalla prima versione all'ultima
+         const sospeso = this.LeggiVersioneInSospeso();
+         const riga: TVersioneInSospeso = sospeso
+            ? { ...sospeso, a: aVersione }
+            : { da: precedente, a: aVersione, timecode: LogService.Adesso() };
+         localStorage.setItem(LogService.CHIAVE_VERSIONE_SOSPESA, JSON.stringify(riga));
+         if (loggedUser.ruolo != "")
+            this.RegistraVersioneInSospeso(loggedUser);
+      }
+      catch
+      {
+         // localStorage non disponibile: l'aggiornamento non si registra
+      }
+   }
+
+
+   // al login: la riga dell'aggiornamento rimasta in sospeso va nel log con l'utente appena entrato
+   RegistraVersioneInSospeso (aUser: IDSUser): void
+   {
+      try
+      {
+         const riga = this.LeggiVersioneInSospeso();
+         if (!riga)
+            return;
+         localStorage.removeItem(LogService.CHIAVE_VERSIONE_SOSPESA);
+         this.Invia({
+            userid:     aUser?.id ?? 0,
+            username:   aUser?.nome ?? "",
+            op:         riga.da ? "Aggiornamento" : "Prima installazione",
+            parameters: riga.da ? `v. ${riga.da} -> v. ${riga.a}` : `v. ${riga.a}`,
+            timecode:   riga.timecode
+         });
+      }
+      catch
+      {
+         // il log non deve mai far fallire l'operazione che lo chiama
+      }
+   }
+
+
+   private LeggiVersioneInSospeso (): TVersioneInSospeso | null
+   {
+      try
+      {
+         const testo = localStorage.getItem(LogService.CHIAVE_VERSIONE_SOSPESA);
+         const riga = testo ? JSON.parse(testo) : null;
+         return (riga && riga.a) ? riga : null;
+      }
+      catch
+      {
+         return null;
       }
    }
 

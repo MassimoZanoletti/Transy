@@ -66,6 +66,7 @@ export class AuthService
          this.loggedIn = true;
          utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
          this.logService.AddToLog(loggedUser, "Login");
+         this.logService.RegistraVersioneInSospeso(loggedUser);
          return true;
       }
       else
@@ -95,6 +96,7 @@ export class AuthService
                this.loggedIn = true;
                utils.SaveToSessionStorage("BBS_Logged_User", loggedUser);
                this.logService.AddToLog(loggedUser, "Login");
+               this.logService.RegistraVersioneInSospeso(loggedUser);
                return true;
             }
             else

@@ -346,6 +346,8 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
    {
       if (!this.swUpdate.isEnabled)
          return;
+      // solo con il service worker attivo (app pubblicata): in sviluppo i cambi di versione non vanno nel log
+      this.logService.RegistraVersione (this.pkg.version);
       this.swSubs.push (this.swUpdate.versionUpdates
          .pipe (filter ((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
          .subscribe (() => {
@@ -367,6 +369,8 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy
 
    AggiornaApp (): void
    {
+      // la versione di arrivo la registra RegistraVersione al riavvio ("Aggiornamento")
+      this.logService.AddToLog (loggedUser, "Aggiornamento richiesto", `da v. ${this.pkg.version}`);
       window.removeEventListener('beforeunload', this.beforeUnloadHandler);
       window.location.reload ();
    }
