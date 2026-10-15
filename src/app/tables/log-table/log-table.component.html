@@ -23,6 +23,19 @@
                       (input)="tabella.filterGlobal($any($event.target).value, 'contains')"/>
             </span>
             <span class="log-conteggio">Ultime {{ tblData.length }} righe (le più recenti in fondo)</span>
+            <!-- pulizia: solo se ci sono righe più vecchie di MESI_PULIZIA mesi -->
+            @if (righeVecchie > 0)
+            {
+               <span style="margin-left: auto;">
+                  <p-button
+                     class="p-button-table"
+                     icon="pi pi-trash"
+                     severity="danger"
+                     label="Cancella log più vecchi di {{ MESI_PULIZIA }} mesi ({{ righeVecchie }})"
+                     (click)="PulisciLog()"
+                  ></p-button>
+               </span>
+            }
          </div>
       </p-card>
    </div>

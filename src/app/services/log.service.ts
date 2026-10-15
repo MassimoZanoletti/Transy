@@ -50,6 +50,20 @@ export class LogService
    }
 
 
+   // righe più vecchie di aMonths mesi (elements: { count, limite })
+   getCountOld(aMonths: number): Observable<any>
+   {
+      return this.http.get<any>(`${this.apiUrl}?operation=countold&months=${aMonths}`);
+   }
+
+
+   // cancellazione delle righe più vecchie di aMonths mesi (elements: { deleted, limite })
+   deleteOld(aMonths: number): Observable<any>
+   {
+      return this.http.get<any>(`${this.apiUrl}?operation=deleteold&months=${aMonths}`);
+   }
+
+
    // aOperation: cosa è successo (Login, Logout, Errore...); aParameters: i dettagli (troncati dal server a 255 caratteri)
    AddToLog (aUser: IDSUser,
              aOperation: string,
