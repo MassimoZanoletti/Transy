@@ -40,6 +40,15 @@ interface TEtichettaPbp
 }
 
 
+// Timeout chiamato da una squadra (segnalino sull'asse dei minuti)
+interface TTimeoutPbp
+{
+   myTeam: boolean;
+   yValue: number;
+   tempo: string;
+}
+
+
 interface TQuartoPbp
 {
    titolo: string;
@@ -51,6 +60,7 @@ interface TQuartoPbp
    myData: TPuntoPbp[];
    oppoData: TPuntoPbp[];
    etichette: Map<string, TEtichettaPbp>;
+   timeouts: TTimeoutPbp[];
    xMin: number;
    xMax: number;
    yMax: number;              // minuti del quarto (10 regolari, 5 supplementari)
@@ -60,6 +70,9 @@ interface TQuartoPbp
 
 // distanza orizzontale (pixel) delle etichette sfalsate di eventi allo stesso minuto
 const LABEL_OFFSET = 220;
+
+// raggio (pixel) del triangolo dei timeout sull'asse dei minuti
+const TIMEOUT_RAGGIO = 9;
 
 // etichette di falli/sostituzioni dello stesso istante: distanza verticale fra una e l'altra e rientro dalla
 // seconda in poi (pixel). Altezza dell'etichetta: font 14 (riga 16.8) + spazio interno 2 x 6 + bordo 2 x 2
@@ -123,6 +136,8 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    // grafico del quarto visibile (uno solo alla volta: i pannelli nascosti hanno dimensione zero)
    private chart: Chart | null = null;
+   // tooltip del timeout sotto il mouse (stesso aspetto dei tooltip PrimeNG delle statistiche)
+   private tooltipTimeout: HTMLDivElement | null = null;
 
 
    ngOnDestroy (): void
@@ -164,6 +179,7 @@ export class PlaybyplayCompComponent implements OnDestroy
                myData:         [],
                oppoData:       [],
                etichette:      new Map(),
+               timeouts:       [],
                xMin:           0,
                xMax:           100,
                yMax:           durata / 60,
@@ -257,6 +273,14 @@ export class PlaybyplayCompComponent implements OnDestroy
          }
          quarto.oppoData.push({ x: punti, y: yFine });
          quarto.xMax = Math.max(quarto.xMax, punti + 6);
+
+         // timeout delle due squadre: solo le operazioni che aggiungono timeout chiamati (non le correzioni)
+         for (const op of opsQ.filter(o => o.oper() === TOperationType.totTimeout))
+         {
+            const [prima, dopo] = (op.desc2() ?? '').split('>');
+            if (ContaTimeout(dopo ?? prima) > ContaTimeout((dopo != undefined) ? prima : ''))
+               quarto.timeouts.push({ myTeam: op.myTeam(), yValue: minuti(op.time()), tempo: TempoStr(op.time()) });
+         }
       }
 
       this.quartiGiocati = quarti;
@@ -288,6 +312,7 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    OnToggleMyTeam (): void
    {
+      this.NascondiTooltipTimeout();
       if (this.chart)
          this.chart.data.datasets[0].hidden = !this.showMyTeam;
       this.chart?.update();
@@ -296,6 +321,7 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    OnToggleOppoTeam (): void
    {
+      this.NascondiTooltipTimeout();
       if (this.chart)
          this.chart.data.datasets[1].hidden = !this.showOppoTeam;
       this.chart?.update();
@@ -340,8 +366,47 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    private DistruggiGrafico (): void
    {
+      this.NascondiTooltipTimeout();
       this.chart?.destroy();
       this.chart = null;
+   }
+
+
+   // tooltip del timeout a destra del triangolo (centro in x, y, coordinate del canvas)
+   private MostraTooltipTimeout (t: TTimeoutPbp,
+                                 x: number,
+                                 y: number): void
+   {
+      const contenitore = this.chart?.canvas.parentElement;
+      if (!contenitore)
+         return;
+      this.NascondiTooltipTimeout();
+      const tip = document.createElement('div');
+      tip.className = 'p-tooltip p-component p-tooltip-right';
+      tip.style.cssText = `display: inline-block; left: ${x + TIMEOUT_RAGGIO + 4}px; top: ${y}px; transform: translateY(-50%); z-index: 1000;`;
+      const freccia = document.createElement('div');
+      freccia.className = 'p-tooltip-arrow';
+      const testo = document.createElement('div');
+      testo.className = 'p-tooltip-text';
+      const titolo = document.createElement('span');
+      titolo.className = 'tt-titolo';
+      const b = document.createElement('b');
+      b.textContent = `Timeout ${t.myTeam ? this.myTeamNome : this.oppoTeamNome}`;
+      titolo.appendChild(b);
+      const descr = document.createElement('span');
+      descr.className = 'tt-testo';
+      descr.textContent = `Chiamato a ${t.tempo}`;
+      testo.append(titolo, document.createElement('br'), descr);
+      tip.append(freccia, testo);
+      contenitore.appendChild(tip);
+      this.tooltipTimeout = tip;
+   }
+
+
+   private NascondiTooltipTimeout (): void
+   {
+      this.tooltipTimeout?.remove();
+      this.tooltipTimeout = null;
    }
 
 
@@ -395,6 +460,26 @@ export class PlaybyplayCompComponent implements OnDestroy
             content:         e.content,
             font:            { size: 14, weight: 'bold' },
             display:         () => fallo ? this.showFalli : this.showSostit
+         };
+      });
+      // timeout: triangolo con la punta a sinistra appoggiata sull'asse dei minuti, rosso MyTeam e verde OppoTeam
+      quarto.timeouts.forEach((t, i) =>
+      {
+         annotations[`timeout_${i}`] = {
+            type:            'point',
+            xValue:          quarto.xMin,
+            yValue:          t.yValue,
+            xAdjust:         TIMEOUT_RAGGIO,
+            pointStyle:      'triangle',
+            rotation:        -90,
+            radius:          TIMEOUT_RAGGIO,
+            backgroundColor: t.myTeam ? 'rgb(255, 0, 0)' : 'rgb(0, 160, 0)',
+            borderColor:     t.myTeam ? '#7f0000' : '#004f00',
+            borderWidth:     1,
+            display:         () => t.myTeam ? this.showMyTeam : this.showOppoTeam,
+            // a video: tooltip con tempo e squadra al passaggio del mouse
+            enter:           aVideo ? (ctx: any) => this.MostraTooltipTimeout(t, ctx.element.x, ctx.element.y) : undefined,
+            leave:           aVideo ? () => this.NascondiTooltipTimeout() : undefined
          };
       });
       return {
@@ -609,6 +694,13 @@ export class PlaybyplayCompComponent implements OnDestroy
       }
       await destinazione.Salva(pdf);
    }
+}
+
+
+// numero di timeout chiamati in una fotografia (vedi TMatchTeam.GetTimeoutSnapshot)
+function ContaTimeout (snapshot: string): number
+{
+   return (snapshot.match(/X/g) ?? []).length;
 }
 
 
