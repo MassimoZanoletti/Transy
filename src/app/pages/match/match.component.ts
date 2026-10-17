@@ -1453,6 +1453,24 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Azione rapida di OppoTeam: come premere la squadra e poi il comando (tiro sbagliato, rimbalzo, palla)
+   async AzioneOppoTeam (azione: 't2-no' | 't3-no' | 'rimb-dif' | 'rimb-att' | 'palla-persa' | 'palla-rec'): Promise<void>
+   {
+      if (!this.GestioneMatchEnabled())
+         return;
+      await this.TeamClicked('compoppoteam');
+      switch (azione)
+      {
+         case 't2-no':       await this.PointsWrong1('t2');            break;
+         case 't3-no':       await this.PointsWrong1('t3');            break;
+         case 'rimb-dif':    await this.DataBtn1Clicked('data-rimb');  break;
+         case 'rimb-att':    await this.DataBtn2Clicked('data-rimb');  break;
+         case 'palla-persa': await this.DataBtn1Clicked('data-palle'); break;
+         case 'palla-rec':   await this.DataBtn2Clicked('data-palle'); break;
+      }
+   }
+
+
    async TeamClicked(id: string)
    {
       if (!this.GestioneMatchEnabled())      // allenatore: nessuna selezione (resta il doppio clic per la mappa)

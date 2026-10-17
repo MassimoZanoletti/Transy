@@ -433,6 +433,46 @@
    padding: 1px !important;
 
    width: 400px;
+   display: flex;
+   gap: 4px;
+}
+
+/* azioni rapide di OppoTeam nello spazio a destra dei giocatori: 3 righe di 2 bottoni larghi metà ciascuno,
+   alti come un giocatore in campo (75px) */
+.div-gioco-oppo-azioni {
+   flex: 1 1 0;
+   min-width: 0;
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   grid-auto-rows: 75px;
+   row-gap: 25px;
+   column-gap: 4px;
+   align-content: start;
+}
+
+.btn-oppo-azione {
+   min-width: 0;
+   padding: 2px;
+   border: 1px solid #aaaaaa;
+   border-radius: 6px;
+   color: white;
+   font-weight: 700;
+   font-size: 0.85rem;
+   line-height: 1.2;
+   cursor: pointer;
+}
+
+.btn-oppo-azione:active {
+   background-color: #dddddd !important;
+   color: black;
+}
+
+.btn-oppo-tiro {
+   background-color: #888800;
+}
+
+.btn-oppo-dato {
+   background-color: #008888;
 }
 
 
@@ -534,6 +574,7 @@
 /* allenatore: comandi di gioco visibilmente disattivati (le zone sono inert, vedi html) */
 .gioco-sola-lettura app-points-comp,
 .gioco-sola-lettura app-data-comp,
-.gioco-sola-lettura #div-gioco-sostit {
+.gioco-sola-lettura #div-gioco-sostit,
+.gioco-sola-lettura .div-gioco-oppo-azioni {
    opacity: 0.4;
 }

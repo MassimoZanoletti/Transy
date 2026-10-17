@@ -467,46 +467,58 @@
 
             <div id="div-gioco-oppofield"
                  class="div-gioco-oppofield">
-               <app-player-comp
-                  componentId="oppopl1"
-                  #compOppoField1
-                  colorSelected="#007700"
-                  [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)"
-                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
-               </app-player-comp>
-               <app-player-comp
-                  componentId="oppopl2"
-                  #compOppoField2
-                  colorSelected="#007700"
-                  [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)"
-                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
-               </app-player-comp>
-               <app-player-comp
-                  componentId="oppopl3"
-                  #compOppoField3
-                  colorSelected="#007700"
-                  [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)"
-                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
-               </app-player-comp>
-               <app-player-comp
-                  componentId="oppopl4"
-                  #compOppoField4
-                  colorSelected="#007700"
-                  [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)"
-                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
-               </app-player-comp>
-               <app-player-comp
-                  componentId="oppopl5"
-                  #compOppoField5
-                  colorSelected="#007700"
-                  [getCurrentTime]="GetCurrClock"
-                  (componentClicked)="PlayerClicked($event)"
-                  (puntiDoubleClicked)="MostraMappaGiocatore($event)">
-               </app-player-comp>
+               <div class="div-gioco-oppofield-giocatori">
+                  <app-player-comp
+                     componentId="oppopl1"
+                     #compOppoField1
+                     colorSelected="#007700"
+                     [getCurrentTime]="GetCurrClock"
+                     (componentClicked)="PlayerClicked($event)"
+                     (puntiDoubleClicked)="MostraMappaGiocatore($event)">
+                  </app-player-comp>
+                  <app-player-comp
+                     componentId="oppopl2"
+                     #compOppoField2
+                     colorSelected="#007700"
+                     [getCurrentTime]="GetCurrClock"
+                     (componentClicked)="PlayerClicked($event)"
+                     (puntiDoubleClicked)="MostraMappaGiocatore($event)">
+                  </app-player-comp>
+                  <app-player-comp
+                     componentId="oppopl3"
+                     #compOppoField3
+                     colorSelected="#007700"
+                     [getCurrentTime]="GetCurrClock"
+                     (componentClicked)="PlayerClicked($event)"
+                     (puntiDoubleClicked)="MostraMappaGiocatore($event)">
+                  </app-player-comp>
+                  <app-player-comp
+                     componentId="oppopl4"
+                     #compOppoField4
+                     colorSelected="#007700"
+                     [getCurrentTime]="GetCurrClock"
+                     (componentClicked)="PlayerClicked($event)"
+                     (puntiDoubleClicked)="MostraMappaGiocatore($event)">
+                  </app-player-comp>
+                  <app-player-comp
+                     componentId="oppopl5"
+                     #compOppoField5
+                     colorSelected="#007700"
+                     [getCurrentTime]="GetCurrClock"
+                     (componentClicked)="PlayerClicked($event)"
+                     (puntiDoubleClicked)="MostraMappaGiocatore($event)">
+                  </app-player-comp>
+               </div>
+               <!-- azioni rapide di OppoTeam: selezionano la squadra e registrano l'azione -->
+               <div class="div-gioco-oppo-azioni"
+                    [attr.inert]="SolaLettura()">
+                  <button class="btn-oppo-azione btn-oppo-tiro" (click)="AzioneOppoTeam('t2-no')">T.2<br>sbagliato<br>Team</button>
+                  <button class="btn-oppo-azione btn-oppo-tiro" (click)="AzioneOppoTeam('t3-no')">T.3<br>sbagliato<br>Team</button>
+                  <button class="btn-oppo-azione btn-oppo-dato" (click)="AzioneOppoTeam('rimb-dif')">Rimb.<br>difesa<br>Team</button>
+                  <button class="btn-oppo-azione btn-oppo-dato" (click)="AzioneOppoTeam('rimb-att')">Rimb.<br>attacco<br>Team</button>
+                  <button class="btn-oppo-azione btn-oppo-dato" (click)="AzioneOppoTeam('palla-persa')">Palla<br>persa<br>Team</button>
+                  <button class="btn-oppo-azione btn-oppo-dato" (click)="AzioneOppoTeam('palla-rec')">Palla<br>recup.<br>Team</button>
+               </div>
             </div>
          </div>
          <div id="div-gioco-basso"

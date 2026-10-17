@@ -71,8 +71,12 @@ interface TQuartoPbp
 // distanza orizzontale (pixel) delle etichette sfalsate di eventi allo stesso minuto
 const LABEL_OFFSET = 220;
 
-// raggio (pixel) del triangolo dei timeout sull'asse dei minuti
+// raggio (pixel) del triangolo dei timeout sull'asse dei minuti e suoi colori (MyTeam / OppoTeam)
 const TIMEOUT_RAGGIO = 9;
+const TIMEOUT_COLORE_MY = 'rgb(255, 0, 0)';
+const TIMEOUT_BORDO_MY = '#7f0000';
+const TIMEOUT_COLORE_OPPO = 'rgb(0, 160, 0)';
+const TIMEOUT_BORDO_OPPO = '#004f00';
 
 // etichette di falli/sostituzioni dello stesso istante: distanza verticale fra una e l'altra e rientro dalla
 // seconda in poi (pixel). Altezza dell'etichetta: font 14 (riga 16.8) + spazio interno 2 x 6 + bordo 2 x 2
@@ -126,6 +130,9 @@ export class PlaybyplayCompComponent implements OnDestroy
    public showSostit: boolean = true;
    public showMyTeam: boolean = true;
    public showOppoTeam: boolean = true;
+   // timeout delle due squadre (si accendono e spengono dalla legenda del grafico)
+   public showTimeoutMy: boolean = true;
+   public showTimeoutOppo: boolean = true;
 
    public quartiGiocati: TQuartoPbp[] = [];
    public activeQuartoIndex: number = 0;
@@ -424,14 +431,15 @@ export class PlaybyplayCompComponent implements OnDestroy
       const canvas = quarto ? this.CanvasQuarto(quarto.numero) : undefined;
       if (!quarto || !canvas)
          return;
-      this.chart = new ChartJs(canvas, this.ConfigGrafico(quarto, true));
+      this.chart = new ChartJs(canvas, this.ConfigGrafico(ChartJs, quarto, true));
    }
 
 
    // Configurazione del grafico (come nebula): grafico a gradini con l'asse dei punti in alto e i minuti di
    // gioco verso il basso; etichette dei canestri/tiri sbagliati (datalabels) e di falli e sostituzioni
    // (annotation). "aVideo" = false per il disegno fuori schermo dell'esportazione in PDF.
-   private ConfigGrafico (quarto: TQuartoPbp,
+   private ConfigGrafico (ChartJs: typeof Chart,
+                          quarto: TQuartoPbp,
                           aVideo: boolean): ChartConfiguration<'line'>
    {
       const pointStyle = (context: any) =>
@@ -473,10 +481,10 @@ export class PlaybyplayCompComponent implements OnDestroy
             pointStyle:      'triangle',
             rotation:        -90,
             radius:          TIMEOUT_RAGGIO,
-            backgroundColor: t.myTeam ? 'rgb(255, 0, 0)' : 'rgb(0, 160, 0)',
-            borderColor:     t.myTeam ? '#7f0000' : '#004f00',
+            backgroundColor: t.myTeam ? TIMEOUT_COLORE_MY : TIMEOUT_COLORE_OPPO,
+            borderColor:     t.myTeam ? TIMEOUT_BORDO_MY : TIMEOUT_BORDO_OPPO,
             borderWidth:     1,
-            display:         () => t.myTeam ? this.showMyTeam : this.showOppoTeam,
+            display:         () => t.myTeam ? (this.showMyTeam && this.showTimeoutMy) : (this.showOppoTeam && this.showTimeoutOppo),
             // a video: tooltip con tempo e squadra al passaggio del mouse
             enter:           aVideo ? (ctx: any) => this.MostraTooltipTimeout(t, ctx.element.x, ctx.element.y) : undefined,
             leave:           aVideo ? () => this.NascondiTooltipTimeout() : undefined
@@ -537,6 +545,50 @@ export class PlaybyplayCompComponent implements OnDestroy
                }
             },
             plugins: {
+               // legenda: le due squadre (come gli interruttori) e i loro timeout (triangolo come sull'asse)
+               legend: {
+                  labels: {
+                     usePointStyle: true,
+                     generateLabels: (chart: Chart) =>
+                     {
+                        const items = ChartJs.defaults.plugins.legend.labels.generateLabels(chart)
+                           .map(item => ({ ...item, pointStyle: 'rect' as const, rotation: 0 }));
+                        const voce = (myTeam: boolean) => ({
+                           text:        `Timeout ${myTeam ? this.myTeamNome : this.oppoTeamNome}`,
+                           fillStyle:   myTeam ? TIMEOUT_COLORE_MY : TIMEOUT_COLORE_OPPO,
+                           strokeStyle: myTeam ? TIMEOUT_BORDO_MY : TIMEOUT_BORDO_OPPO,
+                           fontColor:   items[0]?.fontColor,
+                           lineWidth:   1,
+                           pointStyle:  'triangle' as const,
+                           rotation:    -90,
+                           hidden:      myTeam ? !(this.showMyTeam && this.showTimeoutMy) : !(this.showOppoTeam && this.showTimeoutOppo),
+                           timeoutMy:   myTeam
+                        });
+                        return [...items, voce(true), voce(false)];
+                     }
+                  },
+                  onClick: (_e: any, item: any) =>
+                  {
+                     if (item.timeoutMy === true)
+                        this.showTimeoutMy = !this.showTimeoutMy;
+                     else if (item.timeoutMy === false)
+                        this.showTimeoutOppo = !this.showTimeoutOppo;
+                     else if (item.datasetIndex === 0)
+                     {
+                        this.showMyTeam = !this.showMyTeam;
+                        this.OnToggleMyTeam();
+                        return;
+                     }
+                     else if (item.datasetIndex === 1)
+                     {
+                        this.showOppoTeam = !this.showOppoTeam;
+                        this.OnToggleOppoTeam();
+                        return;
+                     }
+                     this.NascondiTooltipTimeout();
+                     this.chart?.update();
+                  }
+               },
                datalabels: {
                   backgroundColor: (context: any) => context.dataset.borderColor as string,
                   borderColor: (context: any) =>
@@ -661,7 +713,7 @@ export class PlaybyplayCompComponent implements OnDestroy
             canvas.width = larghezza;
             canvas.height = altezza;
             contenitore.appendChild(canvas);
-            const chart = new ChartJs(canvas, this.ConfigGrafico(quarto, false));
+            const chart = new ChartJs(canvas, this.ConfigGrafico(ChartJs, quarto, false));
             const imgW = pageWidth - 2 * margin;
             const imgH = pageHeight - y - margin;
             // risoluzione utile in stampa (~200dpi), su sfondo bianco (niente canale alpha nel PNG)
