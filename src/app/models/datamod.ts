@@ -148,6 +148,7 @@ export interface IDSMatchHeaderDb
    myteamnome_lk : string;
    oppoteamnome_lk : string;
    phasenome_lk: string;
+   phase_nome?: string;       // nome con cui lo manda davvero api_matchheader.php (vedi MatchHeaderFromDb)
    champid_lk: number;
    myteamabbrev_lk: string
    oppoteamabbrev_lk: string

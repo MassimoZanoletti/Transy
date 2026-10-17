@@ -203,7 +203,8 @@ export class MatchheaderService
          matchDataFile: dnElem.matchdatafile,
          exportedFile: dnElem.exportedfile,
          phaseId_link: Number(dnElem.phaseid_link),
-         phaseNome_lk: dnElem.phasenome_lk,
+         // api_matchheader.php manda il nome della fase come "phase_nome" (non "phasenome_lk")
+         phaseNome_lk: dnElem.phasenome_lk ?? dnElem.phase_nome,
          phaseAbbrev_lk: dnElem.phaseabbrev_lk,
          champId_lk:        dnElem.champid_lk,
          champNome_lk:      dnElem.champnome_lk,

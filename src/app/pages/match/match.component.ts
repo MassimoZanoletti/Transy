@@ -5,6 +5,7 @@ import {
    ComponentRef,
    ElementRef,
    HostListener,
+   inject,
    NgZone,
    OnDestroy,
    OnInit,
@@ -252,6 +253,10 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    public tempoForFalli: number = 0;
    public currSeason: IDSSeason | null = null;
    public currPhase: IDSPhase | null = null;
+   // da dove viene la partita (società, stagione, campionato, fase), mostrato accanto a "Gestione partita"
+   public provenienza: { tenant: string; stagione: string; campionato: string; fase: string } | null = null;
+   private readonly servChamp = inject(CampionatiService);
+   private readonly servSocieta = inject(SocietaService);
    public dialogVisible_Roster: boolean = false;
    public dialogVisible_Sostit: boolean = false;
    public sostTeamName: string = '';
@@ -657,7 +662,46 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          const oppoTeamData = await firstValueFrom (this.servTeam.getSingleData(this.matchHeader.oppoTeamId_link));
          if ((oppoTeamData) && (oppoTeamData.ok))
             matchGlobs.currMatch?.oppTeam()?.FromJson(oppoTeamData.elements);
+         await this.LoadProvenienza();
       }
+   }
+
+
+   // Provenienza della partita: campionato e fase sono nell'intestazione; stagione e società si risalgono dal
+   // campionato. Se una lettura fallisce resta vuoto solo quel dato.
+   async LoadProvenienza (): Promise<void>
+   {
+      const mh = this.matchHeader;
+      if (!mh)
+      {
+         this.provenienza = null;
+         return;
+      }
+      const prov = { tenant: '', stagione: '', campionato: mh.champNome_lk ?? '', fase: mh.phaseNome_lk ?? '' };
+      try
+      {
+         const champ = await firstValueFrom(this.servChamp.getSingleData(Number(mh.champId_lk)));
+         const seasonId = Number(champ?.ok ? champ.elements?.seasonid_link : 0);
+         if (seasonId > 0)
+         {
+            const season = await firstValueFrom(this.servSeason.getSingleData(seasonId));
+            if (season?.ok)
+            {
+               prov.stagione = season.elements?.nome ?? '';
+               const tenantId = Number(season.elements?.tenantid_link);
+               if (tenantId > 0)
+               {
+                  const tenant = await firstValueFrom(this.servSocieta.getSingleData(tenantId));
+                  if (tenant?.ok)
+                     prov.tenant = tenant.elements?.nome ?? '';
+               }
+            }
+         }
+      }
+      catch (err)
+      {
+      }
+      this.provenienza = prov;
    }
 
 

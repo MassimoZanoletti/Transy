@@ -16,6 +16,28 @@
       label="Gestione partita"
       [style]="{'height': '30px', 'padding-top': '0', 'padding-bottom': '0', 'font-size': '0.85rem'}">
    </p-button>
+   <!-- da dove viene la partita -->
+   @if (provenienza)
+   {
+      <div class="match-provenienza">
+         @if (provenienza.tenant)
+         {
+            <span class="match-provenienza-label">Società:</span> <span class="match-provenienza-valore">{{ provenienza.tenant }}</span>
+         }
+         @if (provenienza.stagione)
+         {
+            <span class="match-provenienza-label">Stagione:</span> <span class="match-provenienza-valore">{{ provenienza.stagione }}</span>
+         }
+         @if (provenienza.campionato)
+         {
+            <span class="match-provenienza-label">Campionato:</span> <span class="match-provenienza-valore">{{ provenienza.campionato }}</span>
+         }
+         @if (provenienza.fase)
+         {
+            <span class="match-provenienza-label">Fase:</span> <span class="match-provenienza-valore">{{ provenienza.fase }}</span>
+         }
+      </div>
+   }
    <!-- Stato del salvataggio sul server (coda di MatchSyncService), allineato a destra -->
    <app-sync-badge class="ml-auto"></app-sync-badge>
 </div>

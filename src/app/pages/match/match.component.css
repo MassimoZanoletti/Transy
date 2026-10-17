@@ -578,3 +578,24 @@
 .gioco-sola-lettura .div-gioco-oppo-azioni {
    opacity: 0.4;
 }
+
+
+/* provenienza della partita, accanto al bottone "Gestione partita" */
+.match-provenienza {
+   margin-left: 20px;
+   font-size: 0.85rem;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   min-width: 0;
+}
+
+.match-provenienza-label {
+   font-style: italic;
+   color: #aaaaaa;
+}
+
+.match-provenienza-valore {
+   font-weight: bold;
+   margin-right: 16px;
+}
