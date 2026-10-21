@@ -892,6 +892,20 @@ export class MainPageComponent implements OnInit, OnDestroy
    // Un solo caricamento alla volta: con la rete lenta un doppio tocco sul bottone faceva partire due
    // letture che aggiungevano entrambe le partite alla stessa lista (elenco doppio)
    @UnaAllaVolta()
+   // bottone nella riga della tabella Campionati: seleziona quel campionato (se non lo è già) e ne lancia le statistiche
+   async OnStatisticheCampionatoRiga (champ: IDSChamp, evento: Event)
+   {
+      // evita che il click arrivi alla riga (che deselezionerebbe il campionato già selezionato)
+      evento.stopPropagation ();
+      if ((!this.currChamp) || (this.currChamp.id !== champ.id))
+      {
+         this.currChamp = champ;
+         await this.OnSelectedChamp (null);
+      }
+      await this.OnStatisticheCampionato ();
+   }
+
+
    async OnStatisticheCampionato ()
    {
       if (!this.currChamp)

@@ -271,21 +271,19 @@
                   <ng-template pTemplate="body" let-tabella let-rowIndex="rowIndex">
                      <tr [pSelectableRow]="tabella">
                         <td style="width: 150px; font-size: 2.0em;">{{ tabella.nome }}</td>
+                        <td *ngIf="AddEnabled()" style="width: 50px; text-align: right;">
+                           <p-button
+                              icon="pi pi-chart-bar"
+                              severity="primary"
+                              size="small"
+                              pTooltip="Statistiche Campionato"
+                              tooltipPosition="top"
+                              (click)="OnStatisticheCampionatoRiga(tabella, $event)">
+                           </p-button>
+                        </td>
                      </tr>
                   </ng-template>
                </p-table>
-               <div id="div-camp-stat"
-                    style="margin-top: 10px; border: 1px;">
-                  <p-button label="Statistiche campionato"
-                            id="btn-camp-stat"
-                            *ngIf="AddEnabled()"
-                            [disabled]="!currChamp"
-                            severity="primary"
-                            icon="pi pi-chart-bar"
-                            class="btn-fisso"
-                            (click)="OnStatisticheCampionato()">
-                  </p-button>
-               </div>
             </ng-template>
          </p-card>
          <p-card [style]="{ 'width': '350px', 'padding': '2px', 'margin-left': '30px' }"
