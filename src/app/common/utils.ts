@@ -31,7 +31,7 @@ export namespace globs
    export const GenericInfoPrefix: string = `👀 `; // 👀 numero 1 su fondo nero
    export const RabbitMessagePrefix: string = `📣 `; // 📣
    export const bckColorFalli: Array<string> = ["#6c6c6c", "#ffff99", "#ff9c38", "#ff2727", "#ff00ff", "#ffffff"];
-   export const txtColorFalli: Array<string> = ["#55bb55", "#009900", "#0000ff", "#550000", "#ffff00", "#000000"];
+   export const txtColorFalli: Array<string> = ["#55bb55", "#009900", "#0000ff", "#220000", "#ffff00", "#000000"];
    export const maxPlayerFouls: number = 5;
    export const MaxRegQuarters: number = 4;
    export const MaxExtraQuarters: number = 4;

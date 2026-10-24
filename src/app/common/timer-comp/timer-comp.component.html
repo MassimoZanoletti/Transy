@@ -34,7 +34,7 @@
               (click)="quartiVisible = true">
          {{currQuarter}}
       </button>
-      <h1>{{ displayTime }}</h1>
+      <h1 [class.tempo-fermo]="!isRunning">{{ displayTime }}</h1>
       <button pButton
               icon="pi pi-wrench"
               severity="primary"

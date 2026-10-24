@@ -383,7 +383,7 @@
    position: absolute;
    top: 10px;
    left: calc(100% + 10px);
-   font-size: calc(0.85rem + 1px);
+   font-size: calc((0.85rem + 1px) * 1.25);
    font-weight: 700;
    line-height: 1.35;
    white-space: nowrap;
@@ -407,7 +407,7 @@
 }
 
 .punteggi-quarti-negativo {
-   color: #f87171;
+   color: #ff9f9f;
 }
 
 .div-gioco-oppoteam {
@@ -473,6 +473,10 @@
 
 .btn-oppo-dato {
    background-color: #008888;
+}
+
+.btn-oppo-palla {
+   background-color: #868686;
 }
 
 

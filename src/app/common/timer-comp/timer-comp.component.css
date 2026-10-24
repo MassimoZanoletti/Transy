@@ -21,6 +21,11 @@ h1 {
    color: #333;
 }
 
+/* a cronometro fermo il tempo è bianco, in corsa resta scuro */
+h1.tempo-fermo {
+   color: #ffffff;
+}
+
 button {
    padding: 12px 24px;
    font-size: 1rem;

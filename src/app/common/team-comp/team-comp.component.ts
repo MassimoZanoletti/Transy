@@ -236,7 +236,7 @@ export class TeamCompComponent implements OnInit, OnDestroy
    {
       if (this.isSelected)
       {
-         return this.colorSelected2;
+         return this.colorNormal2;//this.colorSelected2;
       }
       else
       {
