@@ -139,7 +139,8 @@
             <p-divider layout="vertical" styleClass="mx-1"></p-divider>
             <div id="div-anag-match-info-center"
                  class="anag-match-info-details">
-               <p style="font-size: 1.4em; font-weight: bolder">{{homeTeamName}}</p>
+               <p class="anag-team-label"
+                  [ngStyle]="{ 'background-color': coloreCasa, 'color': GetContrastTextColor(coloreCasa) }">{{homeTeamName}}</p>
                <div *ngFor="let item of listaRosterCasa">
                   <div class="item-card"
                      [ngClass]="{ 'bordo-capitano': item.capitano === true }"
@@ -170,7 +171,8 @@
             <p-divider layout="vertical" styleClass="mx-1"></p-divider>
             <div id="div-anag-match-info-right"
                  class="anag-match-info-details">
-               <p style="font-size: 1.4em; font-weight: bolder">{{awayTeamName}}</p>
+               <p class="anag-team-label"
+                  [ngStyle]="{ 'background-color': coloreOspite, 'color': GetContrastTextColor(coloreOspite) }">{{awayTeamName}}</p>
                <div *ngFor="let item of listaRosterFuori">
                   <div class="item-card"
                        [ngClass]="{ 'bordo-capitano': item.capitano === true }"

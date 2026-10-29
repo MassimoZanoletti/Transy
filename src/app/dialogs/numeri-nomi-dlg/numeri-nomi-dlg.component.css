@@ -82,3 +82,11 @@
    justify-content: flex-end;
    gap: 16px;
 }
+
+/* Nome squadra nell'intestazione del tab: sfondo colore squadra, testo leggibile (come Tempi di gioco) */
+.numerinomi-team-label {
+   font-weight: bold;
+   padding: 4px 12px;
+   border-radius: 6px;
+   border: 1px solid #c0c0c0;
+}

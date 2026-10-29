@@ -55,9 +55,14 @@
          <p-tabPanel [header]="quarto.titolo">
             <div class="match-header-data-grid">
                <span class="match-header-label">Punteggio:</span>
-               <span class="match-header-value">{{ GetQuartoPunteggio(quarto) }}</span>
+               <span class="match-header-value">{{ GetQuartoPunteggio(quarto) }}<span [ngClass]="GetScartoClass(GetQuartoScartoPunteggio(quarto))">{{ GetScartoStr(GetQuartoScartoPunteggio(quarto)) }}</span></span>
                <span class="match-header-label">Parziale:</span>
-               <span class="match-header-value">{{ GetQuartoParziale(quarto) }}</span>
+               <span class="match-header-value">{{ GetQuartoParziale(quarto) }}<span [ngClass]="GetScartoClass(GetQuartoScartoParziale(quarto))">{{ GetScartoStr(GetQuartoScartoParziale(quarto)) }}</span></span>
+               @for (inizio of GetQuartoInizio(quarto); track $index)
+               {
+                  <span class="match-header-label">{{ inizio.squadra }}:</span>
+                  <span class="pbp-inizio-quarto">{{ inizio.giocatori }}</span>
+               }
             </div>
             <p-divider />
             <div class="chart-container">

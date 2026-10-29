@@ -1325,6 +1325,14 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
    }
 
 
+   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra (formula YIQ),
+   // stessa logica usata per le dialog Tempi di gioco/Sostituzione/Timeout.
+   GetContrastTextColor (bgColor: string): string
+   {
+      return utils.GetContrastTextColor(bgColor);
+   }
+
+
    BtnEditMatchHeader()
    {
       this.diagMatchHeader = CreateEmptyMatchHeader();
@@ -3082,7 +3090,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
 
    onNumeriNomiDialogShow()
    {
-      this.numeriNomiComp?.onComponentShow();
+      this.numeriNomiComp?.onComponentShow(
+         this.matchHeader.myTeamColor || '#FFFFFF',
+         this.matchHeader.oppoTeamColor || '#FFFFFF');
    }
 
 
@@ -3388,7 +3398,9 @@ export class MatchComponent implements OnInit, OnDestroy, AfterViewInit
          ...(matchGlobs.currMatch?.myTeam()?.Roster ?? []),
          ...(matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
       ]);
-      this.falliTotaliComp?.onComponentShow();
+      this.falliTotaliComp?.onComponentShow(
+         this.matchHeader.myTeamColor || '#FFFFFF',
+         this.matchHeader.oppoTeamColor || '#FFFFFF');
    }
 
 

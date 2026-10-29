@@ -56,3 +56,21 @@
    position: relative;
    height: max(2000px, calc(100vh - 490px));
 }
+
+/* scarto a destra di Punteggio/Parziale: stessi colori dei punteggi per quarto della pagina match */
+.pbp-scarto-positivo {
+   color: #a0e77f;
+}
+
+.pbp-scarto-negativo {
+   color: #ff9f9f;
+}
+
+.pbp-scarto-zero {
+   color: #ffffff;
+}
+
+/* giocatori in campo a inizio quarto, sotto il parziale */
+.pbp-inizio-quarto {
+   white-space: normal;
+}

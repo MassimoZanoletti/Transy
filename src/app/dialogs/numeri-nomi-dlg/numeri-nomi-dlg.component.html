@@ -1,8 +1,11 @@
 
 <div class="div-numerinomi-content">
    <p-tabView class="numerinomi-tabview">
-      <p-tabPanel *ngFor="let team of teams"
-                  [header]="team.teamName">
+      <p-tabPanel *ngFor="let team of teams">
+         <ng-template pTemplate="header">
+            <span class="numerinomi-team-label"
+                  [ngStyle]="{ 'background-color': team.teamColor, 'color': GetContrastTextColor(team.teamColor) }">{{ team.teamName }}</span>
+         </ng-template>
          <p-table [value]="team.rows"
                   dataKey="player.playerRecID"
                   class="numerinomi-table"

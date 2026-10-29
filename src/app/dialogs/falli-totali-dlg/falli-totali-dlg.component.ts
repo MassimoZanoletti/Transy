@@ -10,6 +10,7 @@ import {InputMaskModule} from 'primeng/inputmask';
 import {InputTextModule} from 'primeng/inputtext';
 import {TFallo, TMatchPlayer} from "../../models/datamod";
 import {matchGlobs} from "../../common/curr-match";
+import {utils} from "../../common/utils";
 
 
 // Una riga per ogni fallo del giocatore (5 per giocatore): "fallo" è un CLONE (come già fa fallo-dlg),
@@ -18,7 +19,7 @@ import {matchGlobs} from "../../common/curr-match";
 // campo fTempo, allineata da OnTempoChange (stesso schema di tempi-gioco-dlg).
 type TFalloEditRow = { fallo: TFallo, tempoStr: string };
 type TPlayerFalliRow = { player: TMatchPlayer, falliRows: Array<TFalloEditRow> };
-type TFalliTotaliTeam = { teamName: string, rows: Array<TPlayerFalliRow> };
+type TFalliTotaliTeam = { teamName: string, teamColor: string, rows: Array<TPlayerFalliRow> };
 
 
 @Component({
@@ -50,18 +51,20 @@ export class FalliTotaliDlgComponent
    }
 
 
-   onComponentShow ()
+   onComponentShow (myTeamColor: string,
+                    oppoTeamColor: string)
    {
-      const buildTeam = (teamName: string, roster: TMatchPlayer[]): TFalliTotaliTeam => ({
+      const buildTeam = (teamName: string, teamColor: string, roster: TMatchPlayer[]): TFalliTotaliTeam => ({
          teamName,
+         teamColor,
          rows: roster.map(p => ({
             player:    p,
             falliRows: p.falliFatti().map(f => this.BuildFalloEditRow(f.Clone()))
          }))
       });
       this.teams = [
-         buildTeam(matchGlobs.currMatch?.myTeam()?.name() ?? '', matchGlobs.currMatch?.myTeam()?.Roster ?? []),
-         buildTeam(matchGlobs.currMatch?.oppTeam()?.name() ?? '', matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+         buildTeam(matchGlobs.currMatch?.myTeam()?.name() ?? '', myTeamColor, matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         buildTeam(matchGlobs.currMatch?.oppTeam()?.name() ?? '', oppoTeamColor, matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
       ];
    }
 
@@ -125,6 +128,13 @@ export class FalliTotaliDlgComponent
          }
       }
       this.ok.emit();
+   }
+
+
+   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra
+   GetContrastTextColor (bgColor: string): string
+   {
+      return utils.GetContrastTextColor(bgColor);
    }
 
 

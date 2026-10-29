@@ -9,7 +9,7 @@ import {InputTextModule} from 'primeng/inputtext';
 import {TMatchPlayer} from "../../models/datamod";
 import {matchGlobs} from "../../common/curr-match";
 import {MatchSyncService} from "../../services/match-sync.service";
-import {globs} from "../../common/utils";
+import {globs, utils} from "../../common/utils";
 import { UnaAllaVolta } from '../../common/una-alla-volta';
 import {LogService} from "../../services/log.service";
 import {loggedUser} from "../../services/users.service";
@@ -20,7 +20,7 @@ import {loggedUser} from "../../services/users.service";
 // modificati — il numero si applica sempre e solo alla partita corrente, il nome anche al database
 // giocatori (vedi la nota nel component).
 type TNumeriNomiRow = { player: TMatchPlayer, numeroEdit: string, nomeEdit: string, origNumero: string, origNome: string };
-type TNumeriNomiTeam = { teamName: string, rows: Array<TNumeriNomiRow> };
+type TNumeriNomiTeam = { teamName: string, teamColor: string, rows: Array<TNumeriNomiRow> };
 
 
 @Component({
@@ -52,10 +52,12 @@ export class NumeriNomiDlgComponent
    }
 
 
-   onComponentShow ()
+   onComponentShow (myTeamColor: string,
+                    oppoTeamColor: string)
    {
-      const buildTeam = (teamName: string, roster: TMatchPlayer[]): TNumeriNomiTeam => ({
+      const buildTeam = (teamName: string, teamColor: string, roster: TMatchPlayer[]): TNumeriNomiTeam => ({
          teamName,
+         teamColor,
          rows: roster.map(p => ({
             player:     p,
             numeroEdit: p.playNumber(),
@@ -65,8 +67,8 @@ export class NumeriNomiDlgComponent
          }))
       });
       this.teams = [
-         buildTeam(matchGlobs.currMatch?.myTeam()?.name() ?? '', matchGlobs.currMatch?.myTeam()?.Roster ?? []),
-         buildTeam(matchGlobs.currMatch?.oppTeam()?.name() ?? '', matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
+         buildTeam(matchGlobs.currMatch?.myTeam()?.name() ?? '', myTeamColor, matchGlobs.currMatch?.myTeam()?.Roster ?? []),
+         buildTeam(matchGlobs.currMatch?.oppTeam()?.name() ?? '', oppoTeamColor, matchGlobs.currMatch?.oppTeam()?.Roster ?? [])
       ];
    }
 
@@ -121,6 +123,13 @@ export class NumeriNomiDlgComponent
       if (!player.playerRecID)
          return;
       await this.matchSync.EnqueueWrite ('playername', player.playerRecID, { nomedisp: nuovoNome }, globs.openedMatchHeaderId);
+   }
+
+
+   // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra
+   GetContrastTextColor (bgColor: string): string
+   {
+      return utils.GetContrastTextColor(bgColor);
    }
 
 

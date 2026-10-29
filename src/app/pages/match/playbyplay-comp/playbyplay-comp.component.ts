@@ -9,8 +9,9 @@ import type {Chart, ChartConfiguration} from 'chart.js';
 import {IDSMatchHeader, TMatchPlayer} from "../../../models/datamod";
 import {matchGlobs} from "../../../common/curr-match";
 import {globs} from "../../../common/utils";
-import {TOperationType} from "../../../common/operation";
+import {TOperation, TOperationType} from "../../../common/operation";
 import {TContestoLive, TempoStr} from "../../../common/statistiche";
+import {InCampoInizioQuarto} from "../../../common/quintetti";
 import {PdfSaveService} from "../../../services/pdf-save.service";
 import { UnaAllaVolta } from '../../../common/una-alla-volta';
 
@@ -61,10 +62,38 @@ interface TQuartoPbp
    oppoData: TPuntoPbp[];
    etichette: Map<string, TEtichettaPbp>;
    timeouts: TTimeoutPbp[];
+   myTeamInizio: string;      // giocatori in campo a inizio quarto ("4 Rossi, 7 Bianchi, ...")
+   oppoTeamInizio: string;
    xMin: number;
    xMax: number;
    yMax: number;              // minuti del quarto (10 regolari, 5 supplementari)
    beginAtZero: boolean;
+}
+
+
+// Dettagli di un fallo per l'etichetta del grafico: tipo "T" tecnico, "A" antisportivo, "E" espulsione
+// (vuoto se personale) e liberi "P1".."P3" (vuoto se nessuno). Come in MatchSyncService: valgono i dettagli fissati sull'operazione
+// (eventData), altrimenti quelli del fallo registrato sul giocatore allo stesso quarto e tempo.
+function DettaglioFallo (op: TOperation): { tipo: string, liberi: string }
+{
+   let liberi = 0;
+   let tipo = '';
+   if (op.eventData && (op.eventData.subtype !== undefined))
+   {
+      liberi = Number(op.eventData.ftawarded ?? 0) || 0;
+      const sub = String(op.eventData.subtype ?? '').toUpperCase();
+      tipo = (sub === 'TECNICO') ? 'T' : (sub === 'ANTISPORTIVO') ? 'A' : (sub === 'ESPULSIONE') ? 'E' : '';
+   }
+   else
+   {
+      const ff = op.player1()?.falliFatti().find(f => f.fCommesso && (f.fQuarto === op.quarter()) && (f.fTempo === op.time()));
+      if (ff)
+      {
+         liberi = ff.numLiberi;
+         tipo = ff.fEspulsione ? 'E' : ff.fAntisportivo ? 'A' : ff.fTecnico ? 'T' : '';
+      }
+   }
+   return { tipo: tipo ? ` ${tipo}` : '', liberi: (liberi > 0) ? ` P${liberi}` : '' };
 }
 
 
@@ -166,6 +195,12 @@ export class PlaybyplayCompComponent implements OnDestroy
       this.oppoTeamNome = this.matchHeader?.oppoTeamNome_lk ?? '';
 
       const quarti: TQuartoPbp[] = [];
+      const inizioQuarto = InCampoInizioQuarto(ops, [...(myTeam?.Roster ?? []), ...(oppTeam?.Roster ?? [])]);
+      const elencoInizio = (q: number, lato: boolean) => (inizioQuarto.get(q) ?? [])
+         .filter(p => p.isMyTeam() === lato)
+         .sort((a, b) => (parseInt(a.playNumber(), 10) || 0) - (parseInt(b.playNumber(), 10) || 0))
+         .map(p => `${p.playNumber()} ${p.playName()}`)
+         .join(', ');
       let myTeamPti = 0;
       let oppoTeamPti = 0;
       for (let q = 1; q <= globs.MaxRegQuarters + globs.MaxExtraQuarters; q++)
@@ -187,6 +222,8 @@ export class PlaybyplayCompComponent implements OnDestroy
                oppoData:       [],
                etichette:      new Map(),
                timeouts:       [],
+               myTeamInizio:   elencoInizio(q, true),
+               oppoTeamInizio: elencoInizio(q, false),
                xMin:           0,
                xMax:           100,
                yMax:           durata / 60,
@@ -257,7 +294,7 @@ export class PlaybyplayCompComponent implements OnDestroy
                yValue:  min,
                ordine:  sposta,
                content: sostit ? `[${tempo}] in ${nome(op.player2())} ⇄ out ${nome(op.player1())}`
-                               : `[${tempo}] Fallo ${nomeTra(op.player1())}`
+                               : ((d) => `[${tempo}] Fallo${d.tipo} ${nomeTra(op.player1())}${d.liberi}`)(DettaglioFallo(op))
             });
             prevMin = min;
          });
@@ -368,6 +405,64 @@ export class PlaybyplayCompComponent implements OnDestroy
       if (this.matchHeader?.atHome)
          return `(${quarto.myTeamPunti2 - quarto.myTeamPunti1}-${quarto.oppoTeamPunti2 - quarto.oppoTeamPunti1})`;
       return `(${quarto.oppoTeamPunti2 - quarto.oppoTeamPunti1}-${quarto.myTeamPunti2 - quarto.myTeamPunti1})`;
+   }
+
+
+   // Scarto (sempre dal punto di vista di MyTeam, come nella pagina match) a fine quarto
+   GetQuartoScartoPunteggio (quarto: TQuartoPbp): number
+   {
+      return quarto.myTeamPunti2 - quarto.oppoTeamPunti2;
+   }
+
+
+   // Scarto del solo parziale del quarto
+   GetQuartoScartoParziale (quarto: TQuartoPbp): number
+   {
+      return (quarto.myTeamPunti2 - quarto.myTeamPunti1) - (quarto.oppoTeamPunti2 - quarto.oppoTeamPunti1);
+   }
+
+
+   // Giocatori a inizio quarto delle due squadre, nello stesso ordine del punteggio (prima chi gioca in casa)
+   GetQuartoInizio (quarto: TQuartoPbp): Array<{ squadra: string, giocatori: string }>
+   {
+      const my = { squadra: this.myTeamNome, giocatori: quarto.myTeamInizio || '-' };
+      const oppo = { squadra: this.oppoTeamNome, giocatori: quarto.oppoTeamInizio || '-' };
+      return this.matchHeader?.atHome ? [my, oppo] : [oppo, my];
+   }
+
+
+   GetScartoStr (scarto: number): string
+   {
+      return `    (${scarto > 0 ? '+' : ''}${scarto})`;
+   }
+
+
+   // verde a favore di MyTeam, rosso a sfavore, bianco se zero
+   GetScartoClass (scarto: number): string
+   {
+      return scarto > 0 ? 'pbp-scarto-positivo' : (scarto < 0 ? 'pbp-scarto-negativo' : 'pbp-scarto-zero');
+   }
+
+
+   // Riga del PDF centrata in xCentro: testo nero seguito dallo scarto colorato (versione scura dei colori
+   // a video, leggibile su carta bianca: stessi verde/rosso del PDF Confronto; zero in nero)
+   private PdfRigaConScarto (pdf: any,
+                             testo: string,
+                             scarto: number,
+                             xCentro: number,
+                             y: number): void
+   {
+      const scartoStr = this.GetScartoStr(scarto);
+      const wTesto = pdf.getTextWidth(testo);
+      const x = xCentro - (wTesto + pdf.getTextWidth(scartoStr)) / 2;
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(testo, x, y);
+      if (scarto > 0)
+         pdf.setTextColor(0, 140, 0);
+      else if (scarto < 0)
+         pdf.setTextColor(210, 0, 0);
+      pdf.text(scartoStr, x + wTesto, y);
+      pdf.setTextColor(0, 0, 0);
    }
 
 
@@ -703,10 +798,18 @@ export class PlaybyplayCompComponent implements OnDestroy
             pdf.text(quarto.titolo, pageWidth / 2, y, { align: 'center' });
             y += 6;
             pdf.setFontSize(10);
-            pdf.text(`Punteggio: ${this.GetQuartoPunteggio(quarto)}`, pageWidth / 2, y, { align: 'center' });
+            this.PdfRigaConScarto(pdf, `Punteggio: ${this.GetQuartoPunteggio(quarto)}`, this.GetQuartoScartoPunteggio(quarto), pageWidth / 2, y);
             y += 5;
-            pdf.text(`Parziale: ${this.GetQuartoParziale(quarto)}`, pageWidth / 2, y, { align: 'center' });
+            this.PdfRigaConScarto(pdf, `Parziale: ${this.GetQuartoParziale(quarto)}`, this.GetQuartoScartoParziale(quarto), pageWidth / 2, y);
             y += 5;
+            pdf.setFont('helvetica', 'normal');
+            for (const inizio of this.GetQuartoInizio(quarto))
+            {
+               const righe: string[] = pdf.splitTextToSize(`${inizio.squadra}: ${inizio.giocatori}`, pageWidth - 2 * margin);
+               pdf.text(righe, pageWidth / 2, y, { align: 'center' });
+               y += 5 * righe.length;
+            }
+            pdf.setFont('helvetica', 'bold');
 
             // grafico
             const canvas = document.createElement('canvas');

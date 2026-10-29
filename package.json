@@ -1,8 +1,8 @@
 {
   "name": "TRANSY",
-  "version": "1.0.4.610241",
+  "version": "1.0.5.610291",
   "copyrights": "© 2025/2027 by Massimo Zanoletti",
-  "comp_date": "2026-10-24",
+  "comp_date": "2026-10-29",
   "scripts": {
     "clean": ".bin\\clean.bat",
     "install": "",

@@ -603,3 +603,12 @@
    font-weight: bold;
    margin-right: 16px;
 }
+
+/* Nome squadra sopra gli elenchi giocatori del tab Anagrafica: sfondo colore squadra */
+.anag-team-label {
+   font-size: 1.4em;
+   font-weight: bolder;
+   padding: 4px 10px;
+   border-radius: 4px;
+   border: 1px solid #c0c0c0;
+}

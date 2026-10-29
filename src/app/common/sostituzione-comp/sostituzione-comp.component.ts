@@ -71,14 +71,7 @@ export class SostituzioneCompComponent implements OnInit
    // Colore leggibile (bianco/nero) sopra lo sfondo colorato della squadra, in base alla sua luminosità (formula YIQ)
    get teamNameTextColor(): string
    {
-      const hex = (this.teamColor || '#FFFFFF').replace('#', '');
-      if (hex.length !== 6)
-         return '#000000';
-      const r = parseInt(hex.substring(0, 2), 16);
-      const g = parseInt(hex.substring(2, 4), 16);
-      const b = parseInt(hex.substring(4, 6), 16);
-      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-      return yiq >= 128 ? '#000000' : '#ffffff';
+      return utils.GetContrastTextColor(this.teamColor);
    }
 
 

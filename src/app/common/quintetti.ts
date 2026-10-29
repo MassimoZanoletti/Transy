@@ -196,6 +196,82 @@ export function AnalisiInCampo (ops: TOperation[],
 }
 
 
+// Giocatori (di entrambe le squadre) in campo all'inizio di ogni quarto, con le stesse regole di
+// AnalisiInCampo: nel 1° quarto il quintetto base, negli altri chi ha finito il precedente. Contano ancora
+// come "inizio" i blocchi di Quintetto registrati prima della prima azione del quarto e le sostituzioni
+// fatte a cronometro fermo sul tempo pieno. Un quarto ancora senza azioni (appena iniziato) parte con chi
+// ha finito l'ultimo quarto registrato.
+export function InCampoInizioQuarto (ops: TOperation[],
+                                     giocatori: TMatchPlayer[]): Map<number, TMatchPlayer[]>
+{
+   const risultato = new Map<number, TMatchPlayer[]>();
+   let inCampo = new Set<TMatchPlayer>(giocatori.filter(p => p.inQuintetto()));
+   let currQ = 0;
+   let registrato = true;
+   let quintTeam: boolean | null = null;
+   let quintIds = new Set<number>();
+   let prevCounter = -1;
+   const registra = () =>
+   {
+      if (!registrato)
+         risultato.set(currQ, [...inCampo]);
+      registrato = true;
+   };
+
+   for (const op of ops)
+   {
+      const q = op.quarter();
+      if (q !== currQ)
+      {
+         registra();
+         currQ = q;
+         registrato = false;
+         quintTeam = null;
+      }
+      const tipo = op.oper();
+      const inizio = (tipo === TOperationType.totQuintetto) ||
+                     ((tipo === TOperationType.totSostituz) && (op.time() >= DurataQuarto(q)));
+      if (!inizio)
+         registra();
+      const p1 = op.player1();
+      const p2 = op.player2();
+      if (tipo === TOperationType.totQuintetto)
+      {
+         const id1 = p1?.playerRecID ?? 0;
+         const nuovoBlocco = (quintTeam !== op.myTeam()) || (op.counter() !== prevCounter + 1) || quintIds.has(id1);
+         if (nuovoBlocco)
+         {
+            [...inCampo].filter(p => p.isMyTeam() === op.myTeam()).forEach(p => inCampo.delete(p));
+            quintIds = new Set<number>();
+            quintTeam = op.myTeam();
+         }
+         if (p1)
+         {
+            quintIds.add(id1);
+            inCampo.add(p1);
+         }
+      }
+      else
+      {
+         quintTeam = null;
+         if (tipo === TOperationType.totSostituz)
+         {
+            if (p1)
+               inCampo.delete(p1);
+            if (p2)
+               inCampo.add(p2);
+         }
+      }
+      prevCounter = op.counter();
+   }
+   registra();
+   // quarto successivo all'ultimo registrato (o il 1°, se non c'è ancora nessuna azione)
+   if (!risultato.has(currQ + 1))
+      risultato.set(Math.max(1, currQ + 1), [...inCampo]);
+   return risultato;
+}
+
+
 // Somma i quintetti di una partita in quelli del campionato (stessa chiave = stessi 5 giocatori); nome e
 // numero restano quelli dell'ultima partita
 export function AccumulaQuintetti (totali: Map<string, TQuintettoStat>,

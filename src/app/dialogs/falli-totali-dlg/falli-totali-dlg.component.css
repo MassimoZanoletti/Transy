@@ -110,3 +110,11 @@
    border-color: #1976d2;
    color: white;
 }
+
+/* Nome squadra nell'intestazione del tab: sfondo colore squadra, testo leggibile (come Tempi di gioco) */
+.fallitotali-team-label {
+   font-weight: bold;
+   padding: 4px 12px;
+   border-radius: 6px;
+   border: 1px solid #c0c0c0;
+}
