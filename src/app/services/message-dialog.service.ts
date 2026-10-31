@@ -33,6 +33,7 @@ export class MessageDialogService {
          header: '', // Mantenuto vuoto per usare il tuo header interno
          width: width,
          modal: true,
+         focusOnShow: false,
          closable: !disableClose,
          dismissableMask: !disableClose,
          styleClass: `messagedlg-${data.messtype || 'info'}`

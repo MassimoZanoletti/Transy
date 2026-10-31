@@ -135,6 +135,8 @@ export class StatCampionatoPageComponent implements OnInit
    public giocatori: Array<TGiocatoreStatCamp> = [];
    // quintetti della squadra sommati sulle partite selezionate, in ordine di minuti
    public quintetti: Array<TQuintettoStat> = [];
+   // per giocatore: durata delle partite in cui era a referto (% di minuti in campo nella tabella On/Off)
+   public secondiPartite = new Map<number, number> ();
    // timeout delle due parti sommati sulle partite e parziali più ampi (i primi PARZIALI_MOSTRATI per squadra)
    public riepilogoTimeout: { noi: TRiepilogoTimeout, loro: TRiepilogoTimeout } | null = null;
    public parzialiCamp: Array<{ partita: string, p: TParziale }> = [];
@@ -364,6 +366,7 @@ export class StatCampionatoPageComponent implements OnInit
             CreaTorta ('Differenza punti', valoriQuarti (r => r.dif))
          ];
          // giocatori in ordine di nome
+         this.secondiPartite = new Map ([...giocatori.values ()].map (g => [g.id, g.secondiPartite]));
          this.giocatori = [...giocatori.values ()].sort ((a, b) => a.nome.localeCompare (b.nome, 'it', { sensitivity: 'base' }));
          // massimi per le colonne di minuti e punti dei giocatori (valori come mostrati)
          this.maxGioc = {};
@@ -958,7 +961,7 @@ export class StatCampionatoPageComponent implements OnInit
 
          pdf.addPage ();
          titolo (`On/Off e coppie ${nomeTeam}`, 10);
-         const yOnOff = TabellaOnOffPdf (pdf, autoTable, OnOff (this.quintetti), 15, font);
+         const yOnOff = TabellaOnOffPdf (pdf, autoTable, OnOff (this.quintetti, this.secondiPartite), 15, font, true);
          MatriceCoppiePdf (pdf, autoTable, MatriceCoppie (this.quintetti), 'pm', yOnOff + 8, font);
       }
 

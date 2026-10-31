@@ -12,6 +12,7 @@ import {
    MaxScalaCoppie,
    OnOff,
    TestoCoppia,
+   TestoPercMinuti,
    TMatriceCoppie,
    TMetricaCoppie,
    TOnOffGiocatore,
@@ -32,10 +33,22 @@ export class CoppieOnoffCompComponent
 {
    @Input() set quintetti (q: TQuintettoStat[])
    {
-      this.onOff = OnOff(q ?? []);
-      this.matrice = MatriceCoppie(q ?? []);
+      this._quintetti = q ?? [];
+      this.onOff = OnOff(this._quintetti, this._secondiPartite);
+      this.matrice = MatriceCoppie(this._quintetti);
       this.AggiornaScala();
    }
+
+   // campionato: durata delle partite in cui ogni giocatore era a referto (per la % di minuti in campo)
+   @Input() set secondiPartite (s: Map<number, number> | undefined)
+   {
+      this._secondiPartite = s;
+      this.campionato = !!s;
+      this.onOff = OnOff(this._quintetti, s);
+   }
+
+   private _quintetti: TQuintettoStat[] = [];
+   private _secondiPartite: Map<number, number> | undefined;
 
    public onOff: TOnOffGiocatore[] = [];
    public matrice: TMatriceCoppie = { giocatori: [], celle: [] };
@@ -52,9 +65,12 @@ export class CoppieOnoffCompComponent
    public readonly Net = NetQuintetto;
    public readonly Diff = DiffOnOff;
    public readonly Num = NumQ;
+   public readonly Perc = TestoPercMinuti;
+   // campionato (durate delle partite a referto fornite): due colonne di %, altrimenti una
+   public campionato = false;
    public readonly Testo = TestoCoppia;
    public readonly tooltipOnOff = this.Tooltip('On/Off',
-      `Come va la squadra con il giocatore in campo (On) e in panchina (Off). Net: punti fatti meno subiti ogni 100 possessi, solo con almeno ${MIN_POSSESSI_RATING} possessi. On - Off positivo: con lui in campo la squadra rende di più.`);
+      `Come va la squadra con il giocatore in campo (On) e in panchina (Off). Net: punti fatti meno subiti ogni 100 possessi, solo con almeno ${MIN_POSSESSI_RATING} possessi. % Min: quota dei minuti della partita passati in campo. Nel campionato: % Ref. sulle sole partite in cui era a referto (quanto gioca quando è convocato), % Stag. su tutte le partite della squadra (quanto ha pesato nella stagione); se sono lontane, ha saltato delle partite. On - Off positivo: con lui in campo la squadra rende di più.`);
 
 
    EtichettaMetrica (): string

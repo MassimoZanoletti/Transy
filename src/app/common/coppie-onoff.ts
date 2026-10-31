@@ -23,6 +23,7 @@ export interface TOnOffGiocatore
    giocatore: TGiocatoreQuintetto;
    on: TInCampoStat;
    off: TInCampoStat;
+   secondiPartite: number;     // durata delle partite in cui era a referto (base della % di minuti in campo)
 }
 
 
@@ -52,7 +53,10 @@ function Somma (a: TInCampoStat,
 }
 
 
-export function OnOff (quintetti: TQuintettoStat[]): TOnOffGiocatore[]
+// secondiPartite: per giocatore, durata delle partite in cui era a referto (campionato); se manca si usa la
+// durata totale (On + Off), giusta per una partita sola
+export function OnOff (quintetti: TQuintettoStat[],
+                       secondiPartite?: Map<number, number>): TOnOffGiocatore[]
 {
    const totale = InCampoVuoto();
    quintetti.forEach(q => Somma(totale, q));
@@ -63,7 +67,7 @@ export function OnOff (quintetti: TQuintettoStat[]): TOnOffGiocatore[]
          let r = giocatori.get(g.id);
          if (!r)
          {
-            r = { giocatore: g, on: InCampoVuoto(), off: InCampoVuoto() };
+            r = { giocatore: g, on: InCampoVuoto(), off: InCampoVuoto(), secondiPartite: 0 };
             giocatori.set(g.id, r);
          }
          Somma(r.on, q);
@@ -79,8 +83,23 @@ export function OnOff (quintetti: TQuintettoStat[]): TOnOffGiocatore[]
          r.off.noi[k] -= r.on.noi[k];
          r.off.loro[k] -= r.on.loro[k];
       }
+      r.secondiPartite = secondiPartite?.get(r.giocatore.id) ?? totale.secondi;
    }
    return [...giocatori.values()].sort((a, b) => b.on.secondi - a.on.secondi);
+}
+
+
+// Percentuale dei minuti in campo; null se non calcolabile. Due basi:
+//  - 'referto':  durata delle partite in cui era a referto (quanto gioca quando è convocato)
+//  - 'stagione': durata di tutte le partite della squadra, cioè On + Off (quanto ha pesato nella stagione)
+// In una partita sola coincidono.
+export type TBasePercMinuti = 'referto' | 'stagione';
+
+export function PercMinutiOn (r: TOnOffGiocatore,
+                              base: TBasePercMinuti = 'referto'): number | null
+{
+   const tot = (base === 'referto') ? r.secondiPartite : r.on.secondi + r.off.secondi;
+   return (tot > 0) ? Math.min(100, 100 * r.on.secondi / tot) : null;
 }
 
 
@@ -169,6 +188,14 @@ export const ETICHETTE_METRICA: Record<TMetricaCoppie, string> = {
 };
 
 
+export function TestoPercMinuti (r: TOnOffGiocatore,
+                                 base: TBasePercMinuti = 'referto'): string
+{
+   const v = PercMinutiOn(r, base);
+   return (v === null) ? '' : `${Math.round(v)}%`;
+}
+
+
 // ---------------------------------------------------------------- PDF
 
 const Rgb = (hex: string): number[] => [1, 3, 5].map(i => parseInt(hex.substring(i, i + 2), 16));
@@ -216,8 +243,12 @@ export function TabellaOnOffPdf (pdf: any,
                                  autoTable: any,
                                  righe: TOnOffGiocatore[],
                                  startY: number,
-                                 font: string): number
+                                 font: string,
+                                 campionato: boolean = false): number
 {
+   // campionato: due percentuali di minuti (partite a referto e stagione); partita singola: una sola
+   const perc = (r: TOnOffGiocatore) => campionato ? [TestoPercMinuti(r, 'referto'), TestoPercMinuti(r, 'stagione')] : [TestoPercMinuti(r)];
+   const colonnePerc = campionato ? ['% Ref.', '% Stag.'] : ['% Min'];
    const colore = (v: number | null) => ((v ?? 0) > 0) ? { textColor: [0, 140, 0], fontStyle: 'bold' }
                                       : ((v ?? 0) < 0) ? { textColor: [210, 0, 0], fontStyle: 'bold' } : {};
    const min = (c: TInCampoStat) => (c.secondi > 0) ? MinutiQuintetto(c) : '';
@@ -225,12 +256,12 @@ export function TabellaOnOffPdf (pdf: any,
    autoTable(pdf, {
       startY,
       head: [
-         [{ content: '', colSpan: 1 }, { content: 'In campo (On)', colSpan: 3 }, { content: 'In panchina (Off)', colSpan: 3 }, { content: 'On - Off', colSpan: 1 }],
-         ['Giocatore', 'Min', '+/-', 'Net', 'Min', '+/-', 'Net', 'Net']
+         [{ content: '', colSpan: 1 }, { content: 'In campo (On)', colSpan: 3 + colonnePerc.length }, { content: 'In panchina (Off)', colSpan: 3 }, { content: 'On - Off', colSpan: 1 }],
+         ['Giocatore', 'Min', ...colonnePerc, '+/-', 'Net', 'Min', '+/-', 'Net', 'Net']
       ],
       body: righe.map(r => [
          `${r.giocatore.numero} ${r.giocatore.nome}`,
-         min(r.on), { content: NumQ(pm(r.on), true), styles: colore(pm(r.on)) }, NumQ(NetQuintetto(r.on), true),
+         min(r.on), ...perc(r), { content: NumQ(pm(r.on), true), styles: colore(pm(r.on)) }, NumQ(NetQuintetto(r.on), true),
          min(r.off), { content: NumQ(pm(r.off), true), styles: colore(pm(r.off)) }, NumQ(NetQuintetto(r.off), true),
          { content: NumQ(DiffOnOff(r), true), styles: colore(DiffOnOff(r)) }
       ]),

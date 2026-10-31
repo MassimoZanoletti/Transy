@@ -59,6 +59,7 @@ export interface TGiocatoreStatCamp
    numero: string;             // numero di maglia nell'ultima partita
    partite: number;            // partite in cui era a referto
    secondi: number;
+   secondiPartite: number;     // durata delle partite in cui era a referto
    punti: number;
    tl: TTiriStat;
    t2: TTiriStat;
@@ -151,6 +152,8 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
    const inCampo = AnalisiInCampo(ops, roster, isMy, live);
    const plusMinus = inCampo.plusMinus;
    AccumulaQuintetti(quintetti, inCampo.quintetti);
+   // durata della partita, misurata come i minuti in campo (somma dei quintetti)
+   const secondiPartita = inCampo.quintetti.reduce((a, q) => a + q.secondi, 0);
    // tiri del giocatore per tipo (come Tiri() in statistiche.ts)
    const somma = (a: TTiriStat, p: TMatchPlayer, tipo: TTipoRealizzazione) =>
    {
@@ -163,7 +166,7 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
       let g = giocatori.get(p.playerRecID);
       if (!g)
       {
-         g = { id: p.playerRecID, nome: '', numero: '', partite: 0, secondi: 0, punti: 0,
+         g = { id: p.playerRecID, nome: '', numero: '', partite: 0, secondi: 0, secondiPartite: 0, punti: 0,
                tl: { realizzati: 0, tentati: 0 }, t2: { realizzati: 0, tentati: 0 },
                t3: { realizzati: 0, tentati: 0 }, tdc: { realizzati: 0, tentati: 0 },
                ff: 0, fs: 0, rd: 0, ra: 0, pp: 0, pr: 0, as: 0, pir: 0, pm: 0, serie: [] };
@@ -182,6 +185,7 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
                      fga: tiri.filter(x => (x.rTipo === TTipoRealizzazione.trT2) || (x.rTipo === TTipoRealizzazione.trT3)).length,
                      fta: tiri.filter(x => x.rTipo === TTipoRealizzazione.trTL).length });
       g.secondi += secondi;
+      g.secondiPartite += secondiPartita;
       g.punti += punti;
       somma(g.tl, p, TTipoRealizzazione.trTL);
       somma(g.t2, p, TTipoRealizzazione.trT2);

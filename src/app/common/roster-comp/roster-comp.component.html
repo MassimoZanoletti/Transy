@@ -302,6 +302,7 @@
                DIALOG PLAYNUMBER
 ------------------------------------------------------------------>
 <p-dialog id="dialog-playnumber"
+          [focusOnShow]="false"
           [modal]="true"
           [(visible)]="dialogVisible_PlayNumber"
           [closable]="false"
@@ -357,6 +358,7 @@
                DIALOG PLAYERS
 ------------------------------------------------------------------>
 <p-dialog id="dialog-players"
+          [focusOnShow]="false"
           [modal]="true"
           [visible]="PlayersDialogVisible()"
           [closable]="false"
@@ -377,6 +379,7 @@
                DIALOG PLAYER-EDIT
 ------------------------------------------------------------------>
 <p-dialog id="dialog-player-edit"
+          [focusOnShow]="false"
           [modal]="true"
           [visible]="EditPlayerDialogVisible()"
           [closable]="false"

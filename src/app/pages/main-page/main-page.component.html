@@ -474,6 +474,7 @@
                DIALOG SOCIETA' E STAGIONE
 ------------------------------------------------------------------>
 <p-dialog id="dialog-societa-stagione"
+          [focusOnShow]="false"
           header="Seleziona la Società e poi la Stagione"
           [modal]="true"
           [(visible)]="dialogVisible_Societa"
@@ -544,6 +545,7 @@
                DIALOG MATCHHEADER
 ------------------------------------------------------------------>
 <p-dialog id="dialog-matchheader"
+          [focusOnShow]="false"
           [modal]="true"
           [(visible)]="dialogVisible_MatchHeader"
           (onShow)="onMatchHeaderDialogShow()"
@@ -570,6 +572,7 @@
                DIALOG MATCHSTATUS
 ------------------------------------------------------------------>
 <p-dialog id="dialog-matchstatus"
+          [focusOnShow]="false"
           [modal]="true"
           [(visible)]="dialogVisible_MatchStatus"
           [closable]="false"
@@ -626,6 +629,7 @@
                DIALOG PLAYERS
 ------------------------------------------------------------------>
 <p-dialog id="dialog-players"
+          [focusOnShow]="false"
           [modal]="true"
           [(visible)]="dialogVisible_Players"
           [closable]="false"
@@ -648,6 +652,7 @@
                DIALOG Roster
 ------------------------------------------------------------------>
 <p-dialog id="dialog-roster"
+          [focusOnShow]="false"
           [modal]="true"
           [(visible)]="dialogVisible_Roster"
           [closable]="false"
@@ -669,6 +674,7 @@
                DIALOG STATISTICHE CAMPIONATO
 ------------------------------------------------------------------>
 <p-dialog id="dialog-stat-campionato"
+          [focusOnShow]="false"
           [header]="'Statistiche campionato: ' + (currChamp ? currChamp.nome : '')"
           [modal]="true"
           [(visible)]="dialogVisible_StatCamp"
