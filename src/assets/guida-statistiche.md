@@ -266,6 +266,19 @@ Una cautela: 3 minuti sono pochi e molte cose succedono per caso. Un singolo tim
 
 **Dove**: tab partita, sezione "Timeout e parziali" (e PDF completo); nel campionato il riepilogo dei timeout e i 10 parziali più ampi per parte.
 
+### **Il grafico play-by-play**
+
+Nel tab "Play-by-play" della partita c'è un grafico per ogni quarto, uno per linguetta (supplementari compresi). Il tempo scorre dall'alto verso il basso, in minuti di gioco; in orizzontale ci sono i punti. Ogni squadra è una linea a gradini che si sposta a destra a ogni canestro: la nostra rossa, quella degli avversari verde.
+
+- Ogni canestro è un pallino con il giocatore e il punteggio; i nostri tiri sbagliati sono una crocetta.
+- A sinistra, all'altezza del minuto, ci sono le etichette dei nostri **falli** (arancio) e delle nostre **sostituzioni** (azzurro).
+- Sull'asse dei minuti i **triangolini** segnano i timeout: rossi i nostri, verdi i loro. Passando sopra si legge chi l'ha chiamato e a che minuto.
+- Sulla linea di ciascuna squadra i **rombi arancio** segnano le palle perse, nostre e loro, al minuto e al punteggio di quel momento. Passando sopra si leggono la squadra, il giocatore (o "Attribuita alla squadra") e il tempo.
+
+Sopra il grafico ci sono il punteggio, il parziale del quarto e i giocatori in campo all'inizio del quarto.
+
+Gli interruttori in alto (**Falli**, **Sostituzioni**, **Timeout**, **Palle perse** e le due squadre) accendono e spengono ciascun elemento, per alleggerire il grafico quando è troppo pieno. Dalla legenda si possono nascondere anche i timeout di una sola squadra. Il PDF ("Esporta grafici in PDF", una pagina per quarto) esce come lo vedete: quello che è spento a video non c'è nemmeno nel PDF.
+
 ## +/-, quintetti, On/Off e coppie
 
 Tutte queste statistiche nascono dalla stessa idea. Transy ricostruisce **chi era in campo in ogni momento**: parte dal quintetto base e segue tutte le sostituzioni. Così, per ogni canestro (nostro o loro), sa quali dieci giocatori erano sul parquet. A quel punto può "assegnare" ogni canestro ai cinque che erano in campo.

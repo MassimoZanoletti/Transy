@@ -50,6 +50,17 @@ interface TTimeoutPbp
 }
 
 
+// Palla persa (segnalino sulla linea della squadra, al punteggio di quel momento)
+interface TPallaPersaPbp
+{
+   myTeam: boolean;
+   xValue: number;
+   yValue: number;
+   tempo: string;
+   giocatore: string;         // "7 Rossi"; vuoto se attribuita alla squadra
+}
+
+
 interface TQuartoPbp
 {
    titolo: string;
@@ -62,6 +73,7 @@ interface TQuartoPbp
    oppoData: TPuntoPbp[];
    etichette: Map<string, TEtichettaPbp>;
    timeouts: TTimeoutPbp[];
+   palleperse: TPallaPersaPbp[];
    myTeamInizio: string;      // giocatori in campo a inizio quarto ("4 Rossi, 7 Bianchi, ...")
    oppoTeamInizio: string;
    xMin: number;
@@ -107,6 +119,11 @@ const TIMEOUT_BORDO_MY = '#7f0000';
 const TIMEOUT_COLORE_OPPO = 'rgb(0, 160, 0)';
 const TIMEOUT_BORDO_OPPO = '#004f00';
 
+// rombo arancio delle palle perse di MyTeam (raggio in pixel)
+const PERSA_RAGGIO = 10.5;
+const PERSA_COLORE = '#ff9800';
+const PERSA_BORDO = '#7a4100';
+
 // etichette di falli/sostituzioni dello stesso istante: distanza verticale fra una e l'altra e rientro dalla
 // seconda in poi (pixel). Altezza dell'etichetta: font 14 (riga 16.8) + spazio interno 2 x 6 + bordo 2 x 2
 // = 32.8, più 1 pixel di stacco
@@ -130,7 +147,7 @@ function CaricaChartJs (): Promise<typeof Chart>
 
 // Tab "Play-by-play" della partita: replica della pagina "Grafici" di nebula. Per ogni quarto giocato un grafico
 // a gradini dei punti delle due squadre in funzione del tempo, con i canestri (e i tiri sbagliati di MyTeam),
-// i falli e le sostituzioni di MyTeam; interruttori per falli, sostituzioni e squadre ed esportazione in PDF
+// i falli e le sostituzioni di MyTeam, le palle perse delle due squadre; interruttori per falli, sostituzioni, timeout, palle perse e squadre ed esportazione in PDF
 // (una pagina A3 per quarto). I dati si ricalcolano con Aggiorna() (all'apertura del tab).
 @Component({
    selector:    'app-playbyplay-comp',
@@ -157,9 +174,11 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    public showFalli: boolean = true;
    public showSostit: boolean = true;
+   public showTimeout: boolean = true;
+   public showPalleperse: boolean = true;
    public showMyTeam: boolean = true;
    public showOppoTeam: boolean = true;
-   // timeout delle due squadre (si accendono e spengono dalla legenda del grafico)
+   // timeout delle singole squadre (si accendono e spengono dalla legenda del grafico, se showTimeout)
    public showTimeoutMy: boolean = true;
    public showTimeoutOppo: boolean = true;
 
@@ -172,8 +191,8 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    // grafico del quarto visibile (uno solo alla volta: i pannelli nascosti hanno dimensione zero)
    private chart: Chart | null = null;
-   // tooltip del timeout sotto il mouse (stesso aspetto dei tooltip PrimeNG delle statistiche)
-   private tooltipTimeout: HTMLDivElement | null = null;
+   // tooltip del timeout o della palla persa sotto il mouse (stesso aspetto dei tooltip PrimeNG delle statistiche)
+   private tooltipGrafico: HTMLDivElement | null = null;
 
 
    ngOnDestroy (): void
@@ -222,6 +241,7 @@ export class PlaybyplayCompComponent implements OnDestroy
                oppoData:       [],
                etichette:      new Map(),
                timeouts:       [],
+               palleperse:     [],
                myTeamInizio:   elencoInizio(q, true),
                oppoTeamInizio: elencoInizio(q, false),
                xMin:           0,
@@ -318,6 +338,21 @@ export class PlaybyplayCompComponent implements OnDestroy
          quarto.oppoData.push({ x: punti, y: yFine });
          quarto.xMax = Math.max(quarto.xMax, punti + 6);
 
+         // palle perse delle due squadre, sulla linea della squadra al punteggio di quel momento
+         for (const lato of [true, false])
+         {
+            punti = lato ? quarto.myTeamPunti1 : quarto.oppoTeamPunti1;
+            for (const op of opsQ.filter(o => o.myTeam() === lato))
+            {
+               punti += PuntiCanestro(op.oper());
+               if (op.oper() !== TOperationType.totPPersa)
+                  continue;
+               const p = op.player1();
+               quarto.palleperse.push({ myTeam: lato, xValue: punti, yValue: minuti(op.time()), tempo: TempoStr(op.time()),
+                                        giocatore: p ? `${p.playNumber()} ${p.playName()}` : '' });
+            }
+         }
+
          // timeout delle due squadre: solo le operazioni che aggiungono timeout chiamati (non le correzioni)
          for (const op of opsQ.filter(o => o.oper() === TOperationType.totTimeout))
          {
@@ -354,9 +389,23 @@ export class PlaybyplayCompComponent implements OnDestroy
    }
 
 
+   OnToggleTimeout (): void
+   {
+      this.NascondiTooltip();
+      this.chart?.update();
+   }
+
+
+   OnTogglePalleperse (): void
+   {
+      this.NascondiTooltip();
+      this.chart?.update();
+   }
+
+
    OnToggleMyTeam (): void
    {
-      this.NascondiTooltipTimeout();
+      this.NascondiTooltip();
       if (this.chart)
          this.chart.data.datasets[0].hidden = !this.showMyTeam;
       this.chart?.update();
@@ -365,7 +414,7 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    OnToggleOppoTeam (): void
    {
-      this.NascondiTooltipTimeout();
+      this.NascondiTooltip();
       if (this.chart)
          this.chart.data.datasets[1].hidden = !this.showOppoTeam;
       this.chart?.update();
@@ -468,47 +517,54 @@ export class PlaybyplayCompComponent implements OnDestroy
 
    private DistruggiGrafico (): void
    {
-      this.NascondiTooltipTimeout();
+      this.NascondiTooltip();
       this.chart?.destroy();
       this.chart = null;
    }
 
 
-   // tooltip del timeout a destra del triangolo (centro in x, y, coordinate del canvas)
-   private MostraTooltipTimeout (t: TTimeoutPbp,
-                                 x: number,
-                                 y: number): void
+   // tooltip a destra del segnalino (timeout, palla persa): titolo giallo e righe di testo, come i tooltip
+   // PrimeNG delle statistiche. x, y = centro del segnalino (coordinate del canvas), raggio = sua dimensione
+   private MostraTooltip (titolo: string,
+                          righe: string[],
+                          x: number,
+                          y: number,
+                          raggio: number): void
    {
       const contenitore = this.chart?.canvas.parentElement;
       if (!contenitore)
          return;
-      this.NascondiTooltipTimeout();
+      this.NascondiTooltip();
       const tip = document.createElement('div');
       tip.className = 'p-tooltip p-component p-tooltip-right';
-      tip.style.cssText = `display: inline-block; left: ${x + TIMEOUT_RAGGIO + 4}px; top: ${y}px; transform: translateY(-50%); z-index: 1000;`;
+      tip.style.cssText = `display: inline-block; left: ${x + raggio + 4}px; top: ${y}px; transform: translateY(-50%); z-index: 1000;`;
       const freccia = document.createElement('div');
       freccia.className = 'p-tooltip-arrow';
       const testo = document.createElement('div');
       testo.className = 'p-tooltip-text';
-      const titolo = document.createElement('span');
-      titolo.className = 'tt-titolo';
+      const tit = document.createElement('span');
+      tit.className = 'tt-titolo';
       const b = document.createElement('b');
-      b.textContent = `Timeout ${t.myTeam ? this.myTeamNome : this.oppoTeamNome}`;
-      titolo.appendChild(b);
-      const descr = document.createElement('span');
-      descr.className = 'tt-testo';
-      descr.textContent = `Chiamato a ${t.tempo}`;
-      testo.append(titolo, document.createElement('br'), descr);
+      b.textContent = titolo;
+      tit.appendChild(b);
+      testo.appendChild(tit);
+      for (const r of righe)
+      {
+         const span = document.createElement('span');
+         span.className = 'tt-testo';
+         span.textContent = r;
+         testo.append(document.createElement('br'), span);
+      }
       tip.append(freccia, testo);
       contenitore.appendChild(tip);
-      this.tooltipTimeout = tip;
+      this.tooltipGrafico = tip;
    }
 
 
-   private NascondiTooltipTimeout (): void
+   private NascondiTooltip (): void
    {
-      this.tooltipTimeout?.remove();
-      this.tooltipTimeout = null;
+      this.tooltipGrafico?.remove();
+      this.tooltipGrafico = null;
    }
 
 
@@ -579,10 +635,30 @@ export class PlaybyplayCompComponent implements OnDestroy
             backgroundColor: t.myTeam ? TIMEOUT_COLORE_MY : TIMEOUT_COLORE_OPPO,
             borderColor:     t.myTeam ? TIMEOUT_BORDO_MY : TIMEOUT_BORDO_OPPO,
             borderWidth:     1,
-            display:         () => t.myTeam ? (this.showMyTeam && this.showTimeoutMy) : (this.showOppoTeam && this.showTimeoutOppo),
+            display:         () => this.showTimeout && (t.myTeam ? (this.showMyTeam && this.showTimeoutMy) : (this.showOppoTeam && this.showTimeoutOppo)),
             // a video: tooltip con tempo e squadra al passaggio del mouse
-            enter:           aVideo ? (ctx: any) => this.MostraTooltipTimeout(t, ctx.element.x, ctx.element.y) : undefined,
-            leave:           aVideo ? () => this.NascondiTooltipTimeout() : undefined
+            enter:           aVideo ? (ctx: any) => this.MostraTooltip(`Timeout ${t.myTeam ? this.myTeamNome : this.oppoTeamNome}`,
+                                                                       [`Chiamato a ${t.tempo}`], ctx.element.x, ctx.element.y, TIMEOUT_RAGGIO) : undefined,
+            leave:           aVideo ? () => this.NascondiTooltip() : undefined
+         };
+      });
+      // palle perse: rombo arancio sulla linea della squadra
+      quarto.palleperse.forEach((pp, i) =>
+      {
+         annotations[`persa_${i}`] = {
+            type:            'point',
+            xValue:          pp.xValue,
+            yValue:          pp.yValue,
+            pointStyle:      'rectRot',
+            radius:          PERSA_RAGGIO,
+            backgroundColor: PERSA_COLORE,
+            borderColor:     PERSA_BORDO,
+            borderWidth:     1,
+            display:         () => this.showPalleperse && (pp.myTeam ? this.showMyTeam : this.showOppoTeam),
+            enter:           aVideo ? (ctx: any) => this.MostraTooltip(`Palla persa ${pp.myTeam ? this.myTeamNome : this.oppoTeamNome}`,
+                                                                       [pp.giocatore ? `Giocatore: ${pp.giocatore}` : 'Attribuita alla squadra', `Tempo: ${pp.tempo}`],
+                                                                       ctx.element.x, ctx.element.y, PERSA_RAGGIO) : undefined,
+            leave:           aVideo ? () => this.NascondiTooltip() : undefined
          };
       });
       return {
@@ -659,12 +735,26 @@ export class PlaybyplayCompComponent implements OnDestroy
                            hidden:      myTeam ? !(this.showMyTeam && this.showTimeoutMy) : !(this.showOppoTeam && this.showTimeoutOppo),
                            timeoutMy:   myTeam
                         });
-                        return [...items, voce(true), voce(false)];
+                        // con l'interruttore "Timeout" spento le voci dei timeout non ci sono
+                        const persa = {
+                           text:        'Palle perse',
+                           fillStyle:   PERSA_COLORE,
+                           strokeStyle: PERSA_BORDO,
+                           fontColor:   items[0]?.fontColor,
+                           lineWidth:   1,
+                           pointStyle:  'rectRot' as const,
+                           rotation:    0,
+                           hidden:      !(this.showMyTeam || this.showOppoTeam),
+                           palleperse:  true
+                        };
+                        return [...items, ...(this.showTimeout ? [voce(true), voce(false)] : []), ...(this.showPalleperse ? [persa] : [])];
                      }
                   },
                   onClick: (_e: any, item: any) =>
                   {
-                     if (item.timeoutMy === true)
+                     if (item.palleperse)
+                        this.showPalleperse = false;     // si riaccende dall'interruttore (la voce sparisce)
+                     else if (item.timeoutMy === true)
                         this.showTimeoutMy = !this.showTimeoutMy;
                      else if (item.timeoutMy === false)
                         this.showTimeoutOppo = !this.showTimeoutOppo;
@@ -680,7 +770,7 @@ export class PlaybyplayCompComponent implements OnDestroy
                         this.OnToggleOppoTeam();
                         return;
                      }
-                     this.NascondiTooltipTimeout();
+                     this.NascondiTooltip();
                      this.chart?.update();
                   }
                },
@@ -741,11 +831,8 @@ export class PlaybyplayCompComponent implements OnDestroy
                   },
                   display: true
                },
-               tooltip: {
-                  callbacks: {
-                     label: (context: any) => `Punti: ${context.raw.x} al minuto ${context.raw.y}`
-                  }
-               },
+               // niente tooltip sui canestri e sui tiri: l'etichetta accanto dice già tempo, punti e giocatore
+               tooltip: { enabled: false },
                annotation: { annotations }
             }
          } as any

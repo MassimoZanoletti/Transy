@@ -14,6 +14,14 @@
          <label>Sostituzioni</label>
       </div>
       <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showTimeout" (onChange)="OnToggleTimeout()"></p-inputSwitch>
+         <label>Timeout</label>
+      </div>
+      <div class="pbp-switch">
+         <p-inputSwitch [(ngModel)]="showPalleperse" (onChange)="OnTogglePalleperse()"></p-inputSwitch>
+         <label>Palle perse</label>
+      </div>
+      <div class="pbp-switch">
          <p-inputSwitch [(ngModel)]="showMyTeam" (onChange)="OnToggleMyTeam()"></p-inputSwitch>
          <label>My Team</label>
       </div>
