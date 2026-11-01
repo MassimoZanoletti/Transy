@@ -20,7 +20,9 @@
                         class="zt-forma"
                         [class.zt-attiva]="zonaAttiva === f.id"
                         (pointerenter)="zonaAttiva = f.id"
-                        (pointerleave)="zonaAttiva = null"><title>{{ Titolo(Zona(f.id)) }}</title></path>
+                        (pointerleave)="zonaAttiva = null"
+                        [appTooltipSvg]="Tooltip(Zona(f.id))"
+                        [tooltipSegui]="true"></path>
                }
             </svg>
             <img src="assets/campo-tiri.png"

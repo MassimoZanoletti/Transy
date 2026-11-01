@@ -45,6 +45,13 @@ export class AndamentoGiocatoriCompComponent
       this.AggiornaCalcolo();
    }
    private _partite: TPartitaAndamento[] = [];
+   // nome della nostra squadra (descrizione delle partite nel grafico grande)
+   @Input() set nomeNoi (n: string)
+   {
+      this._nomeNoi = n ?? '';
+      this.AggiornaCalcolo();
+   }
+   private _nomeNoi = '';
 
    public readonly metriche = METRICHE_GIOCATORE;
    public readonly SW = 150;
@@ -64,7 +71,8 @@ export class AndamentoGiocatoriCompComponent
    {
       const g = this._andamento.find(x => x.id === this.idScelto);
       const partite = this._partite;
-      this.calcola = g ? ((metrica: string) => DatiAndamentoGiocatore(g, metrica as TMetricaGiocatore, partite)) : null;
+      const nomeNoi = this._nomeNoi;
+      this.calcola = g ? ((metrica: string) => DatiAndamentoGiocatore(g, metrica as TMetricaGiocatore, partite, nomeNoi)) : null;
    }
 
 
@@ -138,6 +146,9 @@ export class AndamentoGiocatoriCompComponent
               m: TMetricaGiocatore): string
    {
       const label = METRICHE_GIOCATORE.find(x => x.value === m)?.label ?? '';
-      return `${g.numero} ${g.nome} - ${label}: ` + g.valori[m].map(v => (v === null) ? '-' : NumMetrica(v, m)).join(', ');
+      // stile degli altri tooltip delle statistiche: il giocatore come titolo, sotto la metrica con i valori partita per partita
+      const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const valori = g.valori[m].map(v => (v === null) ? '-' : NumMetrica(v, m)).join(' · ');
+      return `<span class='tt-titolo'><b>${esc(`${g.numero} ${g.nome}`)}</b></span><br><span class='tt-testo'>${esc(label)}: ${valori}</span>`;
    }
 }

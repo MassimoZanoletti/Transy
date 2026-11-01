@@ -159,7 +159,7 @@ export class AndamentoCampionatoCompComponent
 
    Asse (v: number): string
    {
-      return NumAndamento(v, this.dati?.barre ?? false);
+      return this.dati?.formato ? this.dati.formato(v) : NumAndamento(v, this.dati?.barre ?? false);
    }
 
 
@@ -174,10 +174,11 @@ export class AndamentoCampionatoCompComponent
       const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse());
       const n = dati.etichette.length;
       const i = Math.max(0, Math.min(n - 1, Math.floor(n * (pt.x - this.ML) / (this.W - this.ML - this.MR))));
+      const num = (v: number | null) => (v === null) ? '' : dati.formato ? dati.formato(v) : NumAndamento(v, dati.barre);
       const righe = [dati.dettagli[i], ...dati.serie.map(s =>
       {
          const media = this.mediaMobile ? MediaMobile(s.valori)[i] : null;
-         return `${s.nome}: ${NumAndamento(s.valori[i], dati.barre)}` + ((media !== null) ? ` (media ${MEDIA_MOBILE}: ${NumAndamento(media, dati.barre)})` : '');
+         return `${s.nome}: ${num(s.valori[i])}` + ((media !== null) ? ` (media ${MEDIA_MOBILE}: ${num(media)})` : '');
       })];
       this.hover = { i, x: this.X(i), righe, aDestra: this.X(i) < this.W * 0.6 };
    }

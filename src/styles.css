@@ -165,3 +165,12 @@ html.disp-mobile #router-container > :not(router-outlet) {
 .p-tooltip:has(.tt-titolo) {
    max-width: min(32rem, 90vw);
 }
+
+/* elenchi (es. partite di un quintetto): una voce per riga, senza andare a capo */
+.tt-elenco {
+   white-space: nowrap;
+}
+
+.p-tooltip:has(.tt-elenco) {
+   max-width: 90vw;
+}

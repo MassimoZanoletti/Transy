@@ -25,7 +25,7 @@
                   <td class="ag-num">{{ g.partite }}</td>
                   @for (m of metriche; track m.value)
                   {
-                     <td class="ag-spark ag-sep" [title]="Dettaglio(g, m.value)">
+                     <td class="ag-spark ag-sep" [pTooltip]="Dettaglio(g, m.value)" [escape]="false" tooltipPosition="top">
                         <svg [attr.width]="SW" [attr.height]="SH" [attr.viewBox]="'0 0 ' + SW + ' ' + SH">
                            @if (Spark(g, m.value).yZero !== null)
                            {

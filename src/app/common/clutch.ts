@@ -2,7 +2,7 @@ import {TMatchPlayer} from "../models/datamod";
 import {TOperation, TOperationType} from "./operation";
 import {TContestoLive, TTiriStat} from "./statistiche";
 import {CLUTCH_SCARTO, CLUTCH_SECONDI, DurataQuarto, InClutch} from "./grafico-differenza";
-import {AccumulaQuintetti, AnalisiInCampo, TQuintettoStat} from "./quintetti";
+import {AccumulaQuintetti, AnalisiInCampo, TDatiPartita, TQuintettoStat} from "./quintetti";
 import {OnOff} from "./coppie-onoff";
 
 
@@ -195,7 +195,8 @@ export function CalcolaClutch (ops: TOperation[],
 // Somma una partita nel totale del campionato (giocatori per id, quintetti per chiave); nome e numero
 // restano quelli dell'ultima partita
 export function SommaClutch (tot: TClutch,
-                             c: TClutch): void
+                             c: TClutch,
+                             partita: TDatiPartita | null = null): void
 {
    tot.secondi += c.secondi;
    tot.secondiResto += c.secondiResto;
@@ -223,7 +224,7 @@ export function SommaClutch (tot: TClutch,
    }
    tot.giocatori.sort((a, b) => b.secondi - a.secondi);
    const quintetti = new Map(tot.quintetti.map(q => [q.chiave, q]));
-   AccumulaQuintetti(quintetti, c.quintetti);
+   AccumulaQuintetti(quintetti, c.quintetti, partita);
    tot.quintetti = [...quintetti.values()].sort((a, b) => b.secondi - a.secondi);
 }
 

@@ -3,7 +3,7 @@ import {TOperation, TOperationList} from "./operation";
 import {matchGlobs, TCurrMatch} from "./curr-match";
 import {MinutiPerQuarto, TabellaSquadra, TContestoLive, TRigaStat, TTiriStat} from "./statistiche";
 import {globs} from "./utils";
-import {AccumulaQuintetti, AnalisiInCampo, TQuintettoStat} from "./quintetti";
+import {AccumulaQuintetti, AnalisiInCampo, TDatiPartita, TQuintettoStat} from "./quintetti";
 
 
 // Statistiche di squadra su più partite (pagina "Statistiche campionato"): per ogni partita la squadra
@@ -140,7 +140,8 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
                                    cm: TCurrMatch,
                                    ops: TOperation[],
                                    teamId: number,
-                                   indicePartita: number = 0): void
+                                   indicePartita: number = 0,
+                                   partita: TDatiPartita | null = null): void
 {
    const isMy = (Number(mh.myTeamId_link) === teamId);
    const team = isMy ? cm.myTeam() : cm.oppTeam();
@@ -151,7 +152,7 @@ export function AccumulaGiocatori (giocatori: Map<number, TGiocatoreStatCamp>,
    // +/- e quintetti: basta seguire chi è in campo della squadra scelta, contando i canestri di entrambe le squadre
    const inCampo = AnalisiInCampo(ops, roster, isMy, live);
    const plusMinus = inCampo.plusMinus;
-   AccumulaQuintetti(quintetti, inCampo.quintetti);
+   AccumulaQuintetti(quintetti, inCampo.quintetti, partita);
    // durata della partita, misurata come i minuti in campo (somma dei quintetti)
    const secondiPartita = inCampo.quintetti.reduce((a, q) => a + q.secondi, 0);
    // tiri del giocatore per tipo (come Tiri() in statistiche.ts)
@@ -219,6 +220,29 @@ export function BoxPartita (mh: IDSMatchHeader,
 {
    const isMy = (Number(mh.myTeamId_link) === teamId);
    return { noi: TotaliSquadra(isMy ? cm.myTeam() : cm.oppTeam()), loro: TotaliSquadra(isMy ? cm.oppTeam() : cm.myTeam()) };
+}
+
+
+// Descrizione di una partita nei tooltip (quintetti, andamento): come nei referti, prima la squadra di casa e
+// il suo punteggio, poi l'esito per noi. Es. "25/09/2026 RiverBasket - Transy 64-55 (P)"
+export function DescrizionePartita (riga: TRigaStatCamp,
+                                    nomeNoi: string): string
+{
+   const d = DatiPartita(riga, nomeNoi);
+   return `${d.data} ${d.partita}`;
+}
+
+
+// Come DescrizionePartita, con data e partita separate (per inserire qualcosa in mezzo)
+export function DatiPartita (riga: TRigaStatCamp,
+                             nomeNoi: string): TDatiPartita
+{
+   const noi = nomeNoi || 'Noi';
+   const [casa, ospiti, pCasa, pOspiti] = (riga.casaTrasf === 'C')
+      ? [noi, riga.squadra, riga.puntiF, riga.puntiS]
+      : [riga.squadra, noi, riga.puntiS, riga.puntiF];
+   const esito = (riga.dif > 0) ? ' (V)' : (riga.dif < 0) ? ' (P)' : '';
+   return { data: riga.data, partita: `${casa} - ${ospiti} ${pCasa}-${pOspiti}${esito}` };
 }
 
 

@@ -36,7 +36,7 @@
                @for (a of radar.assi; track a.sigla; let i = $index)
                {
                   <line [attr.x1]="CX" [attr.y1]="CY" [attr.x2]="Punto(i, 1)[0]" [attr.y2]="Punto(i, 1)[1]" class="ra-asse"/>
-                  <text [attr.x]="Etichetta(i).x" [attr.y]="Etichetta(i).y" [attr.text-anchor]="Etichetta(i).ancora" class="ra-etichetta">{{ a.sigla }}<title>{{ a.nome }}</title></text>
+                  <text [attr.x]="Etichetta(i).x" [attr.y]="Etichetta(i).y" [attr.text-anchor]="Etichetta(i).ancora" class="ra-etichetta" [appTooltipSvg]="Testo(a.nome)">{{ a.sigla }}</text>
                }
                <!-- giocatore (e confronto) sotto, media della squadra sopra per non nasconderla -->
                <polygon [attr.points]="Poligono(g.norm)" [attr.fill]="coloreNoi" [attr.stroke]="coloreNoi" class="ra-giocatore"/>
@@ -47,9 +47,8 @@
                <polygon [attr.points]="Poligono(radar.media.norm)" class="ra-media"/>
                @for (a of radar.assi; track a.sigla; let i = $index)
                {
-                  <circle [attr.cx]="Punto(i, Raggio(g.norm[i]))[0]" [attr.cy]="Punto(i, Raggio(g.norm[i]))[1]" r="4" [attr.fill]="coloreNoi" class="ra-vertice">
-                     <title>{{ a.nome }}: {{ Num(g.valori[i], a.unita) }}</title>
-                  </circle>
+                  <circle [attr.cx]="Punto(i, Raggio(g.norm[i]))[0]" [attr.cy]="Punto(i, Raggio(g.norm[i]))[1]" r="4" [attr.fill]="coloreNoi" class="ra-vertice"
+                          [appTooltipSvg]="Testo(g.numero + ' ' + g.nome, [a.nome + ': ' + Num(g.valori[i], a.unita)])"></circle>
                }
             </svg>
             <div class="ra-legenda">

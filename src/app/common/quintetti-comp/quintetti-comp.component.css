@@ -147,6 +147,45 @@
    font-style: italic;
 }
 
+/* filtro per giocatori */
+.q-filtro {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 6px;
+   margin-bottom: 6px;
+}
+
+.q-filtro-titolo {
+   font-size: 0.9rem;
+   color: #94a3b8;
+}
+
+.q-filtro-btn {
+   padding: 2px 8px;
+   border: 1px solid #475569;
+   border-radius: 12px;
+   background-color: #1f2938;
+   color: inherit;
+   font: inherit;
+   font-size: 0.9rem;
+   cursor: pointer;
+}
+
+.q-filtro-btn b {
+   color: #ffaa00;
+}
+
+.q-filtro-btn:hover {
+   border-color: #94a3b8;
+}
+
+.q-filtro-sel {
+   background-color: #422d6b;
+   border-color: #ffe378;
+   color: #ffe378;
+}
+
 /* smartphone: barra più corta */
 @media (max-width: 600px) {
    .q-pm-barra {

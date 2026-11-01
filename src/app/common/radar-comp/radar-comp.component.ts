@@ -4,6 +4,7 @@ import {DropdownModule} from 'primeng/dropdown';
 import {TooltipModule} from 'primeng/tooltip';
 import {COLORE_NOI} from "../grafico-differenza";
 import {COLORE_CONFRONTO, NumR, PuntoRadar, TRadar, TRadarGiocatore} from "../radar";
+import {TestoTooltip, TooltipSvgDirective} from "../tooltip-svg.directive";
 
 
 // Radar di un giocatore (pagina "Statistiche campionato"): poligono del giocatore (rosso) sopra la media della
@@ -12,7 +13,7 @@ import {COLORE_CONFRONTO, NumR, PuntoRadar, TRadar, TRadarGiocatore} from "../ra
 @Component({
    selector:    'app-radar-comp',
    standalone:  true,
-   imports:     [FormsModule, DropdownModule, TooltipModule],
+   imports:     [FormsModule, DropdownModule, TooltipModule, TooltipSvgDirective],
    templateUrl: './radar-comp.component.html',
    styleUrl:    './radar-comp.component.css'
 })
@@ -46,6 +47,7 @@ export class RadarCompComponent
    public readonly coloreNoi = COLORE_NOI;
    public readonly coloreConfronto = COLORE_CONFRONTO;
    public readonly Num = NumR;
+   public readonly Testo = TestoTooltip;
    public readonly tooltipRadar = `<span class='tt-titolo'><b>Come leggere il radar</b></span><br><span class='tt-testo'>` +
       `I conteggi sono riportati a 40 minuti di gioco, così chi gioca poco non è penalizzato. Ogni asse va da 0 al ` +
       `valore più alto della squadra: il radar mostra in cosa il giocatore è forte rispetto ai compagni. ` +

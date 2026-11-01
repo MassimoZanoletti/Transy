@@ -1,4 +1,4 @@
-import {TRigaStatCamp} from "./statistiche-campionato";
+import {DescrizionePartita, TRigaStatCamp} from "./statistiche-campionato";
 import {NetRtg, TFourFactors} from "./four-factors";
 import {COLORE_LORO, COLORE_NOI, COLORE_NOI_PDF, ColorePdf} from "./grafico-differenza";
 
@@ -51,6 +51,7 @@ export interface TDatiAndamento
    etichette: string[];        // asse x: data gg/mm
    esiti: string[];            // "V" vinta, "P" persa, "" pari
    dettagli: string[];         // descrizione della partita per il tooltip
+   formato?: (v: number) => string;  // come scrivere i valori (asse e tooltip); se manca NumAndamento
 }
 
 
@@ -84,7 +85,7 @@ export function DatiAndamento (partite: TPartitaAndamento[],
       titolo, barre, serie,
       etichette: partite.map(p => DataBreve(p.riga.data)),
       esiti:     partite.map(p => (p.riga.dif > 0) ? 'V' : (p.riga.dif < 0) ? 'P' : ''),
-      dettagli:  partite.map(p => `${p.riga.data} ${p.riga.casaTrasf === 'C' ? 'in casa' : 'in trasferta'} con ${p.riga.squadra}: ${p.riga.puntiF}-${p.riga.puntiS}`)
+      dettagli:  partite.map(p => DescrizionePartita(p.riga, nomeNoi))
    };
 }
 
@@ -188,7 +189,7 @@ export function DisegnaAndamentoPdf (pdf: any,
       pdf.setLineWidth((Math.abs(v) < 1e-9) ? 0.35 : 0.15);
       pdf.line(x, sy(v), x + w, sy(v));
       pdf.setTextColor(90, 90, 90);
-      pdf.text(NumAndamento(v, dati.barre), x - 1.5, sy(v) + 1, { align: 'right' });
+      pdf.text(dati.formato ? dati.formato(v) : NumAndamento(v, dati.barre), x - 1.5, sy(v) + 1, { align: 'right' });
    }
    // etichette delle partite (al massimo una ventina, le altre saltate)
    const ogni = Math.max(1, Math.ceil(n / 20));

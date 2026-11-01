@@ -4,6 +4,7 @@ import {SelectButtonModule} from 'primeng/selectbutton';
 import {TooltipModule} from 'primeng/tooltip';
 import {COLORE_NOI} from "../grafico-differenza";
 import {DefAsse, NumU, ScaleUsage, TAsseVolume, TDefAsse, TUsageSquadra, TUsoGiocatore} from "../usage";
+import {TestoTooltip, TooltipSvgDirective} from "../tooltip-svg.directive";
 
 
 // Volume ed efficienza (tab "Statistiche" della partita e pagina "Statistiche campionato"): grafico a
@@ -12,7 +13,7 @@ import {DefAsse, NumU, ScaleUsage, TAsseVolume, TDefAsse, TUsageSquadra, TUsoGio
 @Component({
    selector:    'app-usage-comp',
    standalone:  true,
-   imports:     [FormsModule, SelectButtonModule, TooltipModule],
+   imports:     [FormsModule, SelectButtonModule, TooltipModule, TooltipSvgDirective],
    templateUrl: './usage-comp.component.html',
    styleUrl:    './usage-comp.component.css'
 })
@@ -112,6 +113,18 @@ export class UsageCompComponent
    SogliaMinuti (): number
    {
       return Math.round((this._usage?.minSecondi ?? 0) / 60);
+   }
+
+
+   Tooltip (g: TUsoGiocatore): string
+   {
+      return TestoTooltip(`${g.numero} ${g.nome}`, [
+         `Usage: ${NumU(g.usage)}%`,
+         `Tiri${this._campionato ? ' a partita' : ''}: ${NumU(g.tiri)}`,
+         `TS%: ${NumU(g.ts)}%`,
+         `Punti: ${g.punti}`,
+         `Minuti: ${this.Min(g.secondi)}`
+      ]);
    }
 
 

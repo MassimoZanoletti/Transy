@@ -13,6 +13,7 @@ import {
 } from "../grafico-differenza";
 import {TempoStr} from "../statistiche";
 import {TParziale} from "../parziali-timeout";
+import {TestoTooltip, TooltipSvgDirective} from "../tooltip-svg.directive";
 
 
 // Grafico a video (SVG) dello scarto lungo la partita: area a gradini nel colore della squadra in vantaggio
@@ -21,7 +22,7 @@ import {TParziale} from "../parziali-timeout";
 @Component({
    selector:    'app-grafico-differenza-comp',
    standalone:  true,
-   imports:     [],
+   imports:     [TooltipSvgDirective],
    templateUrl: './grafico-differenza-comp.component.html',
    styleUrl:    './grafico-differenza-comp.component.css'
 })
@@ -110,13 +111,13 @@ export class GraficoDifferenzaCompComponent
 
    TitoloParziale (p: TParziale): string
    {
-      return `Parziale ${p.punti}-0 ${p.myTeam ? this.nomeNoi : this.nomeLoro}`;
+      return TestoTooltip(`Parziale ${p.punti}-0`, [p.myTeam ? this.nomeNoi : this.nomeLoro]);
    }
 
 
    TitoloTimeout (to: { myTeam: boolean, quarto: number, tempo: number }): string
    {
-      return `Timeout ${to.myTeam ? this.nomeNoi : this.nomeLoro} - ${EtichettaQuarto(to.quarto)} ${TempoStr(to.tempo)}`;
+      return TestoTooltip(`Timeout ${to.myTeam ? this.nomeNoi : this.nomeLoro}`, [`${EtichettaQuarto(to.quarto)} ${TempoStr(to.tempo)}`]);
    }
 
 

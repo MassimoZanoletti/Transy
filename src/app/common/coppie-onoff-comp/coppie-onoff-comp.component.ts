@@ -110,12 +110,20 @@ export class CoppieOnoffCompComponent
       const a = this.matrice.giocatori[i];
       const b = this.matrice.giocatori[j];
       const c = this.matrice.celle[i][j];
-      const chi = (i === j) ? `${a.numero} ${a.nome}` : `${a.numero} ${a.nome} + ${b.numero} ${b.nome}`;
+      // prima riga i giocatori, poi un dato per riga (stile degli altri tooltip delle statistiche)
+      const nome = (g: { numero: string, nome: string }) => Esc(`${g.numero} ${g.nome}`);
+      const chi = (i === j) ? nome(a) : `${nome(a)} + ${nome(b)}`;
       if (c.secondi <= 0)
-         return `${chi}: mai in campo insieme`;
+         return this.Tooltip(chi, 'Mai in campo insieme');
       const net = NetQuintetto(c);
-      return `${chi}: ${MinutiQuintetto(c)} min, punti ${c.noi.punti}-${c.loro.punti} (${NumQ(PlusMinusQuintetto(c), true) || '0'})` +
-             ((net !== null) ? `, Net ${NumQ(net, true)}` : '');
+      return this.Tooltip(chi, `Minuti: ${MinutiQuintetto(c)}<br>Punti: ${c.noi.punti}-${c.loro.punti} (${NumQ(PlusMinusQuintetto(c), true) || '0'})` +
+                               ((net !== null) ? `<br>Net: ${NumQ(net, true)}` : ''));
+   }
+
+
+   TooltipGiocatore (g: { numero: string, nome: string }): string
+   {
+      return `<span class='tt-testo'>${Esc(`${g.numero} ${g.nome}`)}</span>`;
    }
 
 
@@ -124,4 +132,11 @@ export class CoppieOnoffCompComponent
    {
       return `<span class='tt-titolo'><b>${titolo}</b></span><br><span class='tt-testo'>${descrizione}</span>`;
    }
+}
+
+
+// i nomi finiscono in un tooltip HTML
+function Esc (s: string): string
+{
+   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

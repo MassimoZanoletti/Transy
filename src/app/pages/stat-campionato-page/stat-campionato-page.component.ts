@@ -26,7 +26,8 @@ import {
    RigaQuarto,
    TotaliPartite,
    TGiocatoreStatCamp,
-   TRigaStatCamp
+   TRigaStatCamp,
+   DatiPartita
 } from "../../common/statistiche-campionato";
 import {MatchheaderService} from "../../services/matchheader.service";
 import {MatchrosterService} from "../../services/matchroster.service";
@@ -69,6 +70,7 @@ import {CalcolaZone, CaricaImmagineCampo, PaginaZonePdf, SommaZone, TMappaZone, 
 import {ZoneTiroCompComponent} from "../../common/zone-tiro-comp/zone-tiro-comp.component";
 import {DatiAndamento, DisegnaAndamentoPdf, TMetricaAndamento} from "../../common/andamento-campionato";
 import {AndamentoCampionatoCompComponent} from "../../common/andamento-campionato-comp/andamento-campionato-comp.component";
+import {TestoTooltip, TooltipSvgDirective} from "../../common/tooltip-svg.directive";
 import {CreaTorta, PathFetta, PercFetta, PoligonoFetta, PuntoTorta, TFettaTorta, TTorta} from "../../common/torte-quarti";
 
 
@@ -89,6 +91,7 @@ export interface TStatCampionatoParams
                standalone:  true,
                imports: [
                   ButtonModule,
+                  TooltipSvgDirective,
                   DividerModule,
                   TableModule,
                   FourFactorsCompComponent,
@@ -279,12 +282,14 @@ export class StatCampionatoPageComponent implements OnInit
             const minuti = MinutiDiGioco (QuartiGiocati (ops));
             minutiTot += minuti;
             ffPartite.push ({ riga, ff: CalcolaFourFactors (box.noi, box.loro, 1, minuti) });
-            AccumulaGiocatori (giocatori, quintetti, mh, cm, ops, teamId, righe.length - 1);
+            // data e partita per il tooltip della colonna "Part" dei quintetti
+            const datiPartita = DatiPartita (riga, this.team?.nome ?? '');
+            AccumulaGiocatori (giocatori, quintetti, mh, cm, ops, teamId, righe.length - 1, datiPartita);
             // parziali e timeout: la serie è sempre dal punto di vista di MyTeam della partita, si gira se la
             // squadra scelta è l'altra
             const isMy = (Number (mh.myTeamId_link) === teamId);
             SommaClutch (clutch, CalcolaClutch (ops, [...(cm.myTeam ()?.Roster ?? []), ...(cm.oppTeam ()?.Roster ?? [])], isMy,
-                                                { quarto: 0, tempo: 0, quartoGiocato: () => false }));
+                                                { quarto: 0, tempo: 0, quartoGiocato: () => false }), datiPartita);
             const nostra = isMy ? cm.myTeam () : cm.oppTeam ();
             const avversaria = isMy ? cm.oppTeam () : cm.myTeam ();
             SommaZone (zoneFatti, CalcolaZone (nostra?.Roster ?? [], nostra?.tiriSquadra () ?? []));
@@ -447,6 +452,16 @@ export class StatCampionatoPageComponent implements OnInit
 
 
    // valore col segno per la torta della differenza (+5 / -9), semplice per le altre
+   // tooltip di uno spicchio: il quarto come titolo, sotto il valore (e se è a sfavore)
+   TooltipFetta (torta: TTorta,
+                 f: TFettaTorta,
+                 differenza: boolean): string
+   {
+      return TestoTooltip (f.etichetta, [`${torta.titolo}: ${this.ValoreTorta (f.valore, differenza)} (${PercFetta (f)}%)` +
+                                         (f.negativo ? ' - a sfavore' : '')]);
+   }
+
+
    ValoreTorta (valore: number,
                 differenza: boolean): string
    {

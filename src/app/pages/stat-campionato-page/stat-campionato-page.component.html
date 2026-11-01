@@ -319,16 +319,14 @@
                      {
                         <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
                               [attr.fill]="f.colore"
-                              class="fetta">
-                           <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%)</title>
-                        </path>
+                              class="fetta"
+                              [appTooltipSvg]="TooltipFetta(torta, f, iTorta === 2)"></path>
                         @if (f.negativo)
                         {
                            <path [attr.d]="PathFetta(f, 0, 0, RAGGIO_TORTA)"
                                  [attr.fill]="'url(#tratteggio-' + iTorta + ')'"
-                                 class="fetta tratteggio-negativo">
-                              <title>{{ f.etichetta }}: {{ ValoreTorta(f.valore, iTorta === 2) }} ({{ PercFetta(f) }}%) - a sfavore</title>
-                           </path>
+                                 class="fetta tratteggio-negativo"
+                                 [appTooltipSvg]="TooltipFetta(torta, f, iTorta === 2)"></path>
                         }
                      }
                      @for (f of torta.fette; track f.etichetta)
@@ -512,7 +510,8 @@
          <!-- andamento stagionale dei giocatori: panoramica con i mini-grafici e grafico del giocatore scelto -->
          <h3 class="titolo-sezione">Andamento stagionale dei giocatori <span class="evidenziato">{{ team?.nome }}</span></h3>
          <app-andamento-giocatori-comp [andamento]="andamentoGiocatori"
-                                       [partite]="ffPartite"></app-andamento-giocatori-comp>
+                                       [partite]="ffPartite"
+                                       [nomeNoi]="team?.nome ?? ''"></app-andamento-giocatori-comp>
 
          <p-divider
             layout="horizontal"

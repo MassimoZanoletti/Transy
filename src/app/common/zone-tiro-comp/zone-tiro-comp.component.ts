@@ -17,6 +17,7 @@ import {
    TMappaZone,
    TZonaTiro
 } from "../zone-tiro";
+import {TestoTooltip, TooltipSvgDirective} from "../tooltip-svg.directive";
 
 
 // Mappa di tiro a zone (tab "Mappa tiro" della partita): campo con le 10 zone colorate secondo i punti per
@@ -24,7 +25,7 @@ import {
 @Component({
    selector:    'app-zone-tiro-comp',
    standalone:  true,
-   imports:     [TooltipModule],
+   imports:     [TooltipModule, TooltipSvgDirective],
    templateUrl: './zone-tiro-comp.component.html',
    styleUrl:    './zone-tiro-comp.component.css'
 })
@@ -75,10 +76,10 @@ export class ZoneTiroCompComponent
    }
 
 
-   Titolo (z: TZonaTiro): string
+   Tooltip (z: TZonaTiro): string
    {
       if (z.tentati === 0)
-         return `${z.nome}: nessun tiro`;
-      return `${z.nome}: ${z.segnati}/${z.tentati} (${PercZona(z)}), ${PpsStr(z)} punti per tiro`;
+         return TestoTooltip(z.nome, ['Nessun tiro']);
+      return TestoTooltip(z.nome, [`Tiri: ${z.segnati}/${z.tentati} (${PercZona(z)})`, `Punti per tiro: ${PpsStr(z)}`]);
    }
 }

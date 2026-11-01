@@ -222,6 +222,8 @@ Il grafico dello scarto è la "storia" della partita in un colpo d'occhio. In or
 
 Passando col mouse o col dito sul grafico si legge il punteggio in quel momento.
 
+Passando sopra un triangolino si legge di chi è il timeout e quando (quarto e minuto); sopra la fascia di un parziale, di quanti punti è e chi l'ha fatto.
+
 Come leggerlo: una linea che sale piano piano racconta una squadra che costruisce il vantaggio con pazienza. Una linea che scende di colpo, come una scala presa di corsa, racconta un momento di blackout. Una linea che balla sempre intorno allo zero racconta una partita equilibrata dall'inizio alla fine.
 
 ### **I parziali**
@@ -300,6 +302,10 @@ I valori ogni 100 possessi compaiono solo sopra i **10 possessi**. Perché? Imma
 
 Come usarli: guardate i quintetti che hanno giocato di più. Se il quintetto che usate più spesso ha un Net negativo, forse vale la pena provare altre combinazioni.
 
+**Filtro per giocatore.** Sopra la tabella c'è un bottone per ogni giocatore. Cliccatene uno e restano solo i quintetti in cui era in campo. Se ne scegliete più di uno, restano i quintetti in cui c'erano **tutti** insieme: per esempio, con il 7 e il 12 vedete come va la squadra quando giocano insieme e con quali compagni. "Azzera" toglie il filtro. Il filtro c'è sia nella partita sia nel campionato, e anche nei quintetti in clutch.
+
+**Partite di un quintetto.** Nella pagina del campionato la colonna "Part" dice in quante partite il quintetto è stato in campo. Passando sopra il numero si vede quali, una per riga: data, minuti giocati dal quintetto in quella partita, squadre e punteggio (sempre prima la squadra di casa, come nei referti) ed esito per noi, V vinta o P persa. Esempio: "25/09/2026 · 12:34 · RiverBasket - Vichinghi 64-55 (P)" vuol dire che i Vichinghi (noi) hanno perso 55-64 in trasferta e quel quintetto ha giocato 12 minuti e 34 secondi.
+
 ### **On/Off**
 
 Per ogni giocatore, Transy divide la partita in due: i minuti **con lui in campo** (On) e i minuti **con lui in panchina** (Off). Per ciascuna delle due parti calcola il Net rating della squadra. Poi fa la differenza.
@@ -325,6 +331,8 @@ Esempio: la casella all'incrocio fra la riga "Rossi" e la colonna "Bianchi" dice
 - Il colore aiuta: **rosso** a favore, **azzurro** contro. Più il colore è intenso, più il valore è grande.
 
 Serve a trovare le coppie che funzionano (o che non funzionano): per esempio due lunghi che insieme vanno sempre sotto, o un playmaker che rende solo con un certo esterno accanto. Prima di trarre conclusioni, guardate i **minuti insieme**: una coppia che ha giocato 3 minuti non dice niente.
+
+Passando sopra una casella compare il dettaglio: i due giocatori sulla prima riga, poi un dato per riga, cioè minuti insieme, punti fatti-subiti con il +/- e Net (il Net solo sopra i 10 possessi). Passando sopra il numero in cima a una colonna si legge il nome del giocatore.
 
 **Attenzione**: tutto questo è affidabile quanto le **sostituzioni registrate**. Se un cambio viene dimenticato, Transy crede che in campo ci sia ancora il giocatore uscito, e gli attribuisce minuti e punti che non sono suoi. Se in una partita i cambi non sono stati segnati bene, meglio non dare peso a questi numeri.
 
@@ -425,6 +433,8 @@ Le linee tratteggiate sono il volume medio e il TS% della squadra: la zona in cu
 
 Esempio: un giocatore con usage 27% e TS% 28% sta in basso a destra. Si prende un possesso su quattro e lo rende male: è il primo caso da discutere.
 
+Passando sopra un punto si leggono i dati del giocatore, uno per riga: usage, tiri, TS%, punti e minuti.
+
 Chi ha giocato troppo poco (meno di 5 minuti in una partita; sul campionato 2 minuti e mezzo per partita, minimo 15 minuti in tutto) resta in tabella in grigio ma fuori dal grafico. Su pochi minuti questi numeri sono solo rumore: un giocatore che entra 2 minuti e segna l'unica tripla tentata avrebbe un TS% del 150%, che non vuol dire nulla.
 
 **Dove**: tab partita (PDF completo) e pagina campionato.
@@ -467,6 +477,8 @@ Qui non si usano rosso e azzurro perché la mappa misura l'efficienza, non una s
 
 Accanto al campo c'è una tabella con, per ogni zona: segnati/tentati, percentuale, punti per tiro e **quota dei tiri**, cioè quanti tiri su 100 sono stati presi da quella zona. È il modo più rapido per vedere se si tira tanto da zone che rendono poco. Esempio: se il 30% dei vostri tiri arriva dalla media distanza e quella zona è arancio, state "sprecando" tanti possessi in tiri poco convenienti.
 
+Passando sopra una zona del campo si leggono il nome della zona, i tiri segnati su tentati con la percentuale e i punti per tiro.
+
 ### **Tiri fatti e tiri subiti**
 
 Nel campionato ci sono due mappe: i nostri tiri e quelli degli avversari. La seconda è la **mappa difensiva**: dice da dove ci segnano e con quanta efficacia. Una zona verde acqua nella mappa degli avversari è una zona che difendiamo male. Funziona solo se in configurazione è attiva la posizione anche per i tiri avversari.
@@ -477,9 +489,21 @@ Nel campionato ci sono due mappe: i nostri tiri e quelli degli avversari. La sec
 
 Queste statistiche hanno senso solo su più partite: servono a vedere le **tendenze**, cioè come cambia la squadra nel tempo. Le trovate nella pagina "Statistiche campionato", dopo la tabella di squadra e le tabelle dei giocatori. L'elaborazione parte da sola appena si apre la pagina, e la squadra proposta è già il Sarezzo.
 
+### **Contributo dei quarti**
+
+Tre grafici a torta, uno accanto all'altro: **punti fatti**, **punti subiti** e **differenza punti**, sommati su tutte le partite scelte. Ogni spicchio è un quarto (Q1…Q4, con gli stessi colori della mappa di tiro); i supplementari, se ci sono, formano un unico spicchio "Et". Sopra ogni torta c'è il totale.
+
+Più uno spicchio è grande, più quel quarto pesa. Esempio: se nella torta dei punti fatti il Q3 è lo spicchio più piccolo, è il quarto in cui segniamo meno.
+
+La torta della differenza dice in quali quarti costruiamo il risultato. Ogni spicchio è grande quanto lo scarto di quel quarto, senza contare il segno, e i quarti **persi** sono **tratteggiati**. Esempio: Q1 +20, Q2 +10, Q3 −15, Q4 +5. Il totale è +20; lo spicchio del Q3 è tratteggiato e occupa il 30% della torta (15 su 20 + 10 + 15 + 5 = 50). Nella torta dei punti subiti sono tratteggiati tutti gli spicchi, perché sono tutti punti a sfavore.
+
+Passando sopra uno spicchio si leggono il quarto, il valore e la percentuale, più "a sfavore" se è tratteggiato. Le torte ci sono anche nel PDF del campionato.
+
 ### **Andamento partita per partita**
 
 Un grafico con un punto per ogni partita, in ordine di data (sotto ogni punto ci sono la data e V o P, cioè vinta o persa). Dal menu si sceglie cosa guardare: punti, differenza, Net rating, punti ogni 100 possessi, eFG%, palle perse, rimbalzi offensivi, TL/TdC, pace, possessi.
+
+Passando sopra un punto si legge la partita, scritta come nei referti: data, prima la squadra di casa, punteggio nello stesso ordine ed esito per noi. Esempio: "25/09/2026 RiverBasket - Vichinghi 64-55 (P)" è una sconfitta in trasferta per 55-64. Lo stesso vale per il grafico grande dell'andamento di un giocatore.
 
 Accanto c'è la **media mobile sulle ultime 3 partite** (attiva di default). Cos'è? Per ogni partita, invece del valore di quella partita, si prende la media di quella partita e delle due precedenti.
 
@@ -510,6 +534,8 @@ Come leggerlo: un poligono grande e rotondo è un giocatore completo; uno strett
 
 In grigio tratteggiato c'è la media della squadra. Si può sovrapporre un secondo giocatore (in viola) per confrontarli. Nel PDF ci sono tutti, 8 per pagina.
 
+Passando sopra un vertice si legge il valore del giocatore in quella statistica; sopra la sigla di un asse, il nome della statistica per esteso.
+
 Non c'è sulla singola partita: con pochi minuti e pochi eventi la forma cambierebbe ogni volta per caso.
 
 ### **Andamento stagionale dei giocatori**
@@ -524,6 +550,8 @@ Come si legge il mini-grafico:
 - **buchi** nella linea: partite non giocate.
 
 Ogni mini-grafico ha la scala del giocatore, con un'ampiezza minima di 10: chi è costante resta quasi piatto, chi è altalenante va su e giù. Serve a vedere a colpo d'occhio chi cresce, chi cala e chi è imprevedibile, cosa che la media non dice. Esempio: 11 punti di media possono essere 5-6-8 a inizio stagione e 14-16-17 alla fine. La media è la stessa, ma il giocatore è cresciuto tantissimo.
+
+Passando sopra un mini-grafico si leggono i valori partita per partita, con un trattino per le partite non giocate. I minuti sono scritti in minuti e secondi, come sul cronometro: 2:30 vuol dire due minuti e mezzo.
 
 Cliccando su una riga compare sotto il grafico grande di quel giocatore, con date e media mobile.
 

@@ -39,11 +39,10 @@
 
             @for (g of punti; track g.id)
             {
-               <g (pointerenter)="hover = g" (pointerleave)="hover = null">
+               <g (pointerenter)="hover = g" (pointerleave)="hover = null" [appTooltipSvg]="Tooltip(g)">
                   <circle [attr.cx]="X(ValoreX(g))" [attr.cy]="Y(g.ts!)" r="14" class="us-bersaglio"/>
                   <circle [attr.cx]="X(ValoreX(g))" [attr.cy]="Y(g.ts!)" r="6" [attr.fill]="coloreNoi" class="us-punto" [class.us-punto-attivo]="hover === g"/>
                   <text [attr.x]="X(ValoreX(g)) + 9" [attr.y]="Y(g.ts!) + 4" class="us-numero">{{ g.numero }}</text>
-                  <title>{{ Titolo(g) }}</title>
                </g>
             }
          </svg>

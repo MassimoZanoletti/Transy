@@ -46,6 +46,22 @@ export interface TQuintettoStat extends TInCampoStat
    chiave: string;             // id dei giocatori in ordine, separati da "-"
    giocatori: TGiocatoreQuintetto[];
    partite: number;
+   elencoPartite?: TPartitaQuintetto[];   // campionato: le partite in cui il quintetto è stato in campo
+}
+
+
+// Una partita (data e "Casa - Ospiti punti-punti (V/P)", vedi DatiPartita)
+export interface TDatiPartita
+{
+   data: string;
+   partita: string;
+}
+
+
+// Una partita di un quintetto nel campionato, con i secondi giocati in quella partita
+export interface TPartitaQuintetto extends TDatiPartita
+{
+   secondi: number;
 }
 
 
@@ -273,10 +289,14 @@ export function InCampoInizioQuarto (ops: TOperation[],
 
 
 // Somma i quintetti di una partita in quelli del campionato (stessa chiave = stessi 5 giocatori); nome e
-// numero restano quelli dell'ultima partita
+// numero restano quelli dell'ultima partita. "info" (data e partita), con i secondi del quintetto, finisce in
+// elencoPartite.
 export function AccumulaQuintetti (totali: Map<string, TQuintettoStat>,
-                                   partita: TQuintettoStat[]): void
+                                   partita: TQuintettoStat[],
+                                   info: TDatiPartita | null = null): void
 {
+   const elenco = (q: TQuintettoStat): TPartitaQuintetto[] =>
+      [...(q.elencoPartite ?? []), ...(info ? [{ ...info, secondi: q.secondi }] : [])];
    const somma = (a: TBoxQuintetto, b: TBoxQuintetto) =>
    {
       a.punti += b.punti; a.fga += b.fga; a.fta += b.fta; a.ra += b.ra; a.pp += b.pp;
@@ -286,11 +306,13 @@ export function AccumulaQuintetti (totali: Map<string, TQuintettoStat>,
       const t = totali.get(q.chiave);
       if (!t)
       {
-         totali.set(q.chiave, { ...q, giocatori: [...q.giocatori], noi: { ...q.noi }, loro: { ...q.loro } });
+         totali.set(q.chiave, { ...q, giocatori: [...q.giocatori], noi: { ...q.noi }, loro: { ...q.loro },
+                                elencoPartite: elenco(q) });
          continue;
       }
       t.giocatori = [...q.giocatori];
-      t.partite++;
+      t.partite += q.partite;
+      t.elencoPartite = [...(t.elencoPartite ?? []), ...elenco(q)];
       t.secondi += q.secondi;
       somma(t.noi, q.noi);
       somma(t.loro, q.loro);
@@ -349,7 +371,7 @@ export function NomiQuintetto (q: TQuintettoStat,
 
 
 // Minuti "mm:ss"
-export function MinutiQuintetto (q: TInCampoStat): string
+export function MinutiQuintetto (q: { secondi: number }): string
 {
    const s = Math.round(q.secondi);
    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;

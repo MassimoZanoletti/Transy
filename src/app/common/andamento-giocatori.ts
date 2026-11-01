@@ -1,6 +1,7 @@
-import {TGiocatoreStatCamp} from "./statistiche-campionato";
+import {DescrizionePartita, TGiocatoreStatCamp} from "./statistiche-campionato";
 import {NumAndamento, TDatiAndamento, TPartitaAndamento} from "./andamento-campionato";
 import {COLORE_NOI, COLORE_NOI_PDF} from "./grafico-differenza";
+import {MinStr} from "./clutch";
 
 
 // Andamento stagionale dei giocatori (pagina "Statistiche campionato"): per ogni giocatore e metrica i valori
@@ -47,7 +48,7 @@ export function AndamentoGiocatori (giocatori: TGiocatoreStatCamp[],
          {
             if ((s.indice < 0) || (s.indice >= numPartite))
                continue;
-            valori.minuti[s.indice] = Math.round(s.secondi / 6) / 10;
+            valori.minuti[s.indice] = Math.round(s.secondi) / 60;
             if (s.entrato)
             {
                valori.punti[s.indice] = s.punti;
@@ -126,7 +127,8 @@ export function Sparkline (valori: (number | null)[],
 // Dati per il grafico grande del singolo giocatore (stesso componente dell'andamento di squadra)
 export function DatiAndamentoGiocatore (g: TAndamentoGiocatore,
                                         metrica: TMetricaGiocatore,
-                                        partite: TPartitaAndamento[]): TDatiAndamento
+                                        partite: TPartitaAndamento[],
+                                        nomeNoi: string = ''): TDatiAndamento
 {
    const def = METRICHE_GIOCATORE.find(m => m.value === metrica)!;
    return {
@@ -135,12 +137,15 @@ export function DatiAndamentoGiocatore (g: TAndamentoGiocatore,
       serie: [{ nome: `${g.numero} ${g.nome}`, colore: COLORE_NOI, valori: g.valori[metrica] }],
       etichette: partite.map(p => { const m = /^(\d{1,2})[\/.-](\d{1,2})/.exec(p.riga.data ?? ''); return m ? `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}` : p.riga.data; }),
       esiti: partite.map(p => (p.riga.dif > 0) ? 'V' : (p.riga.dif < 0) ? 'P' : ''),
-      dettagli: partite.map(p => `${p.riga.data} ${p.riga.casaTrasf === 'C' ? 'in casa' : 'in trasferta'} con ${p.riga.squadra}: ${p.riga.puntiF}-${p.riga.puntiS}`)
+      dettagli: partite.map(p => DescrizionePartita(p.riga, nomeNoi)),
+      ...((metrica === 'minuti') ? { formato: (v: number) => NumMetrica(v, 'minuti') } : {})
    };
 }
 
 
-export const NumMetrica = (v: number | null, metrica: TMetricaGiocatore) => NumAndamento(v, metrica === 'pm');
+// minuti come "mm:ss" (2:30, non 2,5), gli altri come numero (+/- con il segno)
+export const NumMetrica = (v: number | null, metrica: TMetricaGiocatore) =>
+   (metrica === 'minuti') ? ((v === null) ? '' : MinStr(v * 60)) : NumAndamento(v, metrica === 'pm');
 
 
 // ---------------------------------------------------------------- PDF

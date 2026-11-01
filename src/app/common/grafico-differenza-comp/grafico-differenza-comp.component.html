@@ -14,7 +14,7 @@
          @for (p of parziali; track $index)
          {
             <rect [attr.x]="X(p.t0) - 3" [attr.y]="MT" [attr.width]="X(p.t1) - X(p.t0) + 6" [attr.height]="H - MT - MB"
-                  [attr.fill]="p.myTeam ? coloreVantaggio : coloreSvantaggio" class="gd-parziale"><title>{{ TitoloParziale(p) }}</title></rect>
+                  [attr.fill]="p.myTeam ? coloreVantaggio : coloreSvantaggio" class="gd-parziale" [appTooltipSvg]="TitoloParziale(p)"></rect>
             <text [attr.x]="(X(p.t0) + X(p.t1)) / 2" [attr.y]="MT + 13" text-anchor="middle" class="gd-etichetta-parziale">{{ p.punti }}-0</text>
          }
 
@@ -53,12 +53,12 @@
             @if (to.myTeam)
             {
                <path [attr.d]="'M ' + (X(to.t) - 6) + ' ' + (MT - 12) + ' L ' + (X(to.t) + 6) + ' ' + (MT - 12) + ' L ' + X(to.t) + ' ' + (MT - 2) + ' Z'"
-                     [attr.fill]="coloreVantaggio" class="gd-timeout"><title>{{ TitoloTimeout(to) }}</title></path>
+                     [attr.fill]="coloreVantaggio" class="gd-timeout" [appTooltipSvg]="TitoloTimeout(to)"></path>
             }
             @else
             {
                <path [attr.d]="'M ' + (X(to.t) - 6) + ' ' + (H - MB + 12) + ' L ' + (X(to.t) + 6) + ' ' + (H - MB + 12) + ' L ' + X(to.t) + ' ' + (H - MB + 2) + ' Z'"
-                     [attr.fill]="coloreSvantaggio" class="gd-timeout"><title>{{ TitoloTimeout(to) }}</title></path>
+                     [attr.fill]="coloreSvantaggio" class="gd-timeout" [appTooltipSvg]="TitoloTimeout(to)"></path>
             }
          }
 

@@ -86,7 +86,7 @@
                      <th></th>
                      @for (g of matrice.giocatori; track g.id)
                      {
-                        <th class="co-col" [title]="g.numero + ' ' + g.nome">{{ g.numero }}</th>
+                        <th class="co-col" [pTooltip]="TooltipGiocatore(g)" [escape]="false" tooltipPosition="top">{{ g.numero }}</th>
                      }
                   </tr>
                </thead>
@@ -101,7 +101,9 @@
                                [class.co-diagonale]="i === j"
                                [class.co-testo-scuro]="TestoScuro(c)"
                                [style.background-color]="Fondo(c)"
-                               [title]="TitoloCella(i, j)">{{ Testo(c, metrica) }}</td>
+                               [pTooltip]="TitoloCella(i, j)"
+                               [escape]="false"
+                               tooltipPosition="top">{{ Testo(c, metrica) }}</td>
                         }
                      </tr>
                   }

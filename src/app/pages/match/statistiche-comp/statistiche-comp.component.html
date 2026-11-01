@@ -103,7 +103,7 @@
                <td class="stat-nome">
                   <span class="stat-quintetto">{{ r.quintetto ? '🔶' : '' }}</span>
                   {{ r.numero }}) <b>{{ r.nome }}</b>
-                  @if (r.capitano) { <span title="Capitano"> ⛹🏻‍♂️</span> }
+                  @if (r.capitano) { <span pTooltip="<span class='tt-testo'>Capitano</span>" [escape]="false" tooltipPosition="top"> ⛹🏻‍♂️</span> }
                </td>
                @if (r.nonEntrato)
                {
